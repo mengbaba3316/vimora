@@ -2,17 +2,17 @@
   {
     "date": "2026-09-23",
     "project": "image_gen_platform",
-    "surface": "prototype/index.html（五视图工作台原型）",
+    "surface": "prototype/index.html（五视图工作台原型，第二版：用户反馈后改版）",
     "register": "product",
     "sub": "ai-console(workbench)",
     "axes": {
-      "A": "warm-stone-dark+amber(#e8a33d)",
+      "A": "teal&clay-light 双色壳(浅青灰纸+深青黑轨, accent #176C6B)",
       "B": "system-sans-700/400 + mono-for-data",
-      "C": "rail + 3col-workbench(prompt|assets|params) + runstrip",
-      "D": "feedback-only + 1 liveness pulse",
-      "E": "摄影暗房看图台"
+      "C": "rail + 3col-workbench(素材窄|提示词宽|参数) 无运行条",
+      "D": "feedback-only(1 liveness pulse)",
+      "E": "清爽网页端工作台"
     },
     "dials": { "SOUL": 6, "SPECTACLE": 2, "DENSITY": 7 },
-    "notes": "四库功能色 rose/teal/sky/violet 为语义色；运行态用琥珀心跳点；rejected: 平台蓝 admin 后台与 AI 紫光晕"
+    "notes": "v1 暖棕琥珀深底被用户否决（网页端显旧）；四库功能色浅底变体 rose/陶土/天蓝/紫；多任务提交即入队，进度收敛到历史页轮询"
   }
 ]

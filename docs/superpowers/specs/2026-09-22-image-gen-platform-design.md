@@ -196,6 +196,7 @@ CREATE TABLE provider (
   default_quality VARCHAR(30)  NOT NULL DEFAULT 'high',     -- 允许空串=不传该字段
   timeout_seconds INT NOT NULL DEFAULT 300,
   extra_params    JSON NULL,                          -- 附加表单/JSON 字段，随请求合并发送
+  param_options   JSON NULL,                          -- 参数可选值方案（size/quality/resolution/n_max），NULL 用内置默认，见 5.3
   remark          VARCHAR(500) NOT NULL DEFAULT '',
   created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -214,6 +215,7 @@ CREATE TABLE gen_task (
   size           VARCHAR(30)  NOT NULL,
   quality        VARCHAR(30)  NOT NULL DEFAULT '',
   n              INT NOT NULL DEFAULT 1,
+  extra          JSON NULL,                           -- 附加参数快照（清晰度等非标准键），随请求合并发送
   assets         JSON NULL,                           -- 快照，结构见下
   status         ENUM('pending','running','success','failed') NOT NULL DEFAULT 'pending',
   error_message  TEXT NULL,                           -- 失败原因（截断 2000 字）
@@ -360,9 +362,17 @@ POST/PUT 请求体：
   "default_quality": "high",
   "timeout_seconds": 300,
   "extra_params": null,
+  "param_options": {
+    "size": ["1024x1024", "1024x1536", "1536x1024", "auto"],
+    "quality": ["auto", "low", "medium", "high"],
+    "resolution": ["1K", "2K", "4K"],
+    "n_max": 10
+  },
   "remark": "主力站"
 }
 ```
+
+`param_options` 是该源站的**参数可选值方案**。不同中转站背后的模型支持的取值不同：有的收像素尺寸（1024x1536），有的只收比例（3:4）；质量有 auto/low/medium/high，也有 standard/hd；清晰度有按 1K/2K/4K 分档的。因此这些下拉的**选项不写死在平台里**，而是每个源站各自配置，工作台按当前所选源站动态渲染；`resolution` 这类非 OpenAI 标准键在生图时通过任务快照的 `extra` 合并进请求参数（见 5.4 / 6.2）。缺省 NULL 时用内置默认：size=[1024x1024, 1024x1536, 1536x1024, auto]、quality=[high, medium, low]、无清晰度项、n_max=10。
 
 `type=mock` 时其余字段可空。`extra_params` 为扁平键值对象，生图时合并进请求参数（表单或 JSON 均适用），值为字符串/数字/布尔。
 
@@ -389,6 +399,8 @@ POST /api/tasks 请求体：
   "model": "gpt-image-1",
   "size": "1024x1536",
   "quality": "high",
+  "resolution": "4K",
+  "extra": {"resolution": "4K"},
   "n": 2,
   "assets": [
     { "library": "face",   "image_ids": [11] },
@@ -404,6 +416,7 @@ POST /api/tasks 请求体：
 - `assets` 请求体中无需 group 字段，服务端落库快照时按 image_ids 反查并补全 `group_id`/`group_name`（最终快照结构见 4.1）。
 - `model/size/quality/n` 空则取 provider 对应默认；`n` ∈ [1, 10]。
 - `assets` 各 library 的 `image_ids` 必须真实存在于对应库（且属于该库），否则 400 并指明哪张缺失。
+- `extra` 可选，扁平键值对（如清晰度 `{"resolution":"4K"}`，键名/取值范围由源站 param_options 约定）；生图时与标准参数合并发送，并随任务快照存入 `gen_task.extra`，重跑时还原。`resolution` 是前端渲染出来的快捷下拉，最终以 `extra` 为准。
 - 判定 endpoint：所有 `image_ids` 合计为空 → `generations`；否则 → `edits`。
 
 响应 `202`：`{ "id": 88, "status": "pending" }`
@@ -440,7 +453,7 @@ worker: pending → running(started_at) ──成功──▶ success(finished_a
 ```
 
 - 应用启动时把遗留 `pending/running` 置为 `failed`，error_message =「服务重启，任务中断」。
-- 并发数来自 `.env`；队列天然由线程池排队。
+- 并发数来自 `.env`；队列天然由线程池排队。**允许连续提交多个任务**：提交接口立即返回，工作台不锁定，用户可立刻改词换图再提交下一个；进度统一在历史任务页查看（运行中任务由前端每 2 秒轮询刷新状态）。
 
 ### 6.2 请求拼接
 
@@ -450,13 +463,14 @@ worker: pending → running(started_at) ──成功──▶ success(finished_a
 |---|---|
 | `image[]`（字段名取 provider.image_field） | 按第 4.1 节顺序展开的全部选中图片，文件名用 original_name |
 | `prompt` | 任务 prompt_content |
-| `model` / `n` / `size` | 任务值 |
+| `model` / `n` / `size` | 任务值（size 等取值范围来自该源站 param_options） |
 | `quality` | 任务值，空串不传 |
-| extra_params | 逐项合并（与上述键冲突时 extra_params 优先，便于特殊站覆盖） |
+| `extra`（如 resolution） | 任务快照中的附加键，逐项合并 |
+| extra_params | 源站配置的固定附加字段，最后合并（与上述键冲突时以 extra_params 为准，便于特殊站覆盖） |
 
 Header：`Authorization: Bearer <api_key>`。
 
-**generations（无素材图）** — `POST {base_url}{gen_path}`，`application/json`：`{prompt, model, n, size, quality?}`（quality 空串同样不传）+ extra_params，Header 同上。
+**generations（无素材图）** — `POST {base_url}{gen_path}`，`application/json`：`{prompt, model, n, size, quality?}`（quality 空串同样不传）+ `extra` + extra_params，Header 同上。
 
 **响应处理**：OpenAI 兼容格式 `{"data": [{"b64_json": "..."} | {"url": "..."}]}`。
 - `b64_json` → base64 解码写盘。
@@ -477,27 +491,26 @@ Header：`Authorization: Bearer <api_key>`。
 
 ### 7.1 生图工作台 `Workbench.vue`（首页）
 
+三栏布局，纵向撑满整个视口；**不设全局底部运行条**，任务进度统一在历史任务页查看：
+
 ```
-┌───────────────────────────┬──────────────────────────────────────┐
-│ 左栏 35%：提示词           │ 右栏 65%：素材与参数                   │
-│ ┌ 搜索/选择 prompt 下拉 ┐  │ ┌─ 四个素材卡片：人脸/服装/袜子/姿势 ─┐ │
-│ │ 提示词编辑器 textarea │  │ │  每卡：〔选择…〕按钮 + 已选缩略图条  │ │
-│ │ （本次任务可自由修改） │  │ │  （横向滚动，可移除、可拖拽排序）    │ │
-│ │ ┌ 查找 [___] ◀ ▶ 3/7┐ │  │ └────────────────────────────────────┘ │
-│ │ │ 替换 [___] 替换 全替换│ │ │ 参数区：源站▾  模型  尺寸  质量  张数 │
-│ │ └───────────────────┘ │  │ （默认取源站配置，可覆盖）              │
-│ │ 字数统计              │  │ 〔生成〕按钮                           │
-│ │ [保存回提示词库]       │  │ 最近任务状态条（轮询当前任务）          │
-└───────────────────────────┴──────────────────────────────────────┘
+┌────────────┬──────────────────────────────┬────────────────┐
+│ 素材 约300px │ 提示词（居中、最宽）            │ 源站与参数 约300px│
+│ 四张选择卡   │ 下拉选择 + 编辑器               │ 动态参数下拉      │
+│ 已选缩略图条 │ + 查找/替换工具条               │ 提交前检查卡      │
+│ 〔选择…〕    │ + 字数/保存回库                │ 〔生成〕按钮      │
+└────────────┴──────────────────────────────┴────────────────┘
 ```
 
+- **素材列（窄）**：人脸/服装/袜子/姿势四张选择卡纵向排列。实际使用中人脸/袜子/姿势通常各选 1 张、服装最多 3 张，因此素材列整体压窄，把横向空间让给提示词编辑器。每卡：库色点 + 名称 + 已选数量 +〔选择…〕；已选缩略图条带顺序徽标（即 `image[]` 顺序），可移除。
+- **提示词列（居中最宽）**：搜索/选择下拉 + 编辑器（本次任务可自由修改，不回写库）+ 局部查找/替换工具条 + 字数统计 +〔另存为新提示词〕〔保存回提示词库〕。
 - **PromptEditor（核心组件，必须实现局部查找/替换）**：
-  - 工具条：查找输入框、上一个/下一个、匹配计数 `当前/总数`、替换输入框、〔替换〕〔全部替换〕、关闭。
-  - 实现：纯文本 textarea + `String.prototype.indexOf` 循环定位 + `setSelectionRange` 选中当前匹配 + 调整 `scrollTop` 使其可见（textarea 原生选区即高亮，不做覆盖层高亮）。
-  - 大小写不敏感开关（默认开）；「全部替换」一次完成并弹 toast 显示替换次数。
+  - 工具条：查找输入框、上一个/下一个、匹配计数 `当前/总数`、替换输入框、〔替换〕〔全部替换〕。
+  - 实现：纯文本 textarea + 正则循环定位 + `setSelectionRange` 选中当前匹配 + 调整 `scrollTop` 使其可见（textarea 原生选区即高亮）。
+  - 大小写不敏感（默认）；「全部替换」一次完成并弹 toast 显示替换次数。
   - 「保存回提示词库」：已选 prompt → PUT 回写；未选 → 弹框输入名称另存为新 prompt。
-- **素材选择**：点〔选择…〕打开 `AssetPicker` 抽屉（四库复用）。
-- **生成**：POST /api/tasks → 成功提示「已加入队列」；工作台底部显示该任务状态条，2 秒轮询直至 success/failed；success 后可直接点击缩略图预览（el-image 大图预览）。
+- **参数列**：源站下拉（**决定下方可选项**）、模型；尺寸 / 质量 / 清晰度下拉的选项来自该源站的 `param_options`，清晰度仅在该站配置了才渲染；张数上限 `n_max`。提交前检查卡：发送方式（edits·参考图 N 张 / generations）、提示词名与字数、目标源站、参数一览；Mock 源站显示「仅联调」警示。生成按钮在缺提示词或未选源站时禁用，并**注明原因**。
+- **多任务**：点生成 → POST /api/tasks → toast「任务 #N 已加入队列」后**立即解锁界面**，可改词换图连续提交下一个任务；工作台不展示进度。
 
 ### 7.2 AssetPicker 抽屉（四库通用）
 
@@ -527,6 +540,7 @@ Header：`Authorization: Bearer <api_key>`。
 ### 7.6 历史任务 `History.vue`
 
 - 筛选：状态下拉 + 关键字 + 分页表格：创建时间、prompt 名、源站、endpoint、model、n、状态（pending 转圈/failed 红）。
+- **pending/running 任务由前端每 2 秒轮询刷新状态**，无需手动刷新页面。
 - 详情抽屉：完整参数快照（含各库已选图缩略图）+ 结果图网格（点击大图、单张下载按钮）+ 〔用同样配置重跑〕；失败时红条展示 error_message。
 - 删除记录：二次确认，注明「磁盘文件保留在 outputs 目录」。
 

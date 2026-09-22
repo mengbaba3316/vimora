@@ -5,25 +5,27 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>生图工作台 · 交互原型</title>
 <style>
-  /* finesse · register=product · sub=ai-console(workbench) · A=warm-stone+amber(dark)
-   * B=system-sans/700-400 + mono-for-data · C=rail+3col-workbench+runstrip
-   * D=feedback-only(1 liveness pulse) · E=摄影暗房看图台
+  /* finesse · register=product · sub=ai-console(workbench) · A=teal&clay-light(two-tone rail)
+   * B=system-sans/700-400 + mono-for-data · C=rail+3col-workbench(assets|prompt|params)
+   * D=feedback-only(1 liveness pulse) · E=清爽网页端工作台
    * SOUL=6 SPECTACLE=2 DENSITY=7 */
   :root{
-    --page:#191612; --bg:#221e18; --panel-2:#2c2720; --panel-3:#352f26;
-    --border:rgba(255,246,230,.08); --border-2:rgba(255,246,230,.16);
-    --ink-1:#f6f2ea; --ink-2:#c9beac; --ink-3:#a2977f;
-    --accent:#e8a33d; --accent-hi:#f0b356; --accent-soft:rgba(232,163,61,.14); --on-accent:#1a1206;
-    --glow:rgba(232,163,61,.30);
-    --up:#3fcb86; --up-soft:rgba(63,203,134,.13);
-    --down:#ff5f56; --down-soft:rgba(255,95,86,.12);
-    --warn:#e8a33d; --warn-soft:rgba(232,163,61,.13);
-    --lib-face:#f0808f;   --lib-face-soft:rgba(240,128,143,.26);
-    --lib-outfit:#2fd3c5; --lib-outfit-soft:rgba(47,211,197,.22);
-    --lib-socks:#7d9bff;  --lib-socks-soft:rgba(125,155,255,.26);
-    --lib-pose:#bd84e0;   --lib-pose-soft:rgba(189,132,224,.26);
-    --shadow:0 1px 3px rgba(0,0,0,.25);
-    --shadow-lg:0 30px 70px -40px rgba(0,0,0,.6);
+    --page:#e9eeed; --bg:#fdfefd; --panel-2:#f1f5f4; --panel-3:#e3eae8;
+    --border:rgba(16,38,38,.08); --border-2:rgba(16,38,38,.16);
+    --ink-1:#0f2322; --ink-2:#3a4b4a; --ink-3:#6b7d7c;
+    --accent:#176C6B; --accent-hi:#1b807e; --accent-soft:rgba(23,108,107,.10); --on-accent:#fdfefd;
+    --glow:rgba(23,108,107,.28);
+    --up:#2C7A62; --up-soft:rgba(44,122,98,.12);
+    --down:#C0453C; --down-soft:rgba(192,69,60,.10);
+    --warn:#B77A16; --warn-soft:rgba(183,122,22,.12);
+    --lib-face:#B4485E;   --lib-face-soft:rgba(180,72,94,.14);
+    --lib-outfit:#C4633F; --lib-outfit-soft:rgba(196,99,63,.14);
+    --lib-socks:#0E7FA8;  --lib-socks-soft:rgba(14,127,168,.14);
+    --lib-pose:#7C3F9E;   --lib-pose-soft:rgba(124,63,158,.14);
+    --rail:#0e1a19; --rail-2:#172725; --rail-3:#1e312e;
+    --rail-ink:#9db3ae; --rail-ink-2:#6f8681; --rail-ink-on:#eef4f2;
+    --shadow:0 1px 3px rgba(19,61,58,.06);
+    --shadow-lg:0 30px 70px -40px rgba(19,61,58,.45);
     --r:16px; --r-sm:11px; --r-xs:8px;
     --sans:-apple-system,"Segoe UI","Microsoft YaHei","PingFang SC",sans-serif;
     --mono:ui-monospace,"Cascadia Mono",Consolas,monospace;
@@ -41,21 +43,21 @@
   ::-webkit-scrollbar-thumb{background:var(--panel-3);border-radius:99px}
   ::-webkit-scrollbar-track{background:transparent}
 
-  /* ── 应用壳：左轨 + 内容 ─────────────────────────────── */
+  /* ── 应用壳：深色左轨（双色壳）+ 浅色内容 ───────────────── */
   .app{display:grid;grid-template-columns:212px minmax(0,1fr);height:100vh}
-  .rail{background:var(--page);border-right:1px solid var(--border);display:flex;flex-direction:column;min-height:0}
-  .brand{display:flex;align-items:center;gap:10px;height:58px;flex:none;padding:0 16px;border-bottom:1px solid var(--border)}
+  .rail{background:var(--rail);border-right:1px solid var(--rail-border, rgba(255,255,255,.07));display:flex;flex-direction:column;min-height:0}
+  .brand{display:flex;align-items:center;gap:10px;height:58px;flex:none;padding:0 16px;border-bottom:1px solid rgba(255,255,255,.07)}
   .brand .mk{width:28px;height:28px;border-radius:9px;flex:none;display:grid;place-items:center;background:var(--accent);color:var(--on-accent)}
-  .brand b{font-size:14.5px;font-weight:700;letter-spacing:-.01em}
-  .brand span{font-size:10.5px;color:var(--ink-3);margin-left:auto;font-family:var(--mono)}
+  .brand b{font-size:14.5px;font-weight:700;letter-spacing:-.01em;color:var(--rail-ink-on)}
+  .brand span{font-size:10.5px;color:var(--rail-ink-2);margin-left:auto;font-family:var(--mono)}
   .nav{padding:12px 10px;flex:1;min-height:0;overflow-y:auto}
-  .nav-item{position:relative;width:100%;display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--r-sm);color:var(--ink-2);font-size:13.5px;font-weight:500;margin-bottom:2px;transition:background .15s ease,color .15s ease;text-align:left}
+  .nav-item{position:relative;width:100%;display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--r-sm);color:var(--rail-ink);font-size:13.5px;font-weight:500;margin-bottom:2px;transition:background .15s ease,color .15s ease;text-align:left}
   .nav-item svg{flex:none;opacity:.75}
-  .nav-item:hover{background:var(--panel-2);color:var(--ink-1)}
-  .nav-item.on{background:var(--panel-2);color:var(--ink-1);font-weight:600}
+  .nav-item:hover{background:var(--rail-2);color:var(--rail-ink-on)}
+  .nav-item.on{background:var(--rail-2);color:var(--rail-ink-on);font-weight:600}
   .nav-item.on::after{content:"";position:absolute;left:0;top:8px;bottom:8px;width:3px;border-radius:0 3px 3px 0;background:var(--accent)}
-  .nav-item .cnt{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--ink-3)}
-  .rail-foot{flex:none;padding:12px 16px;border-top:1px solid var(--border);font-size:11px;color:var(--ink-3)}
+  .nav-item .cnt{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--rail-ink-2)}
+  .rail-foot{flex:none;padding:12px 16px;border-top:1px solid rgba(255,255,255,.07);font-size:11px;color:var(--rail-ink-2)}
   .rail-foot .dot-live{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--up);margin-right:6px;vertical-align:1px}
 
   main{min-width:0;min-height:0;display:flex;flex-direction:column}
@@ -94,15 +96,15 @@
   .dot-live{width:7px;height:7px;border-radius:50%;background:var(--accent);animation:pulse 1.6s ease-in-out infinite}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
 
-  /* ── 工作台三栏 ─────────────────────────────────────── */
-  .wb{flex:1;min-height:0;display:grid;grid-template-columns:400px minmax(0,1fr) 296px;gap:14px;padding:14px 22px 0}
+  /* ── 工作台三栏：素材(窄) | 提示词(宽) | 参数 ──────────── */
+  .wb{flex:1;min-height:0;display:grid;grid-template-columns:302px minmax(0,1fr) 300px;gap:14px;padding:14px 22px 16px}
   .wb>*{min-height:0}
   .card{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow)}
   .card-h{display:flex;align-items:center;gap:9px;padding:13px 16px;border-bottom:1px solid var(--border);flex:none}
   .card-h b{font-size:13.5px;font-weight:700}
   .card-h .cnt{margin-left:auto;font-size:11.5px;color:var(--ink-3)}
 
-  .col-prompt{display:flex;flex-direction:column;min-height:0}
+  .col-prompt{order:1;display:flex;flex-direction:column;min-height:0}
   .prompt-pick{padding:12px 16px 4px}
   .prompt-pick .select{font-weight:600}
   .findbar{margin:10px 16px 0;background:var(--panel-2);border:1px solid var(--border);border-radius:var(--r-sm);padding:8px 10px;display:flex;flex-direction:column;gap:7px}
@@ -120,18 +122,18 @@
   .prompt-foot{flex:none;display:flex;align-items:center;gap:8px;padding:11px 16px 14px}
   .prompt-foot .wc{font-size:11.5px;color:var(--ink-3);margin-right:auto}
 
-  .col-assets{display:flex;flex-direction:column;gap:12px;overflow-y:auto;padding-right:2px}
+  .col-assets{order:0;display:flex;flex-direction:column;gap:12px;overflow-y:auto;padding-right:2px}
   .lib-card .sel-strip{display:flex;gap:8px;padding:11px 16px 14px;flex-wrap:wrap;min-height:14px}
   .sel-strip .empty-hint{font-size:12px;color:var(--ink-3)}
-  .sel-chip{position:relative;width:44px;height:44px;border-radius:var(--r-xs);flex:none;border:1.5px solid transparent}
+  .sel-chip{position:relative;width:40px;height:40px;border-radius:var(--r-xs);flex:none;border:1.5px solid transparent}
   .sel-chip .rm{position:absolute;top:-6px;right:-6px;width:16px;height:16px;border-radius:50%;background:var(--panel-3);color:var(--ink-2);font-size:10px;display:none;place-items:center;border:1px solid var(--border-2)}
   .sel-chip:hover .rm{display:grid}
   .sel-chip .ord{position:absolute;bottom:-5px;right:-5px;min-width:15px;height:15px;padding:0 3px;border-radius:99px;background:var(--accent);color:var(--on-accent);font-size:9.5px;font-weight:700;display:grid;place-items:center;font-family:var(--mono)}
-  .thumb{width:100%;height:100%;border-radius:inherit;display:grid;place-items:center;font-size:10px;font-weight:700;letter-spacing:.05em;color:var(--ink-1);background:linear-gradient(135deg,var(--tint),transparent 140%),var(--panel-3);border:1px solid var(--border)}
+  .thumb{width:100%;height:100%;border-radius:inherit;display:grid;place-items:center;font-size:10px;font-weight:700;letter-spacing:.05em;color:var(--ink-2);background:linear-gradient(135deg,var(--tint),transparent 140%),var(--panel-2);border:1px solid var(--border)}
   .sel-chip{border-color:var(--tint-solid)}
   .lib-card .pick-btn{margin-left:auto}
 
-  .col-params{display:flex;flex-direction:column;min-height:0;overflow:hidden}
+  .col-params{order:2;display:flex;flex-direction:column;min-height:0;overflow:hidden}
   .gen-wrap{flex:none;padding:0 16px 16px}
   .params-body{padding:13px 16px;flex:1;min-height:0;overflow-y:auto}
   .precheck{flex:none;margin:4px 16px 12px;background:var(--panel-2);border:1px solid var(--border);border-radius:var(--r-sm);padding:11px 13px}
@@ -144,32 +146,11 @@
   .gen-reason.on{display:block}
   .btn.gen{width:100%;padding:11px;font-size:14.5px;font-weight:700;border-radius:var(--r-sm);box-shadow:0 8px 24px var(--glow)}
 
-  /* ── 运行条（现在 + 过去）───────────────────────────── */
-  .runstrip{flex:none;border-top:1px solid var(--border);background:var(--bg);display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);min-height:118px}
-  .run-now{padding:12px 22px;border-right:1px solid var(--border);display:flex;flex-direction:column;gap:8px}
-  .run-now .top{display:flex;align-items:center;gap:10px}
-  .run-now .top b{font-size:13px}
-  .run-now .top .elapsed{font-family:var(--mono);font-size:12px;color:var(--ink-3)}
-  .run-now .idle{font-size:12.5px;color:var(--ink-3)}
-  .run-steps{display:flex;flex-direction:column;gap:3px}
-  .rstep{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink-2)}
-  .rstep .rail-dot{width:5px;height:5px;border-radius:50%;background:var(--panel-3);flex:none}
-  .rstep.live .rail-dot{background:var(--accent)}
-  .rstep.done .rail-dot{background:var(--up)}
-  .rstep .dur{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--ink-3)}
-  .receipt{font-family:var(--mono);font-size:11.5px;color:var(--ink-3)}
-  .run-thumbs{display:flex;gap:8px;margin-top:2px}
-  .run-thumbs .rt{width:52px;height:52px;border-radius:var(--r-xs);overflow:hidden;animation:fadein .5s var(--ease)}
+  /* ── 工作台提交后即入队，进度统一在历史任务页查看 ────────── */
   @keyframes fadein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-  .run-past{padding:12px 22px}
-  .run-past h4{font-size:11px;letter-spacing:.1em;color:var(--ink-3);font-weight:700;margin-bottom:8px}
-  .prow{display:flex;align-items:center;gap:9px;padding:3px 0;font-size:12.5px;color:var(--ink-2)}
-  .prow .pd{width:7px;height:7px;border-radius:50%;flex:none}
-  .prow .pd.success{background:var(--up)}.prow .pd.failed{background:var(--down)}.prow .pd.partial{background:var(--warn)}.prow .pd.queued{background:var(--panel-3)}.prow .pd.running{background:var(--accent)}
-  .prow .pt{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--ink-3)}
 
   /* ── 抽屉 / 弹层 ───────────────────────────────────── */
-  .scrim{position:fixed;inset:0;background:rgba(10,8,5,.55);opacity:0;pointer-events:none;transition:opacity .2s ease;z-index:40}
+  .scrim{position:fixed;inset:0;background:rgba(15,35,34,.38);opacity:0;pointer-events:none;transition:opacity .2s ease;z-index:40}
   .scrim.on{opacity:1;pointer-events:auto}
   .drawer{position:fixed;top:0;right:0;bottom:0;width:560px;max-width:92vw;background:var(--bg);border-left:1px solid var(--border);z-index:50;display:flex;flex-direction:column;transform:translateX(102%);transition:transform .24s var(--ease);box-shadow:var(--shadow-lg)}
   .drawer.on{transform:none}
@@ -191,8 +172,8 @@
   .picker-grid{overflow-y:auto;padding:14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:10px;align-content:start}
   .ptile{position:relative;aspect-ratio:1;border-radius:var(--r-sm);overflow:hidden;cursor:pointer;border:1.5px solid var(--border);transition:border-color .12s ease,transform .12s ease}
   .ptile:hover{transform:translateY(-2px)}
-  .ptile .name{position:absolute;left:0;right:0;bottom:0;font-size:10.5px;padding:3px 7px;background:rgba(12,10,7,.72);color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .ptile .tick{position:absolute;top:7px;left:7px;width:20px;height:20px;border-radius:50%;background:rgba(12,10,7,.6);border:1.5px solid var(--border-2);display:grid;place-items:center;color:transparent}
+  .ptile .name{position:absolute;left:0;right:0;bottom:0;font-size:10.5px;padding:3px 7px;background:rgba(253,254,253,.88);color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ptile .tick{position:absolute;top:7px;left:7px;width:20px;height:20px;border-radius:50%;background:rgba(253,254,253,.85);border:1.5px solid var(--border-2);display:grid;place-items:center;color:transparent}
   .ptile.on{border-color:var(--accent)}
   .ptile.on .tick{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
   .ptile .ord{position:absolute;top:7px;right:7px;min-width:17px;height:17px;padding:0 4px;border-radius:99px;background:var(--accent);color:var(--on-accent);font-size:10px;font-weight:700;display:none;place-items:center;font-family:var(--mono)}
@@ -212,9 +193,9 @@
   .gtile{position:relative;aspect-ratio:1;border-radius:var(--r-sm);overflow:hidden;border:1px solid var(--border)}
   .gtile .ops{position:absolute;top:6px;right:6px;display:none;gap:4px}
   .gtile:hover .ops{display:flex}
-  .gtile .ops button{width:24px;height:24px;border-radius:7px;background:rgba(12,10,7,.78);color:var(--ink-2);display:grid;place-items:center;border:1px solid var(--border-2)}
+  .gtile .ops button{width:24px;height:24px;border-radius:7px;background:rgba(253,254,253,.92);color:var(--ink-2);display:grid;place-items:center;border:1px solid var(--border-2)}
   .gtile .ops button:hover{color:var(--ink-1)}
-  .gtile .name{position:absolute;left:0;right:0;bottom:0;font-size:11px;padding:4px 8px;background:rgba(12,10,7,.72);color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .gtile .name{position:absolute;left:0;right:0;bottom:0;font-size:11px;padding:4px 8px;background:rgba(253,254,253,.88);color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
   /* 空态 / 骨架 */
   .empty{grid-column:1/-1;display:flex;flex-direction:column;align-items:center;gap:8px;padding:44px 20px;color:var(--ink-3);text-align:center}
@@ -253,10 +234,10 @@
   .snap .k{font-size:11px;color:var(--ink-3)}
   .snap .v{font-size:13px;font-weight:600;margin-top:1px;word-break:break-all}
   .snap .v.mono{font-weight:500;font-size:12px}
-  .errbox{background:var(--down-soft);border:1px solid rgba(255,95,86,.3);border-radius:var(--r-sm);padding:11px 13px;margin-bottom:14px}
+  .errbox{background:var(--down-soft);border:1px solid rgba(192,69,60,.3);border-radius:var(--r-sm);padding:11px 13px;margin-bottom:14px}
   .errbox h5{font-size:12px;color:var(--down);margin-bottom:5px;display:flex;align-items:center;gap:6px}
   .errbox pre{font-family:var(--mono);font-size:11.5px;color:var(--ink-2);white-space:pre-wrap;word-break:break-all;max-height:120px;overflow-y:auto}
-  .warnbox{background:var(--warn-soft);border:1px solid rgba(232,163,61,.3);border-radius:var(--r-sm);padding:11px 13px;margin-bottom:14px;font-size:12.5px;color:var(--warn);display:flex;gap:8px;align-items:center;justify-content:space-between}
+  .warnbox{background:var(--warn-soft);border:1px solid rgba(183,122,22,.3);border-radius:var(--r-sm);padding:11px 13px;margin-bottom:14px;font-size:12.5px;color:var(--warn);display:flex;gap:8px;align-items:center;justify-content:space-between}
   .sec-t{font-size:11px;letter-spacing:.1em;color:var(--ink-3);font-weight:700;margin:16px 0 8px}
   .prompt-snap{background:var(--page);border:1px solid var(--border);border-radius:var(--r-sm);padding:11px 13px;font-family:var(--mono);font-size:12px;line-height:1.7;color:var(--ink-2);max-height:150px;overflow-y:auto;white-space:pre-wrap;word-break:break-all}
   .asset-row{display:flex;align-items:center;gap:8px;padding:6px 0;font-size:12.5px;color:var(--ink-2)}
@@ -266,7 +247,7 @@
   .res-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px}
   .res-tile{aspect-ratio:1;border-radius:var(--r-sm);overflow:hidden;position:relative;border:1px solid var(--border);cursor:zoom-in}
   .res-tile:hover{border-color:var(--accent)}
-  .res-tile .dl{position:absolute;right:6px;bottom:6px;opacity:0;background:rgba(12,10,7,.8);border-radius:7px;padding:4px 8px;font-size:11px;color:var(--ink-1);border:1px solid var(--border-2)}
+  .res-tile .dl{position:absolute;right:6px;bottom:6px;opacity:0;background:rgba(253,254,253,.92);border-radius:7px;padding:4px 8px;font-size:11px;color:var(--ink-1);border:1px solid var(--border-2)}
   .res-tile:hover .dl{opacity:1}
 
   /* 弹窗 & toast */
@@ -288,9 +269,7 @@
     .dot-live{opacity:.55;animation:none}
   }
   @media (max-width:1240px){
-    .wb{grid-template-columns:340px minmax(0,1fr) 264px}
-    .runstrip{grid-template-columns:minmax(0,1fr)}
-    .run-past{display:none}
+    .wb{grid-template-columns:272px minmax(0,1fr) 272px}
   }
 </style>
 </head>
@@ -328,7 +307,7 @@
     <!-- ════ 视图 1：生图工作台 ════ -->
     <section class="view on" id="view-workbench">
       <div class="view-head">
-        <h1>生图工作台</h1><span class="sub">选词 → 改词 → 选图 → 生成，产出按提示词归档</span>
+        <h1>生图工作台</h1><span class="sub">选词 → 改词 → 选图 → 生成；任务入队后即可连续提交，进度在历史任务页查看</span>
         <div class="right"><span class="chip mute"><span class="d"></span>输出目录 <span class="num">D:/igp/outputs</span></span></div>
       </div>
       <div class="wb">
@@ -380,7 +359,10 @@
               </select>
             </label>
             <label class="field"><span>质量</span>
-              <select class="select" id="pQuality"><option selected>high</option><option>medium</option><option>low</option></select>
+              <select class="select" id="pQuality"></select>
+            </label>
+            <label class="field" id="resField" style="display:none"><span>清晰度</span>
+              <select class="select" id="pRes"></select>
             </label>
             <label class="field"><span>生成张数</span>
               <div style="display:flex;gap:6px;align-items:center">
@@ -409,16 +391,6 @@
         </aside>
       </div>
 
-      <!-- 底部运行条：现在（左） + 最近（右） -->
-      <footer class="runstrip">
-        <div class="run-now" id="runNow">
-          <div class="idle" id="runIdle">当前没有运行中的任务 · 配置完成后点「生成」，任务会出现在这里</div>
-        </div>
-        <div class="run-past">
-          <h4>最近任务</h4>
-          <div id="runPastList"><!-- JS 渲染 --></div>
-        </div>
-      </footer>
     </section>
 
     <!-- ════ 视图 2：提示词库 ════ -->
@@ -483,11 +455,12 @@
     <section class="view" id="view-history">
       <div class="view-head">
         <h1>历史任务</h1><span class="sub">每次运行按「提示词名 / 时间戳」归档，参数快照可回看可重跑</span>
+        <div class="right"><span class="chip mute"><span class="d" style="background:var(--up)"></span>排队 / 生成中的任务每 2 秒自动刷新状态</span></div>
       </div>
       <div class="view-body">
         <div class="toolbar">
           <select class="select" id="hisStatus">
-            <option value="">全部状态</option><option value="success">成功</option><option value="partial">部分成功</option><option value="failed">失败</option><option value="queued">排队中</option>
+            <option value="">全部状态</option><option value="queued">排队中</option><option value="running">生成中</option><option value="success">成功</option><option value="partial">部分成功</option><option value="failed">失败</option>
           </select>
           <input class="input grow" id="hisSearch" placeholder="搜索提示词名 / 内容…">
           <span class="chip mute num" id="hisTotal">7 条</span>
@@ -569,6 +542,8 @@
     </div>
     <label class="field"><span>附加参数 JSON（随请求合并发送，可留空）</span>
       <textarea class="textarea" id="prExtra" rows="3" style="font-family:var(--mono);font-size:12px" placeholder='{"background":"transparent"}'></textarea></label>
+    <label class="field"><span>参数可选值方案 JSON（该站支持的尺寸/质量/清晰度档位，留空用平台默认）</span>
+      <textarea class="textarea" id="prOptions" rows="4" style="font-family:var(--mono);font-size:12px" placeholder='{"size":["1024x1024","3:4","9:16"],"quality":["standard","hd"],"resolution":["1K","2K","4K"],"n_max":4}'></textarea></label>
     <div style="display:flex;align-items:center;gap:10px;padding-top:4px">
       <span style="font-size:13px">启用</span>
       <button class="switch on" id="prEnabled" role="switch" aria-checked="true"></button>
@@ -654,10 +629,13 @@ const DB = {
       {id:'p3', name:'行走出片', imgs:[]}]},
   },
   providers: [
-    {id:1, name:'中转站A', type:'openai', base:'https://api.a-relay.com', model:'gpt-image-1', enabled:true,  remark:'主力站', test:null},
-    {id:2, name:'中转站B', type:'openai', base:'https://api.b-relay.cn',  model:'gpt-image-1', enabled:true,  remark:'备用，Key 待换', test:'bad'},
-    {id:3, name:'Mock 本地源站', type:'mock', base:'本地 · 不出网', model:'gpt-image-1', enabled:true, remark:'联调用，零额度', test:'ok'},
-    {id:4, name:'旧站-migrated', type:'openai', base:'https://old.example.com', model:'dall-e-2', enabled:false, remark:'已迁移停用', test:null},
+    {id:1, name:'中转站A', type:'openai', base:'https://api.a-relay.com', model:'gpt-image-1', enabled:true,  remark:'主力站', test:null,
+     po:{size:['1024x1024','1024x1536','1536x1024','auto'], quality:['auto','low','medium','high'], resolution:['1K','2K','4K'], n_max:10}},
+    {id:2, name:'中转站B', type:'openai', base:'https://api.b-relay.cn',  model:'flux-1.1-pro', enabled:true,  remark:'备用 · 比例型尺寸', test:'bad',
+     po:{size:['1:1','3:4','9:16'], quality:['standard','hd'], resolution:['1K','2K'], n_max:4}},
+    {id:3, name:'Mock 本地源站', type:'mock', base:'本地 · 不出网', model:'gpt-image-1', enabled:true, remark:'联调用，零额度', test:'ok',
+     po:{size:['1024x1024'], quality:['high'], n_max:2}},
+    {id:4, name:'旧站-migrated', type:'openai', base:'https://old.example.com', model:'dall-e-2', enabled:false, remark:'已迁移停用', test:null, po:null},
   ],
   history: [
     {id:92, name:'街拍白裙', provider:'中转站A', ep:'edits', model:'gpt-image-1', size:'1024x1536', n:2, ok:2, status:'success', time:'2026-09-22 23:15', dir:'街拍白裙/20260922_231501_92', assets:{face:1,outfit:3,socks:1,pose:2}},
@@ -884,6 +862,25 @@ function renderProvSel(){
     `<option value="${p.id}" ${p.enabled?'':'disabled'}>${esc(p.name)}${p.type==='mock'?'（联调）':''}${p.enabled?'':'（已停用）'}</option>`
   ).join('');
 }
+const currentProvider = () => DB.providers.find(x => x.id === +$('#provSel').value);
+/* 参数可选值来自当前源站的 param_options（po），清晰度仅在该站配置了才出现 */
+function renderParamOptions(){
+  const p = currentProvider();
+  const po = (p && p.po) || {};
+  const sizes = po.size || ['1024x1024','1024x1536','1536x1024','auto'];
+  const qualities = po.quality || ['high','medium','low'];
+  const nMax = po.n_max || 10;
+  $('#pSize').innerHTML = sizes.map((s, i) => `<option ${i===0?'selected':''}>${esc(s)}</option>`).join('');
+  $('#pQuality').innerHTML = qualities.map((q, i) => `<option ${i===qualities.length-1?'selected':''}>${esc(q)}</option>`).join('');
+  if(po.resolution && po.resolution.length){
+    $('#resField').style.display = '';
+    $('#pRes').innerHTML = po.resolution.map((r, i) => `<option ${i===0?'selected':''}>${esc(r)}</option>`).join('');
+  } else {
+    $('#resField').style.display = 'none';
+    $('#pRes').innerHTML = '';
+  }
+  $('#pN').value = Math.min(nMax, Math.max(1, +$('#pN').value || 1));
+}
 function currentAssetsCount(){
   return Object.values(sel).reduce((a, b) => a + b.length, 0);
 }
@@ -896,7 +893,7 @@ function updatePrecheck(){
   $('#ckPrompt').textContent = `${name} · ${$('#promptText').value.length} 字`;
   const prov = DB.providers.find(x => x.id === +$('#provSel').value);
   $('#ckProv').textContent = prov ? prov.name : '未选择';
-  $('#ckParams').textContent = `${$('#pSize').value} · ${$('#pQuality').value} · ${$('#pN').value} 张`;
+  $('#ckParams').textContent = `${$('#pSize').value} · ${$('#pQuality').value}${$('#resField').style.display === '' ? ' · ' + $('#pRes').value : ''} · ${$('#pN').value} 张`;
   $('#ckWarn').style.display = prov && prov.type === 'mock' ? 'flex' : 'none';
   $('#genBtn').textContent = `生成 ${$('#pN').value} 张`;
   /* 禁用态必须带原因 */
@@ -905,83 +902,47 @@ function updatePrecheck(){
   if(!prov) reason.push('请选择 API 源站');
   $('#genReason').textContent = reason.join('；');
   $('#genReason').classList.toggle('on', reason.length > 0);
-  $('#genBtn').disabled = reason.length > 0 || runState.active;
+  $('#genBtn').disabled = reason.length > 0;
 }
-$('#provSel').addEventListener('change', updatePrecheck);
+$('#provSel').addEventListener('change', () => { renderParamOptions(); updatePrecheck(); });
 $('#pSize').addEventListener('change', updatePrecheck);
 $('#pQuality').addEventListener('change', updatePrecheck);
 $('#pN').addEventListener('input', () => {
   let v = parseInt($('#pN').value) || 1; v = Math.min(10, Math.max(1, v));
   updatePrecheck();
 });
+const nMax = () => { const p = currentProvider(); return (p && p.po && p.po.n_max) || 10; };
 $('#nMinus').addEventListener('click', () => { $('#pN').value = Math.max(1, +$('#pN').value - 1); updatePrecheck(); });
-$('#nPlus').addEventListener('click', () => { $('#pN').value = Math.min(10, +$('#pN').value + 1); updatePrecheck(); });
+$('#nPlus').addEventListener('click', () => { $('#pN').value = Math.min(nMax(), +$('#pN').value + 1); updatePrecheck(); });
 
-/* ───────────────────────── 生成模拟（运行态状态机）───────────────────────── */
-const runState = {active:false};
-let elapsedTimer = null;
-function fmtSec(ms){ return (ms/1000).toFixed(1) + 's'; }
-function stepRow(text, cls, dur){
-  return `<div class="rstep ${cls||''}"><span class="rail-dot"></span><span>${esc(text)}</span>${dur?`<span class="dur num">${dur}</span>`:''}</div>`;
-}
-$('#genBtn').addEventListener('click', () => {
-  const prov = DB.providers.find(x => x.id === +$('#provSel').value);
+/* ─────────────────── 生成：提交即入队，可连续提交多个任务 ─────────────────── */
+/* 进度不在工作台展示，统一去历史任务页看（真实环境前端每 2 秒轮询） */
+let taskSeq = 146;
+function submitTask(){
+  const prov = currentProvider();
   const pname = $('#promptSel').selectedOptions[0]?.textContent || '未命名';
   const n = +$('#pN').value, cnt = currentAssetsCount();
-  runState.active = true; updatePrecheck();
-  $('#runIdle').style.display = 'none';
-  const t0 = Date.now();
-  $('#runNow').innerHTML = `
-    <div class="top">
-      <span class="dot-live"></span><b>${esc(pname)}</b>
-      <span class="chip st-queued" id="runChip"><span class="d"></span>排队中</span>
-      <span class="elapsed num" id="runElapsed">0.0s</span>
-      <span style="margin-left:auto;display:flex;gap:8px">
-        <button class="btn sm" id="runGoHistory">去历史页看</button>
-      </span>
-    </div>
-    <div class="run-steps" id="runSteps">${stepRow('任务已创建，快照已落库','live')}</div>`;
-  $('#runGoHistory').addEventListener('click', () => switchView('history'));
-
-  elapsedTimer = setInterval(() => { const el = $('#runElapsed'); if(el) el.textContent = fmtSec(Date.now() - t0); }, 100);
-
+  const assetsSnap = {};
+  LIBS.forEach(l => { const c = sel[l.id].length; if(c) assetsSnap[l.id] = c; });
+  const id = ++taskSeq;
+  const rec = {id, name:pname, provider:prov.name, ep:cnt?'edits':'generations',
+    model:$('#pModel').value, size:$('#pSize').value, quality:$('#pQuality').value,
+    res: $('#resField').style.display === '' ? $('#pRes').value : null,
+    n, ok:0, status:'queued', time:'刚刚', dir:null, assets:assetsSnap};
+  DB.history.unshift(rec);
+  renderHistory(); refreshNavCounts();
+  toast(`任务 #${id} 已加入队列（${rec.ep} · ${n} 张），改完词图可继续提交，进度见历史任务页`);
+  /* 模拟状态流转：每个任务独立走 排队 → 生成中 → 成功 */
   setTimeout(() => {
-    $('#runChip').outerHTML = `<span class="chip st-running" id="runChip"><span class="d"></span>生成中</span>`;
-    $('#runSteps').innerHTML =
-      stepRow(`上传参考图 ${cnt||0} 张（image[] 顺序：人脸→服装→袜子→姿势）`, 'done', '0.3s') +
-      stepRow(`请求 ${prov.name} /v1/images/${cnt?'edits':'generations'}`, 'live');
-  }, 1100);
-
+    if(rec.status === 'queued'){ rec.status = 'running'; rec.time = '刚刚'; renderHistory(); }
+  }, 1400);
   setTimeout(() => {
-    clearInterval(elapsedTimer);
-    const dur = fmtSec(Date.now() - t0);
-    const ok = n;
-    const thumbs = Array.from({length:ok}, (_, i) =>
-      `<span class="rt"><span class="thumb" style="--tint:var(--accent-soft)">${pname.slice(0,2)}</span></span>`).join('');
-    $('#runChip').outerHTML = `<span class="chip st-success"><span class="d"></span>已完成 ${ok}/${n} 张</span>`;
-    $('#runSteps').innerHTML =
-      stepRow(`上传参考图 ${cnt||0} 张（image[] 顺序：人脸→服装→袜子→姿势）`, 'done', '0.3s') +
-      stepRow(`请求 ${prov.name} /v1/images/${cnt?'edits':'generations'}`, 'done', dur) +
-      stepRow(`落盘 ${ok} 张 · 已写入 task.json`, 'done', '0.2s');
-    const rid = Math.floor(Math.random()*90)+100;
-    DB.history.unshift({id:rid, name:pname, provider:prov.name, ep:cnt?'edits':'generations', model:$('#pModel').value, size:$('#pSize').value, n, ok, status:'success', time:'刚刚', dir:`${pname}/模拟_${rid}`, assets:{}});
-    renderHistory(); renderRunPast(); refreshNavCounts();
-    $('#runNow').innerHTML += `
-      <div class="run-thumbs">${thumbs}</div>
-      <div class="receipt">${ok}/${n} 张 · ${dur} · ${esc($('#pModel').value)} · ${esc(prov.name)} → <span class="num">outputs/${esc(pname)}/</span></div>`;
-    runState.active = false; updatePrecheck();
-    toast('生成完成，已归档到历史任务');
-  }, 5200);
-});
-
-/* 最近任务（过去时态） */
-function renderRunPast(){
-  $('#runPastList').innerHTML = DB.history.slice(0, 4).map(h => `
-    <div class="prow"><span class="pd ${h.status}"></span>
-      <span>#${h.id} ${esc(h.name)}</span>
-      <span style="font-size:11px;color:var(--ink-3)">${esc(h.provider)}</span>
-      <span class="pt">${esc(h.time)}</span></div>`).join('');
+    rec.status = 'success'; rec.ok = n; rec.dir = `${pname}/sim_${id}`;
+    renderHistory(); refreshNavCounts();
+    toast(`任务 #${id} 生成完成（${n} 张），已按「${pname}」归档`);
+  }, 5000 + (id % 5) * 900);
 }
+$('#genBtn').addEventListener('click', submitTask);
 
 /* ───────────────────────── 提示词库页 ───────────────────────── */
 function renderPromptRows(){
@@ -1192,6 +1153,7 @@ function openProvForm(id){
   $('#prName').value = p?.name || ''; $('#prType').value = p?.type || 'openai';
   $('#prBase').value = p?.base || ''; $('#prKey').value = '';
   $('#prModel').value = p?.model || 'gpt-image-1';
+  $('#prOptions').value = p?.po ? JSON.stringify(p.po, null, 2) : '';
   $('#prEnabled').classList.toggle('on', p ? p.enabled : true);
   openDrawer('#provDrawer');
 }
@@ -1206,7 +1168,7 @@ $('#prSave').addEventListener('click', () => {
 });
 
 /* ───────────────────────── 历史页 ───────────────────────── */
-const stName = {success:'成功', partial:'部分成功', failed:'失败', queued:'排队中'};
+const stName = {success:'成功', partial:'部分成功', failed:'失败', queued:'排队中', running:'生成中'};
 function renderHistory(){
   const st = $('#hisStatus').value;
   const kw = $('#hisSearch').value.trim().toLowerCase();
@@ -1256,7 +1218,7 @@ function openTask(id){
     <div class="snap-grid">
       <div class="snap"><div class="k">源站</div><div class="v">${esc(h.provider)}</div></div>
       <div class="snap"><div class="k">发送方式</div><div class="v mono">${h.ep}</div></div>
-      <div class="snap"><div class="k">模型 / 尺寸</div><div class="v mono">${esc(h.model)} · ${h.size}</div></div>
+      <div class="snap"><div class="k">模型 / 尺寸</div><div class="v mono">${esc(h.model)} · ${h.size}${h.res ? ' · ' + esc(h.res) : ''}</div></div>
       <div class="snap"><div class="k">结果</div><div class="v num">${h.ok}/${h.n} 张 · 状态 ${stName[h.status]}</div></div>
     </div>
     <div class="sec-t">提示词快照</div>
@@ -1289,9 +1251,9 @@ sel.socks = [DB.libs.socks.groups[0].imgs[0].id];
 sel.pose = DB.libs.pose.groups[0].imgs.slice(0, 2).map(i => i.id);
 
 renderPromptSel(); loadPromptIntoEditor();
-renderAssetCards(); renderProvSel(); updatePrecheck();
+renderAssetCards(); renderProvSel(); renderParamOptions(); updatePrecheck();
 renderPromptRows(); renderLibTabs(); renderLibGroups(); renderLibGrid();
-renderProvRows(); renderHistory(); renderRunPast(); refreshNavCounts();
+renderProvRows(); renderHistory(); refreshNavCounts();
 </script>
 </body>
 </html>
