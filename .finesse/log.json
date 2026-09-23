@@ -6,13 +6,13 @@
     "register": "product",
     "sub": "ai-console(workbench)",
     "axes": {
-      "A": "warm-paper-ivory 统一浅面 + forest(#2F6B4F) 单强调（quiet luxury）",
+      "A": "cool-slate+indigo(#4A46C9) 冷调统一浅面 + 磨砂玻璃浮层（backdrop-blur）",
       "B": "system-sans-700/400 + mono-for-data",
       "C": "rail + 3col-workbench(素材窄|提示词宽|参数) 无运行条",
       "D": "feedback-only(1 liveness pulse)",
-      "E": "安静高级的网页端工作台"
+      "E": "清晰冷感高透网页端工作台"
     },
     "dials": { "SOUL": 6, "SPECTACLE": 2, "DENSITY": 7 },
-    "notes": "v1 暖棕琥珀深底否决（网页端显旧）；v2 青绿+深色轨双色壳否决（用户不欣赏深浅拼切）；v3 定稿：统一暖纸面+森林绿单强调，层次靠字重留白不靠色块"
+    "notes": "v1 暖棕琥珀深底否决；v2 青绿双色壳否决（深浅拼切）；v3 暖纸+森林绿否决（暖调显糊）；v4 定稿：冷石灰+纯白卡片+靛蓝精确强调，浮层磨砂表达高透"
   }
 ]
