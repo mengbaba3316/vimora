@@ -5,12 +5,62 @@
   --accent:#23272f; --accent-hi:#333a46; --accent-soft:rgba(35,39,47,.06);
   --up:#1E8A5F; --down:#D0453C; --warn:#B77A16;
   --lib-face:#C2435B; --lib-outfit:#D9642A; --lib-socks:#0E7FA8; --lib-pose:#A93D80;
+  --sans:-apple-system,"Segoe UI","Microsoft YaHei","PingFang SC",sans-serif;
+  --mono:ui-monospace,"Cascadia Mono",Consolas,monospace;
   --el-color-primary: var(--accent);
   --el-color-primary-light-3: var(--accent-hi);
   --el-color-success: var(--up);
   --el-color-danger: var(--down);
   --el-color-warning: var(--warn);
   --el-border-radius-base: 8px;
-  --el-font-family: -apple-system,"Segoe UI","Microsoft YaHei","PingFang SC",sans-serif;
+  --el-font-family: var(--sans);
 }
-body{background:var(--page);color:var(--ink-1);margin:0}
+body{background:var(--page);color:var(--ink-1);margin:0;font-family:var(--sans);font-size:14px;line-height:1.55;-webkit-font-smoothing:antialiased}
+
+/* ── 视图骨架公共（原型 .view-head / .view-body）────────── */
+.view-head{flex:none;display:flex;align-items:center;gap:14px;padding:16px 22px 14px;border-bottom:1px solid var(--border)}
+.view-head h1{font-size:17px;font-weight:700;letter-spacing:-.01em;margin:0}
+.view-head .sub{font-size:12px;color:var(--ink-3)}
+.view-head .right{margin-left:auto;display:flex;gap:8px;align-items:center}
+.view-body{flex:1;min-height:0;overflow-y:auto;padding:18px 22px 26px}
+
+/* ── 通用控件（原型「通用控件」段）────────────────────── */
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:7px 14px;border-radius:11px;background:var(--panel-2);border:1px solid var(--border);font-size:13px;font-weight:600;white-space:nowrap;transition:background .15s ease,border-color .15s ease;cursor:pointer;font-family:inherit;color:var(--ink-1)}
+.btn:hover{background:var(--panel-3);border-color:var(--border-2)}
+.btn.primary{background:var(--accent);color:#fff;border-color:transparent}
+.btn.primary:hover{background:var(--accent-hi)}
+.btn.danger{color:var(--down)}
+.btn.danger:hover{background:rgba(208,69,60,.09)}
+.btn:disabled{opacity:.45;cursor:not-allowed;pointer-events:none}
+.btn.sm{padding:4px 10px;font-size:12px;border-radius:8px}
+.field{display:block;margin-bottom:8px}
+.field>span{display:block;font-size:12px;font-weight:600;color:var(--ink-3);margin-bottom:6px}
+.field>span .req{color:var(--down);font-style:normal}
+.input,.select,.textarea{width:100%;background:var(--page);border:1px solid var(--border-2);border-radius:11px;padding:7px 11px;font-size:13.5px;transition:border-color .15s ease;font-family:inherit;color:var(--ink-1);box-sizing:border-box}
+.input:focus,.select:focus,.textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.input::placeholder,.textarea::placeholder{color:var(--ink-3);opacity:.7}
+.textarea{resize:vertical;line-height:1.7}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:99px;font-size:11.5px;font-weight:600;line-height:1.5}
+.chip .d{width:6px;height:6px;border-radius:50%;background:currentColor;flex:none}
+.chip.mute{background:var(--panel-2);color:var(--ink-3);border:1px solid var(--border)}
+
+/* ── 表格页公共（原型「表格页」段）────────────────────── */
+.toolbar{display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+.toolbar .grow{flex:1;min-width:180px;max-width:340px}
+.table-card{overflow:hidden}
+table{width:100%;border-collapse:collapse}
+th{font-size:11px;letter-spacing:.06em;color:var(--ink-3);font-weight:700;text-align:left;padding:9px 12px;border-bottom:1px solid var(--border-2);white-space:nowrap}
+td{padding:10px 12px;border-bottom:1px solid var(--border);font-size:13px;color:var(--ink-2);vertical-align:middle}
+tr:hover td{background:rgba(255,246,230,.025)}
+td .name{color:var(--ink-1);font-weight:600}
+td .mono{font-family:var(--mono);font-size:12px}
+td .ops-cell{display:flex;gap:6px;justify-content:flex-end}
+.tag{display:inline-block;padding:2px 9px;border-radius:99px;background:var(--panel-2);border:1px solid var(--border);font-size:11px;color:var(--ink-3);margin-right:4px}
+
+/* ── 空态 ─────────────────────────────────────────── */
+.empty{display:flex;flex-direction:column;align-items:center;gap:8px;padding:44px 20px;color:var(--ink-3);text-align:center}
+.empty svg{opacity:.5}
+.empty b{color:var(--ink-2);font-size:13.5px}
+.empty p{font-size:12.5px;max-width:320px;margin:0}
+.empty .btn{margin-top:4px}
