@@ -98,7 +98,7 @@ function renderParamOptions() {
   resolutionOptions.value = po.resolution || null      /* null → 隐藏清晰度下拉 */
   nMax.value = po.n_max || 10
   form.size = sizeOptions.value[0]
-  form.quality = qualityOptions.value[qualityOptions.value.length - 1]
+  form.quality = qualityOptions.value[0]   /* 默认取第一项（如 high），避免无配置源站落到 low */
   form.resolution = resolutionOptions.value?.[0] ?? null
   form.n = Math.min(nMax.value, Math.max(1, form.n || 1))
   form.model = currentProvider.value?.default_model || 'gpt-image-1'
@@ -188,7 +188,6 @@ onMounted(async () => {
   <div class="view">
     <div class="view-head">
       <h1>生图工作台</h1><span class="sub">选词 → 改词 → 选图 → 生成；任务入队后即可连续提交，进度在历史任务页查看</span>
-      <div class="right"><span class="chip mute"><span class="d"></span>输出目录 <span class="num">D:/igp/outputs</span></span></div>
     </div>
 
     <div class="wb">

@@ -196,8 +196,14 @@ async function onFileChange(e) {
   const gid = curGroup.value !== 'all' ? curGroup.value : uploadGroupId.value
   uploading.value = true
   try {
-    await libsApi.upload(curLib.value, gid, files)
-    ElMessage.success(`已上传 ${files.length} 张`)
+    const { data } = await libsApi.upload(curLib.value, gid, files)
+    /* 按 后端实际结果 组装：全部成功 / 有跳过（附原因摘要） */
+    const reasons = (data.errors || []).join('；')
+    if (data.skipped > 0) {
+      ElMessage.warning(`已上传 ${data.imported} 张，跳过 ${data.skipped} 张：${reasons}`)
+    } else {
+      ElMessage.success(`已上传 ${data.imported} 张`)
+    }
     await refresh()
   } catch (err) {
     ElMessage.error('上传失败：' + errMsg(err))
