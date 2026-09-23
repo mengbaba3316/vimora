@@ -1,0 +1,16 @@
+:root{
+  --page:#eceff3; --bg:#ffffff; --panel-2:#f6f7f9; --panel-3:#e7ebf1;
+  --border:rgba(35,39,47,.08); --border-2:rgba(35,39,47,.16);
+  --ink-1:#14171c; --ink-2:#454e5e; --ink-3:#61708a;
+  --accent:#23272f; --accent-hi:#333a46; --accent-soft:rgba(35,39,47,.06);
+  --up:#1E8A5F; --down:#D0453C; --warn:#B77A16;
+  --lib-face:#C2435B; --lib-outfit:#D9642A; --lib-socks:#0E7FA8; --lib-pose:#A93D80;
+  --el-color-primary: var(--accent);
+  --el-color-primary-light-3: var(--accent-hi);
+  --el-color-success: var(--up);
+  --el-color-danger: var(--down);
+  --el-color-warning: var(--warn);
+  --el-border-radius-base: 8px;
+  --el-font-family: -apple-system,"Segoe UI","Microsoft YaHei","PingFang SC",sans-serif;
+}
+body{background:var(--page);color:var(--ink-1);margin:0}
