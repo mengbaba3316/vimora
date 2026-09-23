@@ -45,10 +45,15 @@ def _clean(test_engine):
 def client(test_engine, settings, monkeypatch):
     from fastapi import FastAPI
     from app.database import get_db
-    from app.routers import prompts
+    from app.routers import prompts, libraries
+    from app.services import storage
+    # 存储落盘指到 tmp_path，测试不污染真实 data/ 目录
+    monkeypatch.setattr(storage, "DATA_DIR", settings.DATA_DIR)
+    os.makedirs(settings.DATA_DIR, exist_ok=True)
     Session = sessionmaker(bind=test_engine, expire_on_commit=False)
     app = FastAPI()
     app.include_router(prompts.router, prefix="/api")
+    app.include_router(libraries.router, prefix="/api")
 
     def override():
         s = Session()
