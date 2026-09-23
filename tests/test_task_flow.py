@@ -103,6 +103,32 @@ def test_non_200_response_marks_task_failed(client, monkeypatch):
     assert t["finished_at"] is not None
 
 
+def test_rerun_with_deleted_asset_fails(client, settings):
+    """I-1：rerun 时快照素材已被删除 → 任务 failed，错误信息含库名与缺失 id（不静默跳过）。"""
+    pid = client.post("/api/providers", json={"name": "Mock", "type": "mock",
+                                              "po_n_max": 10}).json()["id"]
+    gid = client.post("/api/libraries/face/groups", json={"name": "模特B"}).json()["id"]
+    client.post("/api/libraries/face/images", data={"group_id": str(gid)},
+                files=[("files", ("a.png", png_bytes(), "image/png")),
+                       ("files", ("b.png", png_bytes(), "image/png"))])
+    imgs = client.get(f"/api/libraries/face/images?group_id={gid}").json()
+    assert len(imgs) == 2
+    r = client.post("/api/tasks", json={
+        "prompt_name": "两张参考", "prompt_content": "A photo", "provider_id": pid,
+        "n": 1, "assets": [{"library": "face", "image_ids": [imgs[0]["id"], imgs[1]["id"]]}]})
+    tid = r.json()["id"]
+    t = _wait_terminal(client, tid)
+    assert t["status"] == "success", t.get("error_message")
+
+    # 删掉其中一张素材后 rerun：快照里的 id 已查不到
+    assert client.delete(f"/api/libraries/face/images/{imgs[1]['id']}").status_code == 200
+    r2 = client.post(f"/api/tasks/{tid}/rerun")
+    assert r2.status_code == 200
+    t2 = _wait_terminal(client, r2.json()["id"])
+    assert t2["status"] == "failed"
+    assert "face" in t2["error_message"] and str(imgs[1]["id"]) in t2["error_message"]
+    assert t2["images"] == []   # 缺图任务不产生任何产物
+
 def test_rerun_copies_snapshot_and_delete_keeps_disk(client, settings):
     pid = client.post("/api/providers", json={"name": "Mock", "type": "mock"}).json()["id"]
     tid = client.post("/api/tasks", json={"prompt_name": "快照", "prompt_content": "y",

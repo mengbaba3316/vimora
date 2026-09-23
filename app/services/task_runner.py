@@ -61,6 +61,13 @@ def _run(task_id: int):
                         .filter(AssetImage.id.in_(ids),
                                 AssetImage.library == grp["library"])
                         .order_by(AssetImage.id).all())
+                # 规格 §4.1：快照素材在执行时必须齐全。缺图（被删除/跨库）不再静默
+                # 跳过，直接置 failed 并指明缺失 id，避免用户拿到缺参考图的产物。
+                if len(rows) != len(set(ids)):
+                    found = {r.id for r in rows}
+                    missing = [i for i in ids if i not in found]
+                    raise RuntimeError(f"{grp['library']}/{grp.get('group_name')} "
+                                       f"缺失图片 id={missing}")
                 rows.sort(key=lambda r: ids.index(r.id))   # 按 image_ids 顺序展开
                 for r in rows:
                     path = os.path.join(generator.DATA_DIR, "libraries", r.file_path)
@@ -82,16 +89,19 @@ def _run(task_id: int):
             resp = resp.json()
         out_dir = os.path.join(generator.OUTPUT_DIR, safe_dirname(t.prompt_name),
                                f"{stamp()}_{t.id}")
-        paths = generator.save_results(t, resp, out_dir=out_dir)
+        paths, missing = generator.save_results(t, resp, out_dir=out_dir)
         if not paths:
-            raise RuntimeError("中转站未返回任何图片")
+            detail = "；".join(m.get("reason", "") for m in missing if m.get("reason"))
+            raise RuntimeError("中转站未返回任何图片"
+                               + (f"（{detail}）" if detail else ""))
         for fp in paths:
             rel = os.path.relpath(fp, generator.OUTPUT_DIR).replace("\\", "/")
             db.add(TaskImage(task_id=t.id, file_path=rel))
         t.output_dir = os.path.relpath(out_dir, generator.OUTPUT_DIR).replace("\\", "/")
         t.status = "success"
         t.finished_at = datetime.now()   # 置终态之后写 task.json，快照即最终状态
-        generator.write_task_json(out_dir, _snapshot(t), paths, time.time() - started)
+        generator.write_task_json(out_dir, _snapshot(t), paths,
+                                  time.time() - started, missing=missing)
     except Exception as e:
         if t is not None:
             t.status = "failed"
