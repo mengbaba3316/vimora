@@ -6,13 +6,13 @@
     "register": "product",
     "sub": "ai-console(workbench)",
     "axes": {
-      "A": "cool-slate+indigo(#4A46C9) 冷调统一浅面 + 磨砂玻璃浮层（backdrop-blur）",
+      "A": "cool-slate+mono-ink 石墨黑主色，零彩色强调，磨砂玻璃浮层",
       "B": "system-sans-700/400 + mono-for-data",
       "C": "rail + 3col-workbench(素材窄|提示词宽|参数) 无运行条",
       "D": "feedback-only(1 liveness pulse)",
       "E": "清晰冷感高透网页端工作台"
     },
     "dials": { "SOUL": 6, "SPECTACLE": 2, "DENSITY": 7 },
-    "notes": "v1 暖棕琥珀深底否决；v2 青绿双色壳否决（深浅拼切）；v3 暖纸+森林绿否决（暖调显糊）；v4 定稿：冷石灰+纯白卡片+靛蓝精确强调，浮层磨砂表达高透"
+    "notes": "v1 暖棕琥珀深底否决；v2 青绿双色壳否决；v3 暖纸+森林绿否决（暖调显糊）；v4 靛蓝强调否决（用户不喜欢蓝紫色）；v5 定稿：冷石灰+白卡+石墨黑 mono 主色，姿势库紫改洋红避紫"
   }
 ]
