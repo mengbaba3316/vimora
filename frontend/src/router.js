@@ -3,7 +3,7 @@ import Workbench from './views/Workbench.vue'
 import Prompts from './views/Prompts.vue'
 import Libraries from './views/Libraries.vue'
 import Providers from './views/Providers.vue'
-import History from './views/History.vue'
+import HistoryView from './views/HistoryView.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -12,7 +12,7 @@ const router = createRouter({
     { path: '/prompts', name: 'prompts', component: Prompts },
     { path: '/libraries', name: 'libraries', component: Libraries },
     { path: '/providers', name: 'providers', component: Providers },
-    { path: '/history', name: 'history', component: History },
+    { path: '/history', name: 'history', component: HistoryView },
   ],
 })
 
