@@ -27,7 +27,8 @@ class TaskIn(BaseModel):
     quality: Optional[str] = None
     n: Optional[int] = Field(default=None, ge=1, le=10)
     extra: Optional[dict] = None
-    assets: List[AssetIn] = []
+    # 前端工作台对无值字段发显式 JSON null（assets:null/extra:null/prompt_id:null），须容忍
+    assets: Optional[List[AssetIn]] = None
 
 
 def _fmt(dt) -> Optional[str]:
@@ -80,12 +81,13 @@ def create_task(body: TaskIn, db: Session = Depends(get_db)):
     if body.n and n_max and body.n > n_max:
         raise HTTPException(400, f"张数 n={body.n} 超过该源站上限 {n_max}")
     # 每张图必须真实存在于对应 library（id 与 library 联合校验），否则 400 指明缺失
-    flat_ids = [i for a in body.assets for i in a.image_ids]
+    assets = body.assets or []                # 显式 null → 走既定默认（空列表 → generations）
+    flat_ids = [i for a in assets for i in a.image_ids]
     found = {}
     if flat_ids:
         for r in db.query(AssetImage).filter(AssetImage.id.in_(flat_ids)).all():
             found[r.id] = r
-    for a in body.assets:
+    for a in assets:
         for i in a.image_ids:
             r = found.get(i)
             if r is None or r.library != a.library:
@@ -93,7 +95,7 @@ def create_task(body: TaskIn, db: Session = Depends(get_db)):
     endpoint = "edits" if flat_ids else "generations"
     # 快照按规格 §4.1 补全 group_id/group_name（组信息取该条素材的首张图）
     snap_assets = []
-    for a in body.assets:
+    for a in assets:
         rows = [found[i] for i in a.image_ids]
         snap_assets.append({
             "library": a.library,

@@ -57,6 +57,21 @@ def test_task_generations_when_no_assets(client, settings):
     assert t["endpoint"] == "generations" and t["status"] == "success"
 
 
+def test_explicit_null_payload_creates_generations_task(client, settings):
+    """前端工作台对无值字段发显式 JSON null，须容忍并走既定默认逻辑（assets:null → generations）。"""
+    pid = client.post("/api/providers", json={"name": "Mock", "type": "mock"}).json()["id"]
+    r = client.post("/api/tasks", json={
+        "prompt_id": None, "prompt_name": "空值容忍", "prompt_content": "x",
+        "provider_id": pid, "model": None, "size": None, "quality": None,
+        "n": None, "extra": None, "assets": None})
+    assert r.status_code == 202
+    t = _wait_terminal(client, r.json()["id"])
+    assert t["status"] == "success", t.get("error_message")
+    assert t["endpoint"] == "generations"
+    # None → 落源站默认值，assets/extra 保持 None
+    assert t["model"] == "gpt-image-1" and t["assets"] is None and t["extra"] is None
+
+
 def test_missing_asset_fails(client):
     pid = client.post("/api/providers", json={"name": "Mock", "type": "mock"}).json()["id"]
     r = client.post("/api/tasks", json={"prompt_name": "x", "prompt_content": "x",
