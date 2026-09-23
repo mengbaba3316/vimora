@@ -6,6 +6,7 @@ from ..utils import image_io
 from ..utils.filenames import stamp
 
 OUTPUT_DIR = "outputs"   # main 启动时由 settings 覆盖；测试可 monkeypatch
+DATA_DIR = "data"        # 素材读取根目录；main 启动时由 settings 覆盖；测试可 monkeypatch
 
 
 def build_request(p, t, image_files: Optional[List[Tuple]] = None):

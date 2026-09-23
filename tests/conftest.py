@@ -45,16 +45,21 @@ def _clean(test_engine):
 def client(test_engine, settings, monkeypatch):
     from fastapi import FastAPI
     from app.database import get_db
-    from app.routers import prompts, libraries, providers
-    from app.services import storage
+    from app.routers import prompts, libraries, providers, tasks
+    from app.services import generator, storage, task_runner
     # 存储落盘指到 tmp_path，测试不污染真实 data/ 目录
     monkeypatch.setattr(storage, "DATA_DIR", settings.DATA_DIR)
+    # 生图执行线程读素材与写结果同样指到 tmp_path
+    monkeypatch.setattr(generator, "DATA_DIR", settings.DATA_DIR)
+    monkeypatch.setattr(generator, "OUTPUT_DIR", settings.OUTPUT_DIR)
     os.makedirs(settings.DATA_DIR, exist_ok=True)
+    os.makedirs(settings.OUTPUT_DIR, exist_ok=True)
     Session = sessionmaker(bind=test_engine, expire_on_commit=False)
     app = FastAPI()
     app.include_router(prompts.router, prefix="/api")
     app.include_router(libraries.router, prefix="/api")
     app.include_router(providers.router, prefix="/api")
+    app.include_router(tasks.router, prefix="/api")
 
     def override():
         s = Session()
@@ -63,8 +68,12 @@ def client(test_engine, settings, monkeypatch):
         finally:
             s.close()  # 与真实 get_db 一致；否则连接带事务滞留池中，drop_all 会死锁在元数据锁上
     app.dependency_overrides[get_db] = override
+    # 后台执行线程用同一个 test_engine 的会话工厂（否则任务落在别库，轮询永远 pending）
+    task_runner.init_runner(Session, settings.MAX_CONCURRENT_TASKS)
     # httpx>=0.28 的 ASGITransport 仅支持异步 Client，同步测试用 FastAPI 官方 TestClient
     from fastapi.testclient import TestClient
     c = TestClient(app)
     yield c
     c.close()
+    if task_runner.executor is not None:
+        task_runner.executor.shutdown(wait=False)
