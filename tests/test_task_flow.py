@@ -80,6 +80,29 @@ def test_missing_asset_fails(client):
     assert r.status_code == 400 and "不存在" in r.json()["detail"]
 
 
+def test_non_200_response_marks_task_failed(client, monkeypatch):
+    """规格 §8：源站非 200 响应 → 任务 failed，错误信息含状态码与响应体。"""
+    pid = client.post("/api/providers", json={
+        "name": "B", "type": "openai", "base_url": "https://b.com",
+        "api_key": "k"}).json()["id"]
+
+    class FakeResp:
+        status_code = 500
+        text = "internal error: quota exceeded"
+
+        def json(self):
+            return {}
+
+    import app.services.task_runner as R
+    monkeypatch.setattr(R.requests, "post", lambda *a, **k: FakeResp())
+    tid = client.post("/api/tasks", json={"prompt_name": "失败", "prompt_content": "x",
+                                          "provider_id": pid, "n": 1}).json()["id"]
+    t = _wait_terminal(client, tid)
+    assert t["status"] == "failed"
+    assert "HTTP 500" in t["error_message"] and "quota exceeded" in t["error_message"]
+    assert t["finished_at"] is not None
+
+
 def test_rerun_copies_snapshot_and_delete_keeps_disk(client, settings):
     pid = client.post("/api/providers", json={"name": "Mock", "type": "mock"}).json()["id"]
     tid = client.post("/api/tasks", json={"prompt_name": "快照", "prompt_content": "y",

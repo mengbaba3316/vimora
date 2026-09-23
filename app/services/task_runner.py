@@ -63,7 +63,11 @@ def _run(task_id: int):
                                           size=t.size, n=t.n, quality=t.quality,
                                           extra=t.extra)
         else:
-            resp = requests.post(url, **kwargs).json()
+            resp = requests.post(url, **kwargs)
+            if resp.status_code != 200:
+                # 规格 §8：非 200 响应不抛请求层异常，任务置 failed 并留全量诊断信息
+                raise RuntimeError(f"HTTP {resp.status_code}\n{resp.text[:2000]}")
+            resp = resp.json()
         out_dir = os.path.join(generator.OUTPUT_DIR, safe_dirname(t.prompt_name),
                                f"{stamp()}_{t.id}")
         paths = generator.save_results(t, resp, out_dir=out_dir)
