@@ -75,5 +75,6 @@ def client(test_engine, settings, monkeypatch):
     c = TestClient(app)
     yield c
     c.close()
-    if task_runner.executor is not None:
-        task_runner.executor.shutdown(wait=False)
+    # 等待在途/排队任务真正结束再 teardown：此刻 monkeypatch 未解除、表未 drop，
+    # worker 的落盘仍指向 tmp_path；wait=False 会留下线程在 teardown 后写真实 outputs/
+    task_runner.shutdown(wait=True)

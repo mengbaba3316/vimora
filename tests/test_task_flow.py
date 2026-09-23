@@ -110,7 +110,11 @@ def test_rerun_copies_snapshot_and_delete_keeps_disk(client, settings):
     t = _wait_terminal(client, tid)
     r = client.post(f"/api/tasks/{tid}/rerun")
     assert r.status_code == 200
-    t2 = client.get(f"/api/tasks/{r.json()['id']}").json()
+    # rerun 任务同样必须轮询至终态：否则 teardown（drop_all）后 worker 线程
+    # 仍在跑，monkeypatch 解除后会把 Mock 图写进真实 outputs/ 目录
+    t2 = _wait_terminal(client, r.json()["id"])
+    assert t2["status"] == "success", t2.get("error_message")
+    assert len(t2["images"]) == t["n"]
     assert (t2["prompt_name"], t2["prompt_content"], t2["endpoint"], t2["model"],
             t2["size"], t2["quality"], t2["n"], t2["provider_id"],
             t2["provider_name"]) == (t["prompt_name"], t["prompt_content"], t["endpoint"],

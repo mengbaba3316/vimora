@@ -28,6 +28,18 @@ def submit(task_id: int):
     executor.submit(_run, task_id)
 
 
+def shutdown(wait: bool = True):
+    """关闭执行器并（默认）等待在途任务真正结束。
+
+    测试 fixture teardown 用：wait=False 会留下仍在运行的 worker，待测试的
+    monkeypatch 解除、表 drop 之后继续执行，把产物写进真实 outputs/ 目录。
+    """
+    global executor
+    if executor is not None:
+        executor.shutdown(wait=wait)
+        executor = None
+
+
 def _run(task_id: int):
     db = SessionLocal()
     t = None
