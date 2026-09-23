@@ -7,8 +7,17 @@ class Base(DeclarativeBase): pass
 
 def ensure_database(s=settings):
     """库不存在则创建（utf8mb4），返回绑定该库的 engine。"""
-    raw = pymysql.connect(host=s.DB_HOST, port=s.DB_PORT, user=s.DB_USER,
-                          password=s.DB_PASSWORD)
+    try:
+        raw = pymysql.connect(host=s.DB_HOST, port=s.DB_PORT, user=s.DB_USER,
+                              password=s.DB_PASSWORD)
+    except Exception as e:
+        # 规格 §3：连接失败给出中文诊断与手工建库 SQL（print 后 raise，保留原始堆栈）
+        print(f"[启动失败] 无法连接 MySQL（{s.DB_USER}@{s.DB_HOST}:{s.DB_PORT}）：{e}\n"
+              "请检查 .env / 环境变量中 DB_HOST、DB_PORT、DB_USER、DB_PASSWORD 配置是否正确、"
+              "MySQL 服务是否已启动；若账号无建库权限，请先手工执行：\n"
+              f"    CREATE DATABASE {s.DB_NAME} DEFAULT CHARSET utf8mb4;\n"
+              "然后重新启动。")
+        raise
     with raw.cursor() as c:
         c.execute(f"CREATE DATABASE IF NOT EXISTS `{s.DB_NAME}` "
                   "DEFAULT CHARSET utf8mb4 COLLATE utf8mb4_unicode_ci")
