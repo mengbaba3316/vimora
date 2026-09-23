@@ -272,7 +272,7 @@ onMounted(async () => {
           <button class="pg-item" :class="{ on: curGroup === 'all' }" @click="pickGroup('all')">
             <span class="gname">全部组</span><span class="n num">{{ allCount }}</span>
           </button>
-          <div v-for="g in curGroups" :key="g.id" class="pg-item" :class="{ on: curGroup === g.id }" @click="pickGroup(g.id)">
+          <div v-for="g in curGroups" :key="g.id" class="pg-item has-ops" :class="{ on: curGroup === g.id }" @click="pickGroup(g.id)">
             <span class="gname">{{ g.name }}</span>
             <span class="gops">
               <button title="改名" @click.stop="renameGroup(g)"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20l4-1L20 7l-3-3L5 16z"/></svg></button>
@@ -390,7 +390,7 @@ onMounted(async () => {
 .pg-item .n{font-size:11px;color:var(--ink-3);flex:none}
 .pg-item .gops{display:none;gap:2px;flex:none}
 .pg-item:hover .gops{display:flex}
-.pg-item:hover .n{display:none}
+.pg-item.has-ops:hover .n{display:none}
 .gops button{width:20px;height:20px;border-radius:6px;display:grid;place-items:center;color:var(--ink-3);border:0;background:none;cursor:pointer}
 .gops button:hover{background:var(--panel-3);color:var(--ink-1)}
 

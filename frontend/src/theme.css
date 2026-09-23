@@ -4,6 +4,9 @@
   --ink-1:#14171c; --ink-2:#454e5e; --ink-3:#61708a;
   --accent:#23272f; --accent-hi:#333a46; --accent-soft:rgba(35,39,47,.06);
   --up:#1E8A5F; --down:#D0453C; --warn:#B77A16;
+  --on-accent:#ffffff;
+  --down-soft:rgba(208,69,60,.09); --warn-soft:rgba(183,122,22,.11); --up-soft:rgba(30,138,95,.10);
+  --glow:rgba(20,24,32,.18);
   --lib-face:#C2435B; --lib-outfit:#D9642A; --lib-socks:#0E7FA8; --lib-pose:#A93D80;
   --sans:-apple-system,"Segoe UI","Microsoft YaHei","PingFang SC",sans-serif;
   --mono:ui-monospace,"Cascadia Mono",Consolas,monospace;
@@ -28,10 +31,10 @@ body{background:var(--page);color:var(--ink-1);margin:0;font-family:var(--sans);
 .num{font-family:var(--mono);font-variant-numeric:tabular-nums}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:7px 14px;border-radius:11px;background:var(--panel-2);border:1px solid var(--border);font-size:13px;font-weight:600;white-space:nowrap;transition:background .15s ease,border-color .15s ease;cursor:pointer;font-family:inherit;color:var(--ink-1)}
 .btn:hover{background:var(--panel-3);border-color:var(--border-2)}
-.btn.primary{background:var(--accent);color:#fff;border-color:transparent}
+.btn.primary{background:var(--accent);color:var(--on-accent);border-color:transparent}
 .btn.primary:hover{background:var(--accent-hi)}
 .btn.danger{color:var(--down)}
-.btn.danger:hover{background:rgba(208,69,60,.09)}
+.btn.danger:hover{background:var(--down-soft)}
 .btn:disabled{opacity:.45;cursor:not-allowed;pointer-events:none}
 .btn.sm{padding:4px 10px;font-size:12px;border-radius:8px}
 .field{display:block;margin-bottom:8px}
@@ -48,6 +51,7 @@ body{background:var(--page);color:var(--ink-1);margin:0;font-family:var(--sans);
 /* ── 表格页公共（原型「表格页」段）────────────────────── */
 .toolbar{display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
 .toolbar .grow{flex:1;min-width:180px;max-width:340px}
+.card{background:var(--bg);border:1px solid var(--border);border-radius:16px;box-shadow:0 1px 3px rgba(20,24,32,.05)}
 .table-card{overflow:hidden}
 table{width:100%;border-collapse:collapse}
 th{font-size:11px;letter-spacing:.06em;color:var(--ink-3);font-weight:700;text-align:left;padding:9px 12px;border-bottom:1px solid var(--border-2);white-space:nowrap}
