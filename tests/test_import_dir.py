@@ -20,3 +20,13 @@ def test_import_dir(client, tmp_path):
 def test_import_dir_not_exists(client, tmp_path):
     r = client.post("/api/libraries/socks/import-dir", json={"source_dir": str(tmp_path / "无")})
     assert r.status_code == 400
+
+def test_import_dir_lazy_ungrouped(client, tmp_path):
+    """「未分组」惰性创建：纯子目录导入不产生空的未分组，根级散图才 ensure。"""
+    src = tmp_path / "姿势库"
+    (src / "站姿").mkdir(parents=True)
+    (src / "站姿" / "a.png").write_bytes(png_bytes())
+    r = client.post("/api/libraries/pose/import-dir", json={"source_dir": str(src)}).json()
+    assert r["groups_created"] == 1 and r["images_imported"] == 1
+    names = {g["name"] for g in client.get("/api/libraries/pose/groups").json()}
+    assert "未分组" not in names and "站姿" in names

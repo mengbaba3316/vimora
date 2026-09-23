@@ -128,7 +128,8 @@ class ImportDirIn(BaseModel):
 
 @router.post("/{library}/import-dir")
 def import_dir(library: str, body: ImportDirIn, db: Session = Depends(get_db)):
-    """磁盘批量导入：一级子目录→组（递归读全部文件），根散图→「未分组」组。
+    """磁盘批量导入：一级子目录→组（递归读全部文件），根散图→「未分组」组（惰性创建：
+    首个根级散图才 ensure，纯子目录导入不产生空的「未分组」）。
 
     组计数口径与测试对齐：目录/「未分组」已存在同名组 = 并入（groups_merged），
     新建 = groups_created；不存在的 source_dir → 400。
@@ -160,8 +161,8 @@ def import_dir(library: str, body: ImportDirIn, db: Session = Depends(get_db)):
             for fn in files:
                 import_file(os.path.join(root, fn), group)
 
-    loose, created = ensure_group("未分组")
-    stats["groups_created" if created else "groups_merged"] += 1
+    # 「未分组」惰性创建：只有根级真的有散图才建/并入，纯子目录导入不产生空组
+    loose = None
     for name in os.listdir(src):
         p = os.path.join(src, name)
         if os.path.isdir(p):
@@ -169,6 +170,9 @@ def import_dir(library: str, body: ImportDirIn, db: Session = Depends(get_db)):
             stats["groups_created" if created else "groups_merged"] += 1
             walk_dir(p, g)
         else:
+            if loose is None:
+                loose, created = ensure_group("未分组")
+                stats["groups_created" if created else "groups_merged"] += 1
             import_file(p, loose)
     db.commit()
     return stats

@@ -119,6 +119,8 @@ def test_rerun_with_deleted_asset_fails(client, settings):
     tid = r.json()["id"]
     t = _wait_terminal(client, tid)
     assert t["status"] == "success", t.get("error_message")
+    # to_dict 快照补 file_paths（与 image_ids 按位对齐），供历史详情真实缩略图
+    assert t["assets"][0]["file_paths"] == [i["file_path"] for i in imgs]
 
     # 删掉其中一张素材后 rerun：快照里的 id 已查不到
     assert client.delete(f"/api/libraries/face/images/{imgs[1]['id']}").status_code == 200

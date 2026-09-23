@@ -35,14 +35,32 @@ def _fmt(dt) -> Optional[str]:
     return dt.strftime("%Y-%m-%d %H:%M:%S") if dt else None
 
 
-def to_dict(t: GenTask) -> dict:
+def _file_path_map(db: Session, tasks: List[GenTask]) -> dict:
+    """快照引用的全部素材 id → 当前 file_path（一次查询，供详情真实缩略图）。"""
+    ids = sorted({i for t in tasks for a in (t.assets or [])
+                  for i in (a.get("image_ids") or [])})
+    if not ids:
+        return {}
+    rows = (db.query(AssetImage.id, AssetImage.file_path)
+              .filter(AssetImage.id.in_(ids)).all())
+    return {r.id: r.file_path for r in rows}
+
+
+def to_dict(t: GenTask, file_paths: Optional[dict] = None) -> dict:
+    assets = t.assets
+    if assets and file_paths is not None:
+        # 快照补 file_paths（与 image_ids 按位对齐；素材已删的位为 null），
+        # 历史详情据此渲染 /files/libraries 真实缩略图
+        assets = [{**a, "file_paths": [file_paths.get(i)
+                                       for i in (a.get("image_ids") or [])]}
+                  for a in assets]
     return {
         "id": t.id, "status": t.status, "error_message": t.error_message,
         "prompt_id": t.prompt_id, "prompt_name": t.prompt_name,
         "prompt_content": t.prompt_content,
         "provider_id": t.provider_id, "provider_name": t.provider_name,
         "endpoint": t.endpoint, "model": t.model, "size": t.size,
-        "quality": t.quality, "n": t.n, "extra": t.extra, "assets": t.assets,
+        "quality": t.quality, "n": t.n, "extra": t.extra, "assets": assets,
         "output_dir": t.output_dir,
         "images": [{"id": im.id, "file_path": im.file_path,
                     "url": f"/files/outputs/{im.file_path}"} for im in t.images],
@@ -68,7 +86,8 @@ def list_tasks(status: str = "", keyword: str = "", prompt_id: Optional[int] = N
     total = q.count()
     items = (q.order_by(GenTask.id.desc())
              .offset((page - 1) * size).limit(size).all())
-    return {"items": [to_dict(t) for t in items], "total": total,
+    paths = _file_path_map(db, items)
+    return {"items": [to_dict(t, paths) for t in items], "total": total,
             "page": page, "size": size}
 
 
@@ -120,7 +139,8 @@ def create_task(body: TaskIn, db: Session = Depends(get_db)):
 
 @router.get("/{tid}")
 def get_task(tid: int, db: Session = Depends(get_db)):
-    return to_dict(_one(db, tid))
+    t = _one(db, tid)
+    return to_dict(t, _file_path_map(db, [t]))
 
 
 @router.post("/{tid}/rerun")

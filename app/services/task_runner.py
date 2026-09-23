@@ -117,7 +117,7 @@ def _run(task_id: int):
                 # 在 finally 里炸出第二个异常吞掉原始异常，也释放连接事务
                 db.rollback()
                 traceback.print_exc()
-            db.close()
+        db.close()   # 挪到外层：任务记录不存在（t is None）的早退路径也要释放连接
 
 
 def _snapshot(t: GenTask) -> dict:
