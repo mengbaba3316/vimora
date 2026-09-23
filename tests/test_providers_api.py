@@ -50,6 +50,13 @@ def test_mock_connectivity(client):
     mid = client.post("/api/providers", json={"name": "Mock", "type": "mock"}).json()["id"]
     assert client.post(f"/api/providers/{mid}/test").json()["ok"] is True
 
+def test_provider_type_rejects_illegal_value(client):
+    """type 限定 openai/mock：非法值 422 校验失败，而非落库 Enum 报 500。"""
+    r = client.post("/api/providers", json={"name": "坏源站", "type": "midjourney"})
+    assert r.status_code == 422
+    lst = client.get("/api/providers").json()
+    assert all(p["type"] in ("openai", "mock") for p in lst)
+
 def test_bad_key_result(client, monkeypatch):
     pid = client.post("/api/providers", json={
         "name": "B", "type": "openai", "base_url": "https://b.com", "api_key": "bad"}).json()["id"]

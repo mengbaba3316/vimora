@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+from typing import Literal, Optional
 
 from pydantic import BaseModel, Field, field_serializer
 
@@ -31,7 +31,8 @@ class GroupIn(BaseModel):
 
 class ProviderIn(BaseModel):
     name: str = Field(min_length=1, max_length=100)
-    type: str = "openai"
+    # 仅两种源站类型；非法值 422（而非落库时 Enum 炸 500）
+    type: Literal["openai", "mock"] = "openai"
     base_url: str = ""
     api_key: str = ""
     enabled: bool = True
