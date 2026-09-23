@@ -74,6 +74,7 @@ def _run(task_id: int):
             db.add(TaskImage(task_id=t.id, file_path=rel))
         t.output_dir = os.path.relpath(out_dir, generator.OUTPUT_DIR).replace("\\", "/")
         t.status = "success"
+        t.finished_at = datetime.now()   # 置终态之后写 task.json，快照即最终状态
         generator.write_task_json(out_dir, _snapshot(t), paths, time.time() - started)
     except Exception as e:
         if t is not None:
@@ -81,9 +82,16 @@ def _run(task_id: int):
             t.error_message = (str(e) or traceback.format_exc())[:2000]
     finally:
         if t is not None:
-            t.finished_at = datetime.now()
-            db.commit()
-        db.close()
+            if t.finished_at is None:
+                t.finished_at = datetime.now()
+            try:
+                db.commit()
+            except Exception:
+                # running 状态落库失败时先回滚：既避免 PendingRollbackError
+                # 在 finally 里炸出第二个异常吞掉原始异常，也释放连接事务
+                db.rollback()
+                traceback.print_exc()
+            db.close()
 
 
 def _snapshot(t: GenTask) -> dict:
@@ -97,6 +105,8 @@ def _snapshot(t: GenTask) -> dict:
         "output_dir": t.output_dir,
         "created_at": t.created_at.strftime("%Y-%m-%d %H:%M:%S") if t.created_at else None,
         "started_at": t.started_at.strftime("%Y-%m-%d %H:%M:%S") if t.started_at else None,
+        "finished_at": t.finished_at.strftime("%Y-%m-%d %H:%M:%S") if t.finished_at else None,
+        "error_message": t.error_message,
     }
 
 
