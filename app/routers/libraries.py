@@ -1,6 +1,9 @@
+import mimetypes
+import os
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from ..database import get_db
@@ -103,6 +106,9 @@ async def upload_images(library: str, group_id: int = Form(...), files: List[Upl
 def update_image(library: str, img_id: int, body: dict, db: Session = Depends(get_db)):
     _lib(library)
     i = _image_of(library, img_id, db)
+    if "group_id" in body:
+        # 目标组必须存在于本库，否则 404（防止悬挂 group_id / 跨库越权）
+        _group_of(library, int(body["group_id"]), db)
     for k in ("original_name", "group_id", "sort_order"):
         if k in body: setattr(i, k, body[k])
     db.commit(); return {"ok": True}
@@ -114,6 +120,58 @@ def delete_image(library: str, img_id: int, db: Session = Depends(get_db)):
     i = _image_of(library, img_id, db)
     storage.delete_image(i.file_path)
     db.delete(i); db.commit(); return {"ok": True}
+
+
+class ImportDirIn(BaseModel):
+    source_dir: str
+
+
+@router.post("/{library}/import-dir")
+def import_dir(library: str, body: ImportDirIn, db: Session = Depends(get_db)):
+    """磁盘批量导入：一级子目录→组（递归读全部文件），根散图→「未分组」组。
+
+    组计数口径与测试对齐：目录/「未分组」已存在同名组 = 并入（groups_merged），
+    新建 = groups_created；不存在的 source_dir → 400。
+    """
+    _lib(library)
+    src = body.source_dir
+    if not os.path.isdir(src): raise HTTPException(400, "后端机器上不存在该目录")
+    stats = {"groups_created": 0, "groups_merged": 0, "images_imported": 0, "skipped": 0}
+
+    def ensure_group(name: str):
+        g = db.query(AssetGroup).filter_by(library=library, name=name).first()
+        if g is not None: return g, False
+        g = AssetGroup(library=library, name=name); db.add(g); db.flush()
+        return g, True
+
+    def import_file(path: str, group: AssetGroup):
+        fn = os.path.basename(path)
+        with open(path, "rb") as fh: data = fh.read()
+        mime = mimetypes.guess_type(fn)[0]
+        if mime not in storage.ALLOWED or len(data) > storage.MAX_SIZE:
+            stats["skipped"] += 1; return
+        rel = storage.save_image(library, group.id, fn, data)
+        db.add(AssetImage(library=library, group_id=group.id,
+                          original_name=fn, file_path=rel))
+        stats["images_imported"] += 1
+
+    def walk_dir(d: str, group: AssetGroup):
+        for root, _, files in os.walk(d):
+            for fn in files:
+                import_file(os.path.join(root, fn), group)
+
+    loose, created = ensure_group("未分组")
+    stats["groups_created" if created else "groups_merged"] += 1
+    for name in os.listdir(src):
+        p = os.path.join(src, name)
+        if os.path.isdir(p):
+            g, created = ensure_group(name)
+            stats["groups_created" if created else "groups_merged"] += 1
+            walk_dir(p, g)
+        else:
+            import_file(p, loose)
+    db.commit()
+    return stats
 
 
 def _raise(code, msg): raise HTTPException(code, msg)

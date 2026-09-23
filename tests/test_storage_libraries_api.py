@@ -36,6 +36,25 @@ def test_upload_list_delete_image(client, settings):
     assert not os.path.exists(path)
 
 
+def test_update_image_move_group_guard(client):
+    g1 = client.post("/api/libraries/face/groups", json={"name": "A"}).json()["id"]
+    g2 = client.post("/api/libraries/face/groups", json={"name": "B"}).json()["id"]
+    gx = client.post("/api/libraries/socks/groups", json={"name": "别库组"}).json()["id"]
+    client.post("/api/libraries/face/images", data={"group_id": str(g1)},
+                files=[("files", ("a.png", png_bytes(), "image/png"))])
+    img_id = client.get("/api/libraries/face/images").json()[0]["id"]
+    # 移到不存在的组 → 404（而非写出悬挂 group_id）
+    assert client.put(f"/api/libraries/face/images/{img_id}",
+                      json={"group_id": 99999}).status_code == 404
+    # 移到跨库的组 → 404
+    assert client.put(f"/api/libraries/face/images/{img_id}",
+                      json={"group_id": gx}).status_code == 404
+    # 本库正常移动 → 200 且移动生效
+    assert client.put(f"/api/libraries/face/images/{img_id}",
+                      json={"group_id": g2}).status_code == 200
+    assert client.get(f"/api/libraries/face/images?group_id={g2}").json()[0]["id"] == img_id
+
+
 def test_group_rename_dup_and_cross_library_guards(client):
     g1 = client.post("/api/libraries/face/groups", json={"name": "A"}).json()["id"]
     g2 = client.post("/api/libraries/face/groups", json={"name": "B"}).json()["id"]
