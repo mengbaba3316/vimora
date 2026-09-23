@@ -45,7 +45,10 @@ def get_one(pid: int, db: Session = Depends(get_db)):
 @router.put("/{pid}")
 def update(pid: int, body: ProviderIn, db: Session = Depends(get_db)):
     p = _one(db, pid)
+    old_key = p.api_key
     for k, v in body.model_dump().items(): setattr(p, k, v)
+    # 空串/省略/纯空白的 api_key → 保留原 Key（前端启停 PUT 不携带 Key，不能被默认值清掉）
+    if not (body.api_key or "").strip(): p.api_key = old_key
     db.commit(); db.refresh(p)
     return to_dict(p)
 
