@@ -6,13 +6,13 @@
     "register": "product",
     "sub": "ai-console(workbench)",
     "axes": {
-      "A": "teal&clay-light 双色壳(浅青灰纸+深青黑轨, accent #176C6B)",
+      "A": "warm-paper-ivory 统一浅面 + forest(#2F6B4F) 单强调（quiet luxury）",
       "B": "system-sans-700/400 + mono-for-data",
       "C": "rail + 3col-workbench(素材窄|提示词宽|参数) 无运行条",
       "D": "feedback-only(1 liveness pulse)",
-      "E": "清爽网页端工作台"
+      "E": "安静高级的网页端工作台"
     },
     "dials": { "SOUL": 6, "SPECTACLE": 2, "DENSITY": 7 },
-    "notes": "v1 暖棕琥珀深底被用户否决（网页端显旧）；四库功能色浅底变体 rose/陶土/天蓝/紫；多任务提交即入队，进度收敛到历史页轮询"
+    "notes": "v1 暖棕琥珀深底否决（网页端显旧）；v2 青绿+深色轨双色壳否决（用户不欣赏深浅拼切）；v3 定稿：统一暖纸面+森林绿单强调，层次靠字重留白不靠色块"
   }
 ]
