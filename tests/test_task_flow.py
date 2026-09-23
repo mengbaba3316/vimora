@@ -33,7 +33,7 @@ def test_task_success_flow(client, settings, monkeypatch):
         "prompt_name": "街拍白裙", "prompt_content": "A photo", "provider_id": pid,
         "model": "gpt-image-1", "size": "1024x1024", "quality": "high", "n": 1,
         "assets": [{"library": "face", "image_ids": [img_id]}]})
-    assert r.status_code == 200
+    assert r.status_code == 202
     tid = r.json()["id"]
     task = _wait_terminal(client, tid)
     assert task["status"] == "success", task.get("error_message")

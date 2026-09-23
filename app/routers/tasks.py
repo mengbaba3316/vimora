@@ -71,7 +71,7 @@ def list_tasks(status: str = "", keyword: str = "", prompt_id: Optional[int] = N
             "page": page, "size": size}
 
 
-@router.post("")
+@router.post("", status_code=202)
 def create_task(body: TaskIn, db: Session = Depends(get_db)):
     p = db.get(Provider, body.provider_id)
     if not p:
