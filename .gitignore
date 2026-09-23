@@ -1,0 +1,13 @@
+
+# SDD 工作区与工作树
+.superpowers/
+.worktrees/
+
+# 运行时产物
+data/
+outputs/
+.env
+
+# 前端
+node_modules/
+frontend/dist/
