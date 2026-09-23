@@ -26,9 +26,16 @@ const STATUS_META = {
   partial: { label: '部分成功', cls: 'st-partial' },
   failed:  { label: '失败',     cls: 'st-failed' },
 }
-/* 后端如仍回传旧值 pending，按 queued 展示（排队中） */
-function normStatus(s) { return s === 'pending' ? 'queued' : (s || 'queued') }
-function stMeta(s) { return STATUS_META[normStatus(s)] || STATUS_META.queued }
+/* 后端 status 权威只有 pending/running/success/failed（规格 §4 DDL），五态展示在前端派生：
+   pending → queued；success 且成功张数 < n → partial；否则原值。
+   成功张数优先取后端 ok 字段（若将来提供），当前按 images 数计算。 */
+function normStatus(t) {
+  const s = t?.status
+  if (s === 'pending') return 'queued'
+  if (s === 'success' && (t.ok ?? okCount(t)) < t.n) return 'partial'
+  return s || 'queued'
+}
+function stMeta(t) { return STATUS_META[normStatus(t)] || STATUS_META.queued }
 
 function errMsg(e) {
   const d = e?.response?.data?.detail
@@ -49,14 +56,24 @@ const pageCount = computed(() => Math.max(1, Math.ceil(total.value / pageSize)))
 async function refresh(silent = true) {
   if (!silent) loading.value = true
   try {
+    /* 筛选映射：后端 status 只有 pending/running/success/failed（§4 DDL 权威）。
+       「排队中」→ 请求 status=pending；「部分成功」→ 请求 status=success 后
+       客户端按 ok<n 过滤（partial 是派生态，后端无法直接查询）；其余直传。 */
+    const fs = filterStatus.value
     const { data } = await tasksApi.list({
-      status: filterStatus.value,
+      status: fs === 'queued' ? 'pending' : (fs === 'partial' ? 'success' : fs),
       keyword: filterKw.value.trim(),
       page: page.value,
       size: pageSize,
     })
-    list.value = data.items || []
-    total.value = data.total || 0
+    let items = data.items || []
+    let count = data.total || 0
+    if (fs === 'partial') {
+      items = items.filter(t => normStatus(t) === 'partial')
+      count = items.length   /* success 总数含全部成功会虚高，展示客户端过滤后的条数 */
+    }
+    list.value = items
+    total.value = count
     /* 抽屉开着时用列表里的最新数据同步详情（轮询带来的状态流转立即可见） */
     if (drawer.value && detail.value) {
       const fresh = list.value.find(x => x.id === detail.value.id)
@@ -169,7 +186,7 @@ const resTitle = computed(() => {
   return d?.output_dir ? `结果图 · 归档于 outputs/${d.output_dir}/` : '结果图'
 })
 const resHint = computed(() => {
-  const s = normStatus(detail.value?.status)
+  const s = normStatus(detail.value)
   if (s === 'failed') return '无输出，磁盘未产生文件。'
   if (s === 'queued' || s === 'running') return '任务完成后这里会显示结果图。'
   return '无输出，磁盘未产生文件。'
@@ -187,7 +204,7 @@ const resSnapshot = computed(() => {
   if (res) rows.push({ k: '清晰度', v: res, mono: true })
   rows.push({
     k: '结果',
-    v: `${okCount(d)}/${d.n} 张 · 状态 ${stMeta(d.status).label}`,
+    v: `${okCount(d)}/${d.n} 张 · 状态 ${stMeta(d).label}`,
     mono: false,
   })
   return rows
@@ -293,8 +310,8 @@ async function copyError() {
               <td><span class="chip mute num">{{ t.endpoint }}</span></td>
               <td class="num">{{ okCount(t) }}/{{ t.n }} 张</td>
               <td>
-                <span class="chip" :class="stMeta(t.status).cls">
-                  <span class="d"></span>{{ stMeta(t.status).label }}
+                <span class="chip" :class="stMeta(t).cls">
+                  <span class="d"></span>{{ stMeta(t).label }}
                 </span>
               </td>
               <td>
@@ -351,8 +368,8 @@ async function copyError() {
           <pre>{{ detail.error_message }}</pre>
         </div>
 
-        <!-- 部分成功：警示条 -->
-        <div v-if="normStatus(detail.status) === 'partial'" class="warnbox">
+        <!-- 部分成功：警示条（partial 由 success + ok<n 派生，见 normStatus） -->
+        <div v-if="normStatus(detail) === 'partial'" class="warnbox">
           <span>⚠ {{ okCount(detail) }}/{{ detail.n }} 张成功</span>
         </div>
 
