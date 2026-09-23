@@ -40,3 +40,25 @@ def _clean(test_engine):
     from app import database
     database.Base.metadata.drop_all(test_engine)
     database.Base.metadata.create_all(test_engine)
+
+@pytest.fixture()
+def client(test_engine, settings, monkeypatch):
+    from fastapi import FastAPI
+    from app.database import get_db
+    from app.routers import prompts
+    Session = sessionmaker(bind=test_engine, expire_on_commit=False)
+    app = FastAPI()
+    app.include_router(prompts.router, prefix="/api")
+
+    def override():
+        s = Session()
+        try:
+            yield s
+        finally:
+            s.close()  # 与真实 get_db 一致；否则连接带事务滞留池中，drop_all 会死锁在元数据锁上
+    app.dependency_overrides[get_db] = override
+    # httpx>=0.28 的 ASGITransport 仅支持异步 Client，同步测试用 FastAPI 官方 TestClient
+    from fastapi.testclient import TestClient
+    c = TestClient(app)
+    yield c
+    c.close()
