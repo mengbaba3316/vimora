@@ -1,0 +1,79 @@
+from typing import Optional
+
+import requests as http
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+
+from ..database import get_db
+from ..models import Provider
+from ..schemas import ProviderIn
+
+router = APIRouter(prefix="/providers", tags=["providers"])
+
+
+def to_dict(p: Provider) -> dict:
+    """只输出真实列（排除 _sa_instance_state），供列表/详情/增改统一返回。"""
+    return {
+        "id": p.id, "name": p.name, "type": p.type, "base_url": p.base_url,
+        "api_key": p.api_key, "enabled": p.enabled, "gen_path": p.gen_path,
+        "edits_path": p.edits_path, "image_field": p.image_field,
+        "default_model": p.default_model, "default_size": p.default_size,
+        "default_quality": p.default_quality, "timeout_seconds": p.timeout_seconds,
+        "extra_params": p.extra_params, "param_options": p.param_options,
+        "remark": p.remark,
+        "created_at": p.created_at.strftime("%Y-%m-%d %H:%M:%S") if p.created_at else None,
+        "updated_at": p.updated_at.strftime("%Y-%m-%d %H:%M:%S") if p.updated_at else None,
+    }
+
+
+@router.get("")
+def list_providers(db: Session = Depends(get_db)):
+    return [to_dict(p) for p in db.query(Provider).order_by(Provider.id).all()]
+
+
+@router.post("")
+def create(body: ProviderIn, db: Session = Depends(get_db)):
+    p = Provider(**body.model_dump()); db.add(p); db.commit(); db.refresh(p)
+    return to_dict(p)
+
+
+@router.get("/{pid}")
+def get_one(pid: int, db: Session = Depends(get_db)):
+    return to_dict(_one(db, pid))
+
+
+@router.put("/{pid}")
+def update(pid: int, body: ProviderIn, db: Session = Depends(get_db)):
+    p = _one(db, pid)
+    for k, v in body.model_dump().items(): setattr(p, k, v)
+    db.commit(); db.refresh(p)
+    return to_dict(p)
+
+
+@router.delete("/{pid}")
+def delete(pid: int, db: Session = Depends(get_db)):
+    p = _one(db, pid); db.delete(p); db.commit(); return {"ok": True}
+
+
+@router.post("/{pid}/test")
+def test_conn(pid: int, db: Session = Depends(get_db)):
+    """连通性测试：GET {base_url}/v1/models，超时 5s。mock 类型不发起网络请求。"""
+    p = _one(db, pid)
+    if p.type == "mock":
+        return {"ok": True, "status_code": 0, "model_count": 0, "message": "Mock 源站，本地联调"}
+    try:
+        r = http.get(f"{p.base_url}/v1/models",
+                     headers={"Authorization": f"Bearer {p.api_key}"}, timeout=5)
+        if r.status_code == 200:
+            n = len((r.json() or {}).get("data", []))
+            return {"ok": True, "status_code": 200, "model_count": n, "message": "连通正常"}
+        return {"ok": False, "status_code": r.status_code, "model_count": 0,
+                "message": f"HTTP {r.status_code}"}
+    except Exception as e:
+        return {"ok": False, "status_code": 0, "model_count": 0, "message": str(e)[:200]}
+
+
+def _one(db: Session, pid: int) -> Optional[Provider]:
+    p = db.get(Provider, pid)
+    if not p: raise HTTPException(404, "源站不存在")
+    return p
