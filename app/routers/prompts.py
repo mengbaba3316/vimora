@@ -9,14 +9,22 @@ router = APIRouter(prefix="/prompts", tags=["prompts"])
 
 
 @router.get("")
-def list_prompts(keyword: str = "", page: int = Query(1, ge=1),
+def list_prompts(keyword: str = "", tag: str = "", page: int = Query(1, ge=1),
                  size: int = Query(50, le=200), db: Session = Depends(get_db)):
     q = db.query(Prompt)
     if keyword:
         like = f"%{keyword}%"
         q = q.filter(Prompt.name.like(like) | Prompt.content.like(like) | Prompt.tags.like(like))
-    total = q.count()
-    items = q.order_by(Prompt.id.desc()).offset((page - 1) * size).limit(size).all()
+    if tag:
+        # 规格 §5.1：tag 精确匹配——查询 tag 按逗号拆分后须全部包含在提示词 tags 里
+        wanted = {t.strip() for t in tag.split(",") if t.strip()}
+        ps = [p for p in q.order_by(Prompt.id.desc()).all()
+              if wanted <= {t.strip() for t in p.tags.split(",") if t.strip()}]
+        total = len(ps)
+        items = ps[(page - 1) * size:(page - 1) * size + size]
+    else:
+        total = q.count()
+        items = q.order_by(Prompt.id.desc()).offset((page - 1) * size).limit(size).all()
     return {"items": [PromptOut.model_validate(i) for i in items],
             "total": total, "page": page, "size": size}
 

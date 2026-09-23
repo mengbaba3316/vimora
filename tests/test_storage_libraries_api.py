@@ -34,3 +34,31 @@ def test_upload_list_delete_image(client, settings):
     img_id = imgs[0]["id"]
     assert client.delete(f"/api/libraries/socks/images/{img_id}").status_code == 200
     assert not os.path.exists(path)
+
+
+def test_group_rename_dup_and_cross_library_guards(client):
+    g1 = client.post("/api/libraries/face/groups", json={"name": "A"}).json()["id"]
+    g2 = client.post("/api/libraries/face/groups", json={"name": "B"}).json()["id"]
+    # 改名撞同库已有名 → 400（而非唯一约束 500）
+    assert client.put(f"/api/libraries/face/groups/{g2}", json={"name": "A"}).status_code == 400
+    # 改名维持自己原名（未变名）→ 200
+    assert client.put(f"/api/libraries/face/groups/{g1}", json={"name": "A"}).status_code == 200
+    # 非法 library → 404（规格 §5.2）
+    assert client.put(f"/api/libraries/badlib/groups/{g1}", json={"name": "C"}).status_code == 404
+    # 跨库：face 的组走 socks 前缀 → 404
+    assert client.put(f"/api/libraries/socks/groups/{g1}", json={"name": "C"}).status_code == 404
+    assert client.delete(f"/api/libraries/socks/groups/{g1}").status_code == 404
+    # 图片跨库：face 的图走 socks 前缀 → 404
+    r = client.post("/api/libraries/face/images", data={"group_id": str(g1)},
+                    files=[("files", ("a.png", png_bytes(), "image/png"))])
+    assert r.status_code == 200
+    img_id = client.get("/api/libraries/face/images").json()[0]["id"]
+    assert client.put(f"/api/libraries/socks/images/{img_id}",
+                      json={"original_name": "z.png"}).status_code == 404
+    assert client.delete(f"/api/libraries/socks/images/{img_id}").status_code == 404
+    # 跨库上传：socks 前缀 + face 组 → 404（防 library 列与组不一致）
+    assert client.post("/api/libraries/socks/images", data={"group_id": str(g1)},
+                       files=[("files", ("b.png", png_bytes(), "image/png"))]).status_code == 404
+    # 本库操作仍正常
+    assert client.delete(f"/api/libraries/face/images/{img_id}").status_code == 200
+    assert client.delete(f"/api/libraries/face/groups/{g1}").status_code == 200

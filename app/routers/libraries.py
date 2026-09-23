@@ -17,6 +17,20 @@ def _lib(library: str) -> str:
     return library
 
 
+def _group_of(library: str, gid: int, db: Session) -> AssetGroup:
+    """取组并校验归属：不存在或不属于该 library 一律 404（防跨库越权）。"""
+    g = db.get(AssetGroup, gid)
+    if g is None or g.library != library: _raise(404, "组不存在")
+    return g
+
+
+def _image_of(library: str, img_id: int, db: Session) -> AssetImage:
+    """取图片并校验归属：不存在或不属于该 library 一律 404。"""
+    i = db.get(AssetImage, img_id)
+    if i is None or i.library != library: _raise(404, "图片不存在")
+    return i
+
+
 @router.get("/{library}/groups")
 def list_groups(library: str, db: Session = Depends(get_db)):
     _lib(library)
@@ -36,13 +50,18 @@ def create_group(library: str, body: GroupIn, db: Session = Depends(get_db)):
 
 @router.put("/{library}/groups/{gid}")
 def update_group(library: str, gid: int, body: GroupIn, db: Session = Depends(get_db)):
-    g = db.get(AssetGroup, gid) or _raise(404, "组不存在")
+    _lib(library)
+    g = _group_of(library, gid, db)
+    if body.name != g.name and \
+            db.query(AssetGroup).filter_by(library=library, name=body.name).first():
+        raise HTTPException(400, "同库下已存在同名组")
     g.name = body.name; db.commit(); return {"id": g.id, "name": g.name}
 
 
 @router.delete("/{library}/groups/{gid}")
 def delete_group(library: str, gid: int, db: Session = Depends(get_db)):
-    g = db.get(AssetGroup, gid) or _raise(404, "组不存在")
+    _lib(library)
+    g = _group_of(library, gid, db)
     for img in list(g.images): storage.delete_image(img.file_path)
     db.delete(g); db.commit(); return {"ok": True}
 
@@ -65,7 +84,7 @@ def list_images(library: str, group_id: Optional[int] = None, keyword: str = "",
 async def upload_images(library: str, group_id: int = Form(...), files: List[UploadFile] = File(...),
                         db: Session = Depends(get_db)):
     _lib(library)
-    g = db.get(AssetGroup, group_id) or _raise(404, "组不存在")
+    g = _group_of(library, group_id, db)  # 组不存在或跨库均 404，防 library 列与组不一致
     imported, errors = 0, []
     for f in files:
         data = await f.read()
@@ -82,7 +101,8 @@ async def upload_images(library: str, group_id: int = Form(...), files: List[Upl
 
 @router.put("/{library}/images/{img_id}")
 def update_image(library: str, img_id: int, body: dict, db: Session = Depends(get_db)):
-    i = db.get(AssetImage, img_id) or _raise(404, "图片不存在")
+    _lib(library)
+    i = _image_of(library, img_id, db)
     for k in ("original_name", "group_id", "sort_order"):
         if k in body: setattr(i, k, body[k])
     db.commit(); return {"ok": True}
@@ -90,7 +110,8 @@ def update_image(library: str, img_id: int, body: dict, db: Session = Depends(ge
 
 @router.delete("/{library}/images/{img_id}")
 def delete_image(library: str, img_id: int, db: Session = Depends(get_db)):
-    i = db.get(AssetImage, img_id) or _raise(404, "图片不存在")
+    _lib(library)
+    i = _image_of(library, img_id, db)
     storage.delete_image(i.file_path)
     db.delete(i); db.commit(); return {"ok": True}
 
