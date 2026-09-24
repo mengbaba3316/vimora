@@ -14,8 +14,8 @@ voice: 直接、工具感、不废话；界面文案短句，数据用等宽字�
 SOUL: 6   SPECTACLE: 2   DENSITY: 7
 
 ## Visual lock
-accent: 石墨黑 #23272f（mono 风格，Vercel/Apple 路线）——主按钮/激活导航/选中环全用近黑，**全界面零彩色强调**，on-accent 白
-theme: 冷调高透统一浅面——page 冷石灰 #eceff3 / 卡片纯白 #ffffff / 内衬 #f6f7f9，冷近黑文字 #14171c；浮层（抽屉/弹窗/toast/遮罩）用磨砂玻璃 backdrop-blur 表达「高透」；细线分隔，无深色轨
+accent: 石墨黑 mono 双主题（v6）：炭黑默认（page #131417 / bg #1b1c20 / panel-2 #232529，主按钮反色白底黑字 #f4f5f7）⇄ 纯白（page #ffffff / panel-2 #f7f8fa，主按钮黑底白字），导航栏底部切换按钮 + localStorage 持久化
+theme: 冷调高透统一浅面→双主题切换；浮层（抽屉/弹窗/toast/遮罩）磨砂玻璃 backdrop-blur；细线分隔，无深色轨；Element Plus dark 变量随 html.dark 联动
 type: 系统 sans（-apple-system/Segoe UI/微软雅黑）+ 等宽（Cascadia Mono/Consolas）用于路径、时间戳、参数
 
 ## Anti-references (must NOT look like)
