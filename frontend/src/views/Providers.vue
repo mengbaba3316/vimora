@@ -89,7 +89,7 @@ function blankForm() {
     name: '', type: 'openai', base_url: '', api_key: '',
     gen_path: '/v1/images/generations', edits_path: '/v1/images/edits', image_field: 'image[]',
     default_model: 'gpt-image-1', default_size: '1024x1024', default_quality: 'high',
-    timeout_seconds: 300, extraText: '', optionsText: '', remark: '', enabled: true,
+    timeout_seconds: 300, extraText: '', optionsText: '', modelsText: '', remark: '', enabled: true,
   }
 }
 const form = ref(blankForm())
@@ -121,6 +121,7 @@ function openEdit(p) {
     timeout_seconds: p.timeout_seconds ?? 300,
     extraText: jsonText(p.extra_params),
     optionsText: jsonText(p.param_options),
+    modelsText: (Array.isArray(p.param_options?.models) ? p.param_options.models : []).join(', '),
     remark: p.remark || '',
     enabled: !!p.enabled,
   }
@@ -142,6 +143,11 @@ function parseJson(text, label) {
   }
 }
 
+/* 可选模型：逗号（含中文逗号）分隔，去首尾空格与空项 */
+function parseModels(text) {
+  return (text || '').split(/[,，]/).map(s => s.trim()).filter(Boolean)
+}
+
 async function save() {
   const f = form.value
   if (!f.name.trim()) { ElMessage.warning('名称必填'); return }
@@ -149,10 +155,17 @@ async function save() {
   if (!extra.ok) { ElMessage.warning(extra.msg); return }
   const options = parseJson(f.optionsText, '参数可选值方案 JSON')
   if (!options.ok) { ElMessage.warning(options.msg); return }
+  /* 可选模型表单字段为准：非空覆盖 param_options.models，留空移除该键（=仅默认模型）；
+     其余 JSON 键保留，用户手改 JSON 与表单字段冲突时以表单字段为准 */
+  const models = parseModels(f.modelsText)
+  let optionsValue = options.value
+  if (models.length) optionsValue = { ...(optionsValue || {}), models }
+  else if (optionsValue) delete optionsValue.models
+  if (optionsValue && !Object.keys(optionsValue).length) optionsValue = null
 
   const payload = rowPayload(
     { ...f, name: f.name.trim(), timeout_seconds: Number(f.timeout_seconds) || 300 },
-    { extra_params: extra.value, param_options: options.value },
+    { extra_params: extra.value, param_options: optionsValue },
   )
   if (f.api_key.trim()) payload.api_key = f.api_key.trim()
   else if (!editId.value) payload.api_key = ''
@@ -280,11 +293,14 @@ onMounted(load)
             <input class="input" v-model="form.remark" placeholder="给这个源站记点什么">
           </label>
         </div>
+        <label class="field"><span>可选模型（逗号分隔，留空=仅默认模型）</span>
+          <input class="input" v-model="form.modelsText" placeholder="gpt-image-1, sora-image（工作台可选、可手输其他）">
+        </label>
         <label class="field"><span>附加参数 JSON（随请求合并发送，可留空）</span>
           <textarea class="textarea mono-area" v-model="form.extraText" rows="3" placeholder='{"background":"transparent"}'></textarea>
         </label>
-        <label class="field"><span>参数可选值方案 JSON（该站支持的尺寸/质量/清晰度档位，留空用平台默认）</span>
-          <textarea class="textarea mono-area" v-model="form.optionsText" rows="4" placeholder='{"size":["1024x1024","3:4","9:16"],"quality":["standard","hd"],"resolution":["1K","2K","4K"],"n_max":4}'></textarea>
+        <label class="field"><span>参数可选值方案 JSON（该站支持的档位，留空用平台默认）</span>
+          <textarea class="textarea mono-area" v-model="form.optionsText" rows="4" placeholder='{"ratios":["3:4","16:9"],"resolutions":["1K","2K","4K"],"quality":["standard","hd"],"models":["gpt-image-1"],"n_max":4}'></textarea>
         </label>
         <div class="enable-row">
           <span>启用</span>

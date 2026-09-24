@@ -2,6 +2,7 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { libsApi, promptsApi, providersApi, tasksApi } from '../api'
+import { ratioToSize } from '../utils/sizeMap'
 import { store } from '../store'
 import PromptEditor from '../components/PromptEditor.vue'
 import AssetPicker from '../components/AssetPicker.vue'
@@ -84,24 +85,42 @@ function removeAsset(lib, id) {
 }
 const assetsCount = computed(() => LIBS.reduce((a, l) => a + sel[l.id].length, 0))
 
-/* ── 源站与参数联动（从原型 renderParamOptions 移植）── */
 const providers = ref([])                /* 仅 enabled */
-const form = reactive({ providerId: null, model: 'gpt-image-1', size: '', quality: '', resolution: null, n: 2 })
-const sizeOptions = ref([]), qualityOptions = ref([]), resolutionOptions = ref(null), nMax = ref(10)
+/* ── 源站与参数联动（从原型 renderParamOptions 移植）──
+ * 两种形态：源站 param_options 配了 size（像素串列表）→ 维持「尺寸」直选；
+ * 否则「比例 + 清晰度」档位，提交时按 ratioToSize 换算成像素串。
+ */
+const DEFAULT_RATIOS = ['1:1', '3:4', '4:3', '16:9', '9:16', '2:3', '3:2']
+const DEFAULT_RESOLUTIONS = ['1K', '2K', '3K', '4K']
+const form = reactive({ providerId: null, model: 'gpt-image-1', ratio: '3:4', size: '', quality: '', resolution: null, n: 2 })
+const sizeMode = ref(false)
+const sizeOptions = ref([]), ratioOptions = ref([]), resolutionKs = ref([])
+const qualityOptions = ref([]), modelOptions = ref([]), nMax = ref(10)
 
 const currentProvider = computed(() => providers.value.find(p => p.id === form.providerId))
 
 function renderParamOptions() {
-  const po = currentProvider.value?.param_options || {}
-  sizeOptions.value = po.size || ['1024x1024', '1024x1536', '1536x1024', 'auto']
+  const p = currentProvider.value
+  const po = p?.param_options || {}
   qualityOptions.value = po.quality || ['high', 'medium', 'low']
-  resolutionOptions.value = po.resolution || null      /* null → 隐藏清晰度下拉 */
   nMax.value = po.n_max || 10
-  form.size = sizeOptions.value[0]
+  sizeMode.value = Array.isArray(po.size) && po.size.length > 0
+  if (sizeMode.value) {
+    sizeOptions.value = po.size
+    form.size = po.size[0]               /* 旧行为：直接选像素串，比例/清晰度隐藏 */
+    form.resolution = null
+  } else {
+    ratioOptions.value = po.ratios?.length ? po.ratios : DEFAULT_RATIOS
+    resolutionKs.value = po.resolutions?.length ? po.resolutions : DEFAULT_RESOLUTIONS
+    form.ratio = ratioOptions.value.includes('3:4') ? '3:4' : ratioOptions.value[0]
+    form.resolution = resolutionKs.value.includes('2K') ? '2K' : resolutionKs.value[0]
+  }
   form.quality = qualityOptions.value[0]   /* 默认取第一项（如 high），避免无配置源站落到 low */
-  form.resolution = resolutionOptions.value?.[0] ?? null
   form.n = Math.min(nMax.value, Math.max(1, form.n || 1))
-  form.model = currentProvider.value?.default_model || 'gpt-image-1'
+  /* 模型：param_options.models 为可选列表，未配置则只有默认模型；默认值取默认模型（在列表中时） */
+  const dm = p?.default_model || 'gpt-image-1'
+  modelOptions.value = Array.isArray(po.models) && po.models.length ? po.models : [dm]
+  form.model = modelOptions.value.includes(dm) ? dm : modelOptions.value[0]
 }
 function onProviderChange() { renderParamOptions() }
 function nMinus() { form.n = Math.max(1, form.n - 1) }
@@ -112,8 +131,9 @@ function onNInput() { form.n = Math.min(nMax.value, Math.max(1, parseInt(form.n)
 const ckEndpoint = computed(() => assetsCount.value ? `edits · 参考图 ${assetsCount.value} 张` : 'generations · 纯文生图')
 const ckPrompt = computed(() => `${editingPrompt.value?.name || '未选择'} · ${editorText.value.length} 字`)
 const ckProv = computed(() => currentProvider.value?.name || '未选择')
-const ckParams = computed(() =>
-  `${form.size || '-'} · ${form.quality || '-'}${form.resolution ? ' · ' + form.resolution : ''} · ${form.n} 张`)
+const ckParams = computed(() => sizeMode.value
+  ? `${form.size || '-'} · ${form.quality || '-'} · ${form.n} 张`
+  : `${form.ratio} · ${form.resolution} · ${form.quality || '-'} · ${form.n} 张`)
 const isMock = computed(() => currentProvider.value?.type === 'mock')
 const genReason = computed(() => {
   const reason = []
@@ -132,17 +152,19 @@ async function submitTask() {
     .map(l => ({ library: l.id, image_ids: [...sel[l.id]] }))
   submitting.value = true
   try {
+    /* 尺寸：像素模式原样传所选串；比例模式按清晰度档位换算（extra.resolution 带所选 K） */
+    const size = sizeMode.value ? form.size : ratioToSize(form.ratio, form.resolution)
     const { data } = await tasksApi.create({
       prompt_id: editingPrompt.value?.id ?? null,
       prompt_name: editingPrompt.value?.name || '未命名',
       prompt_content: editorText.value,
       provider_id: form.providerId,
       model: form.model,
-      size: form.size,
+      size,
       quality: form.quality,
       n: form.n,
       assets: assets.length ? assets : null,
-      extra: form.resolution ? { resolution: form.resolution } : null,
+      extra: !sizeMode.value && form.resolution ? { resolution: form.resolution } : null,
     })
     ElMessage.success(`任务 #${data.id} 已加入队列（${ep} · ${form.n} 张），改完词图可继续提交，进度见历史任务页`)
   } catch (e) {
@@ -239,21 +261,34 @@ onMounted(async () => {
                 {{ p.name }}{{ p.type === 'mock' ? '（联调）' : '' }}
               </option>
             </select>
+            <div v-if="currentProvider?.remark" id="provRemark" class="prov-remark">{{ currentProvider.remark }}</div>
           </label>
-          <label class="field"><span>模型</span><input id="pModel" v-model="form.model" class="input"></label>
-          <label class="field"><span>尺寸</span>
+          <div class="field"><span>模型</span>
+            <el-select id="pModel" v-model="form.model" class="model-select" filterable allow-create
+                       default-first-option placeholder="选择或输入模型">
+              <el-option v-for="m in modelOptions" :key="m" :value="m" :label="m" />
+            </el-select>
+          </div>
+          <label v-if="sizeMode" class="field"><span>尺寸</span>
             <select id="pSize" v-model="form.size" class="select">
               <option v-for="s in sizeOptions" :key="s" :value="s">{{ s }}</option>
             </select>
           </label>
+          <template v-else>
+            <label id="ratioField" class="field"><span>比例</span>
+              <select id="pRatio" v-model="form.ratio" class="select">
+                <option v-for="r in ratioOptions" :key="r" :value="r">{{ r }}</option>
+              </select>
+            </label>
+            <label id="resField" class="field"><span>清晰度</span>
+              <select id="pRes" v-model="form.resolution" class="select">
+                <option v-for="r in resolutionKs" :key="r" :value="r">{{ r }}</option>
+              </select>
+            </label>
+          </template>
           <label class="field"><span>质量</span>
             <select id="pQuality" v-model="form.quality" class="select">
               <option v-for="q in qualityOptions" :key="q" :value="q">{{ q }}</option>
-            </select>
-          </label>
-          <label v-if="resolutionOptions" id="resField" class="field"><span>清晰度</span>
-            <select id="pRes" v-model="form.resolution" class="select">
-              <option v-for="r in resolutionOptions" :key="r" :value="r">{{ r }}</option>
             </select>
           </label>
           <label class="field"><span>生成张数</span>
@@ -319,6 +354,8 @@ onMounted(async () => {
 /* 参数列 */
 .col-params{order:2;display:flex;flex-direction:column;min-height:0;overflow:hidden}
 .params-body{padding:13px 16px;flex:1;min-height:0;overflow-y:auto}
+.prov-remark{margin-top:6px;font-size:12px;color:var(--ink-3);line-height:1.45}
+.model-select{width:100%}
 .n-row{display:flex;gap:6px;align-items:center}
 .n-hint{font-size:11.5px;color:var(--ink-3)}
 .iconbtn{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;color:var(--ink-2);flex:none;border:1px solid var(--border);background:none;cursor:pointer;font-family:inherit}
