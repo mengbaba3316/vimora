@@ -424,10 +424,10 @@ onMounted(async () => {
 /* 图片网格：瓦片 = 正方形图区（contain 完整缩放，允许留白）+ 下方独立名称行；
  * 行高由内容自然撑开，名称不再绝对定位叠在图上，杜绝行间压盖 */
 .lib-gridwrap{display:flex;flex-direction:column;min-height:0;overflow:hidden}
-.lib-grid{flex:1;min-height:0;overflow-y:auto;padding:14px;display:grid;grid-template-columns:repeat(auto-fill,132px);gap:12px;align-content:start}
-.gtile{display:flex;flex-direction:column;width:132px;border-radius:11px;overflow:hidden;border:1px solid var(--border);background:var(--panel-2)}
-.gtile .thumb{position:relative;height:132px;width:100%;cursor:zoom-in}
-.gtile .thumb img{width:100%;height:100%;object-fit:contain;display:block}
+.lib-grid{flex:1;min-height:0;overflow-y:auto;padding:14px;display:grid;grid-template-columns:repeat(auto-fill,132px);gap:12px;align-items:start;align-content:start}
+.gtile{display:flex;flex-direction:column;width:100%;min-width:0;border-radius:11px;overflow:hidden;border:1px solid var(--border);background:var(--panel-2)}
+.gtile .thumb{position:relative;width:100%;cursor:zoom-in}
+.gtile .thumb img{width:100%;height:auto;display:block}
 .gtile .ops{position:absolute;top:6px;right:6px;display:none;gap:4px;z-index:2}
 .gtile .thumb:hover .ops{display:flex}
 .gtile .ops button{width:24px;height:24px;border-radius:7px;background:var(--img-chip-bg);color:var(--ink-2);display:grid;place-items:center;border:1px solid var(--border-2);cursor:pointer}

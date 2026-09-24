@@ -73,7 +73,7 @@ function toggleTheme() {
 .brand .mk{width:28px;height:28px;border-radius:9px;flex:none;display:grid;place-items:center;background:var(--accent);color:var(--on-accent)}
 .brand b{font-size:14.5px;font-weight:700;letter-spacing:-.01em;color:var(--ink-1)}
 .brand span{font-size:10.5px;color:var(--ink-3);margin-left:auto;font-family:ui-monospace,"Cascadia Mono",Consolas,monospace}
-.nav{padding:12px 10px 12px 14px;flex:1;min-height:0;overflow-y:auto}
+.nav{padding:14px 12px 14px 18px;flex:1;min-height:0;overflow-y:auto}
 .nav-item{position:relative;width:100%;display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:11px;color:var(--ink-1);font-size:13.5px;font-weight:500;margin-bottom:2px;transition:background .15s ease,color .15s ease;text-align:left;text-decoration:none;cursor:pointer}
 .nav-item svg{flex:none;opacity:1}
 .nav-item:hover{background:var(--panel-2)}

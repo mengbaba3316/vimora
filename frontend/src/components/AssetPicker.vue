@@ -187,12 +187,12 @@ defineExpose({ open })
 .pg-item .gname{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pg-item .n{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--ink-3);flex:none}
 
-.picker-grid{overflow-y:auto;padding:14px;display:grid;grid-template-columns:repeat(auto-fill,132px);gap:10px;align-content:start}
+.picker-grid{overflow-y:auto;padding:14px;display:grid;grid-template-columns:repeat(auto-fill,132px);gap:10px;align-items:start;align-content:start}
 /* 瓦片 = 正方形图区（contain 完整缩放，允许留白）+ 下方独立名称行；行高随内容撑开，不压盖 */
-.ptile{position:relative;display:flex;flex-direction:column;min-width:0;border-radius:11px;overflow:hidden;cursor:pointer;border:1.5px solid var(--border);background:var(--panel-2);transition:border-color .12s ease,transform .12s ease}
+.ptile{position:relative;display:flex;flex-direction:column;width:100%;min-width:0;border-radius:11px;overflow:hidden;cursor:pointer;border:1.5px solid var(--border);background:var(--panel-2);transition:border-color .12s ease,transform .12s ease}
 .ptile:hover{transform:translateY(-2px)}
-.ptile .thumb{position:relative;height:132px;width:100%}
-.ptile .thumb img{width:100%;height:100%;object-fit:contain;display:block}
+.ptile .thumb{position:relative;width:100%}
+.ptile .thumb img{width:100%;height:auto;display:block}
 .ptile .zoom{position:absolute;top:6px;right:6px;width:24px;height:24px;padding:0;border-radius:7px;background:var(--img-chip-bg);color:var(--ink-2);display:grid;place-items:center;border:1px solid var(--border-2);cursor:zoom-in;opacity:0;pointer-events:none;transition:opacity .12s ease;z-index:2}
 .ptile:hover .zoom{opacity:1;pointer-events:auto}
 .ptile .zoom:hover{color:var(--ink-1)}
