@@ -58,7 +58,7 @@ class Provider(Base):
     default_model: Mapped[str] = mapped_column(String(100), default="gpt-image-1")
     default_size: Mapped[str] = mapped_column(String(30), default="1024x1024")
     default_quality: Mapped[str] = mapped_column(String(30), default="high")
-    timeout_seconds: Mapped[int] = mapped_column(Integer, default=300)
+    timeout_seconds: Mapped[int] = mapped_column(Integer, default=600)
     extra_params: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
     param_options: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
     remark: Mapped[str] = mapped_column(String(500), default="")

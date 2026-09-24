@@ -82,7 +82,12 @@ def _run(task_id: int):
                                           size=t.size, n=t.n, quality=t.quality,
                                           extra=t.extra)
         else:
-            resp = requests.post(url, **kwargs)
+            try:
+                resp = requests.post(url, **kwargs)
+            except requests.exceptions.Timeout:
+                raise RuntimeError(
+                    f"请求超时：{p.timeout_seconds} 秒内未收到响应。中转站可能已扣费出图，"
+                    f"可到其后台确认取图；若该站经常超时，请在「API 源站」编辑里调大「超时（秒）」。")
             if resp.status_code != 200:
                 # 规格 §8：非 200 响应不抛请求层异常，任务置 failed 并留全量诊断信息
                 raise RuntimeError(f"HTTP {resp.status_code}\n{resp.text[:2000]}")

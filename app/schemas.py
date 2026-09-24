@@ -42,7 +42,7 @@ class ProviderIn(BaseModel):
     default_model: str = "gpt-image-1"
     default_size: str = "1024x1024"
     default_quality: str = "high"
-    timeout_seconds: int = 300
+    timeout_seconds: int = 600
     extra_params: Optional[dict] = None
     param_options: Optional[dict] = None
     remark: str = ""
