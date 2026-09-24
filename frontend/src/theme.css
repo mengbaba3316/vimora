@@ -155,7 +155,10 @@ body{background:var(--page);color:var(--ink-1);margin:0;font-family:var(--sans);
 .card{background:var(--bg);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow-1)}
 .table-card{overflow:hidden}
 table{width:100%;border-collapse:collapse}
-th{font-size:11px;letter-spacing:.06em;color:var(--ink-3);font-weight:700;text-align:left;padding:9px 12px;border-bottom:1px solid var(--border-2);white-space:nowrap}
+th{font-size:12px;letter-spacing:.06em;color:var(--on-accent);font-weight:700;text-align:left;padding:10px 12px;background:var(--accent);border-bottom:0;white-space:nowrap}
+thead th:first-child{border-top-left-radius:10px}
+thead th:last-child{border-top-right-radius:10px}
+thead th:empty::after{content:"操作"}
 td{padding:10px 12px;border-bottom:1px solid var(--border);font-size:13px;color:var(--ink-2);vertical-align:middle}
 tr:hover td{background:var(--row-hover)}
 td .name{color:var(--ink-1);font-weight:600}

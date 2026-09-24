@@ -54,6 +54,14 @@ def create_app():
 
         # 注意顺序：Starlette 按注册顺序取第一个完全匹配的路由，Mount("/") 会吞掉所有
         # GET——兜底路由若注册在它之后则永远不可达（深链接刷新仍会 404），故必须在前。
+        # index.html 禁缓存：前端重新构建后用户普通刷新即可拿到新版本（hash 资源仍长缓存）
+        @app.middleware("http")
+        async def _no_cache_html(request, call_next):
+            resp = await call_next(request)
+            if resp.headers.get("content-type", "").startswith("text/html"):
+                resp.headers["Cache-Control"] = "no-cache"
+            return resp
+
         app.mount("/", StaticFiles(directory=dist, html=True), name="spa")
     # 后台生图执行器（init_app_db 之后 database.SessionLocal 才有值，须取模块属性）
     task_runner.init_runner(database.SessionLocal, settings.MAX_CONCURRENT_TASKS)
