@@ -1,4 +1,5 @@
 <script setup>
+const build = __APP_BUILD__
 import { ref } from 'vue'
 
 /* 主题切换：初始值由 index.html/main.js 写在 <html> 上，这里只读与翻转。
@@ -20,7 +21,7 @@ function toggleTheme() {
         <div class="mk">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 3l1.9 5.6L20 10l-6.1 1.4L12 17l-1.9-5.6L4 10l6.1-1.4z"/></svg>
         </div>
-        <b>生图工作台</b><span>v0.1</span>
+        <b>生图工作台</b><span>{{ build }}</span>
       </div>
       <nav class="nav">
         <router-link to="/" class="nav-item" exact-active-class="on">

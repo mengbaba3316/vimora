@@ -187,7 +187,7 @@ defineExpose({ open })
 .pg-item .gname{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pg-item .n{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--ink-3);flex:none}
 
-.picker-grid{overflow-y:auto;padding:14px;display:grid;grid-template-columns:repeat(auto-fill,132px);gap:10px;align-items:start;align-content:start}
+.picker-grid{overflow-y:auto;padding:14px;display:grid;grid-template-columns:repeat(auto-fill,132px);grid-auto-rows:max-content;gap:10px;align-items:start;align-content:start}
 /* 瓦片 = 正方形图区（contain 完整缩放，允许留白）+ 下方独立名称行；行高随内容撑开，不压盖 */
 .ptile{position:relative;display:flex;flex-direction:column;width:100%;min-width:0;border-radius:11px;overflow:hidden;cursor:pointer;border:1.5px solid var(--border);background:var(--panel-2);transition:border-color .12s ease,transform .12s ease}
 .ptile:hover{transform:translateY(-2px)}
