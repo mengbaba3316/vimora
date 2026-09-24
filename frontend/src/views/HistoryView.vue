@@ -466,11 +466,11 @@ async function copyError() {
 .td-del{margin-right:auto}
 .td-foot-right{display:flex;gap:8px}
 
-.errbox{background:var(--down-soft);border:1px solid rgba(208,69,60,.3);border-radius:8px;padding:11px 13px;margin-bottom:14px}
+.errbox{background:var(--down-soft);border:1px solid var(--down-line);border-radius:8px;padding:11px 13px;margin-bottom:14px}
 .errbox h5{font-size:12px;color:var(--down);margin:0 0 5px;display:flex;align-items:center;gap:6px}
 .errbox pre{font-family:var(--mono);font-size:11.5px;color:var(--ink-2);white-space:pre-wrap;word-break:break-all;max-height:120px;overflow-y:auto;margin:0}
 
-.warnbox{background:var(--warn-soft);border:1px solid rgba(183,122,22,.3);border-radius:8px;padding:11px 13px;margin-bottom:14px;font-size:12.5px;color:var(--warn);display:flex;gap:8px;align-items:center;justify-content:space-between}
+.warnbox{background:var(--warn-soft);border:1px solid var(--warn-line);border-radius:8px;padding:11px 13px;margin-bottom:14px;font-size:12.5px;color:var(--warn);display:flex;gap:8px;align-items:center;justify-content:space-between}
 
 .snap-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
 .snap{background:var(--panel-2);border-radius:8px;padding:9px 12px}
@@ -492,7 +492,7 @@ async function copyError() {
 .res-tile:hover{border-color:var(--accent)}
 .res-tile .el-image{width:100%;height:100%;display:block;cursor:zoom-in}
 .res-tile .el-image img{width:100%;height:100%;object-fit:cover}
-.res-tile .dl{position:absolute;right:6px;bottom:6px;opacity:0;background:rgba(255,255,255,.92);border-radius:7px;padding:4px 8px;font-size:11px;color:var(--ink-1);border:1px solid var(--border-2);text-decoration:none;transition:opacity .12s ease}
+.res-tile .dl{position:absolute;right:6px;bottom:6px;opacity:0;background:var(--img-chip-bg);border-radius:7px;padding:4px 8px;font-size:11px;color:var(--ink-1);border:1px solid var(--border-2);text-decoration:none;transition:opacity .12s ease}
 .res-tile:hover .dl{opacity:1}
 .res-none{font-size:12.5px;color:var(--ink-3);margin:0}
 </style>

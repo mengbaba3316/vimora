@@ -430,7 +430,7 @@ onMounted(async () => {
 .gtile .thumb img{width:100%;height:100%;object-fit:contain;display:block}
 .gtile .ops{position:absolute;top:6px;right:6px;display:none;gap:4px;z-index:2}
 .gtile .thumb:hover .ops{display:flex}
-.gtile .ops button{width:24px;height:24px;border-radius:7px;background:rgba(255,255,255,.92);color:var(--ink-2);display:grid;place-items:center;border:1px solid var(--border-2);cursor:pointer}
+.gtile .ops button{width:24px;height:24px;border-radius:7px;background:var(--img-chip-bg);color:var(--ink-2);display:grid;place-items:center;border:1px solid var(--border-2);cursor:pointer}
 .gtile .ops button:hover{color:var(--ink-1)}
 .gtile .name{flex:none;font-size:11px;padding:5px 8px;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-top:1px solid var(--border)}
 .hidden-file{display:none}

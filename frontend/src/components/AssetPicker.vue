@@ -193,12 +193,12 @@ defineExpose({ open })
 .ptile:hover{transform:translateY(-2px)}
 .ptile .thumb{position:relative;aspect-ratio:1;width:100%}
 .ptile .thumb img{width:100%;height:100%;object-fit:contain;display:block}
-.ptile .zoom{position:absolute;top:6px;right:6px;width:24px;height:24px;padding:0;border-radius:7px;background:rgba(255,255,255,.92);color:var(--ink-2);display:grid;place-items:center;border:1px solid var(--border-2);cursor:zoom-in;opacity:0;pointer-events:none;transition:opacity .12s ease;z-index:2}
+.ptile .zoom{position:absolute;top:6px;right:6px;width:24px;height:24px;padding:0;border-radius:7px;background:var(--img-chip-bg);color:var(--ink-2);display:grid;place-items:center;border:1px solid var(--border-2);cursor:zoom-in;opacity:0;pointer-events:none;transition:opacity .12s ease;z-index:2}
 .ptile:hover .zoom{opacity:1;pointer-events:auto}
 .ptile .zoom:hover{color:var(--ink-1)}
 .ptile.on .zoom{top:29px}   /* 右上角被选中序号徽标占用时，放大镜下移避让 */
 .ptile .name{flex:none;font-size:10.5px;padding:4px 8px;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-top:1px solid var(--border)}
-.ptile .tick{position:absolute;top:7px;left:7px;width:20px;height:20px;border-radius:50%;background:rgba(255,255,255,.85);border:1.5px solid var(--border-2);display:grid;place-items:center;color:transparent}
+.ptile .tick{position:absolute;top:7px;left:7px;width:20px;height:20px;border-radius:50%;background:var(--img-chip-bg-soft);border:1.5px solid var(--border-2);display:grid;place-items:center;color:transparent}
 .ptile.on{border-color:var(--accent)}
 .ptile.on .tick{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
 .ptile .ord{position:absolute;top:7px;right:7px;min-width:17px;height:17px;padding:0 4px;border-radius:99px;background:var(--accent);color:var(--on-accent);font-size:10px;font-weight:700;display:none;place-items:center;font-family:var(--mono)}

@@ -5,6 +5,15 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>生图工作台</title>
+    <script>
+      /* 首屏绘制前应用主题：默认炭黑，localStorage.theme === 'light' 时纯白（防闪白） */
+      (function () {
+        var t = localStorage.getItem('theme') === 'light' ? 'light' : 'dark'
+        var el = document.documentElement
+        el.setAttribute('data-theme', t)
+        el.classList.toggle('dark', t === 'dark')
+      })()
+    </script>
   </head>
   <body>
     <div id="app"></div>
