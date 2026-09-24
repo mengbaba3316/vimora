@@ -74,11 +74,11 @@ function toggleTheme() {
 .brand b{font-size:14.5px;font-weight:700;letter-spacing:-.01em;color:var(--ink-1)}
 .brand span{font-size:10.5px;color:var(--ink-3);margin-left:auto;font-family:ui-monospace,"Cascadia Mono",Consolas,monospace}
 .nav{padding:12px 10px;flex:1;min-height:0;overflow-y:auto}
-.nav-item{position:relative;width:100%;display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:11px;color:var(--ink-2);font-size:13.5px;font-weight:500;margin-bottom:2px;transition:background .15s ease,color .15s ease;text-align:left;text-decoration:none;cursor:pointer}
-.nav-item svg{flex:none;opacity:.75}
-.nav-item:hover{background:var(--panel-2);color:var(--ink-1)}
-.nav-item.on{background:var(--accent-soft);color:var(--accent);font-weight:600}
-.nav-item.on::after{content:"";position:absolute;left:0;top:8px;bottom:8px;width:3px;border-radius:0 3px 3px 0;background:var(--accent)}
+.nav-item{position:relative;width:100%;display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:11px;color:var(--ink-1);font-size:13.5px;font-weight:500;margin-bottom:2px;transition:background .15s ease,color .15s ease;text-align:left;text-decoration:none;cursor:pointer}
+.nav-item svg{flex:none;opacity:1}
+.nav-item:hover{background:var(--panel-2)}
+.nav-item.on{background:var(--accent);color:var(--on-accent);font-weight:600}
+.nav-item.on::after{content:"";position:absolute;left:0;top:8px;bottom:8px;width:3px;border-radius:0 3px 3px 0;background:var(--on-accent)}
 .nav-item.on svg{opacity:1}
 
 /* ── 左轨底部：主题切换 ── */
@@ -86,5 +86,5 @@ function toggleTheme() {
 .theme-btn{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;background:var(--panel-2);border:1px solid var(--border);color:var(--ink-2);cursor:pointer;transition:background .15s ease,border-color .15s ease,color .15s ease;font-family:inherit;padding:0}
 .theme-btn:hover{background:var(--panel-3);border-color:var(--border-2);color:var(--ink-1)}
 
-main{flex:1;min-width:0;min-height:0;display:flex;flex-direction:column;overflow-y:auto}
+main{flex:1;min-width:0;min-height:0;display:flex;flex-direction:column;overflow-y:auto;overflow-x:clip}
 </style>

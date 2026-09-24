@@ -6,6 +6,8 @@
  * EP 桥接变量在两个块里各声明一份：EP 的 dark 变量文件用 html.dark 选择器，
  * 会盖过 :root 上的 :root 块，故 dark 块必须全量重申 --el-* 映射。
  * ══════════════════════════════════════════════════════════════════════════ */
+*, *::before, *::after{box-sizing:border-box}
+html, body{overflow-x:clip}
 :root{
   /* 纯白 Light：白多黑少 */
   --page:#ffffff; --bg:#ffffff; --panel-2:#f7f8fa; --panel-3:#eef0f3;
