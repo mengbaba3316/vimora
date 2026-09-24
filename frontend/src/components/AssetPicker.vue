@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { libsApi } from '../api'
+import { naturalDesc } from '../utils/naturalSort'
 
 /*
  * 四库通用素材选择抽屉。
@@ -50,7 +51,8 @@ async function open() {
   try {
     const [g, imgs] = await Promise.all([libsApi.groups(props.library), libsApi.images(props.library)])
     groups.value = asList(g.data)
-    images.value = asList(imgs.data)
+    /* 后端按 id 升序返回；前端按名称自然排序倒序展示（8-10 排在 8-2 前） */
+    images.value = asList(imgs.data).sort((a, b) => naturalDesc(a.original_name, b.original_name))
   } catch (e) {
     groups.value = []
     images.value = []
@@ -77,6 +79,13 @@ function toggleTile(img) {
   const i = draft.value.indexOf(img.id)
   if (i > -1) draft.value.splice(i, 1)
   else draft.value.push(img.id)
+}
+
+/* ── 放大镜预览：右上角小按钮打开大图查看器，不影响点选 ── */
+const previewUrl = ref('')
+/* 预览地址与列表一致：静态文件挂载 /files/libraries/<file_path> */
+function openPreview(img) {
+  previewUrl.value = img.file_path ? `/files/libraries/${img.file_path}` : (img.url || '')
 }
 
 function clearLib() {
@@ -112,16 +121,21 @@ defineExpose({ open })
         </button>
       </div>
 
-      <!-- 右：图片网格，点选切换 + 顺序徽标 -->
+      <!-- 右：图片网格，点选切换 + 顺序徽标；右上角放大镜只管预览 -->
       <div class="picker-grid">
         <template v-if="shownImages.length">
           <div v-for="img in shownImages" :key="img.id" class="ptile" :class="{ on: ordOf(img.id) > 0 }" @click="toggleTile(img)">
-            <img :src="img.url" :alt="img.original_name" loading="lazy">
+            <div class="thumb">
+              <img :src="img.url" :alt="img.original_name" loading="lazy">
+              <button class="zoom" title="放大预览" @click.stop="openPreview(img)">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.8-3.8"/></svg>
+              </button>
+            </div>
             <span class="tick">
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
             </span>
             <span class="ord num">{{ ordOf(img.id) }}</span>
-            <span class="name">{{ img.original_name }}{{ groupName(img) ? ` · ${groupName(img)}` : '' }}</span>
+            <span class="name" :title="`${img.original_name}${groupName(img) ? ` · ${groupName(img)}` : ''}`">{{ img.original_name }}{{ groupName(img) ? ` · ${groupName(img)}` : '' }}</span>
           </div>
         </template>
         <div v-else-if="!loading" class="empty">
@@ -139,6 +153,15 @@ defineExpose({ open })
       </div>
     </template>
   </el-drawer>
+
+  <!-- 大图预览（teleport 到 body，层级高于抽屉）；Esc / 点遮罩关闭 -->
+  <el-image-viewer
+    v-if="previewUrl"
+    :url-list="[previewUrl]"
+    teleported
+    hide-on-click-modal
+    @close="previewUrl = ''"
+  />
 </template>
 
 <style>
@@ -165,10 +188,16 @@ defineExpose({ open })
 .pg-item .n{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--ink-3);flex:none}
 
 .picker-grid{overflow-y:auto;padding:14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:10px;align-content:start}
-.ptile{position:relative;aspect-ratio:1;border-radius:11px;overflow:hidden;cursor:pointer;border:1.5px solid var(--border);background:var(--panel-2);transition:border-color .12s ease,transform .12s ease}
+/* 瓦片 = 正方形图区（contain 完整缩放，允许留白）+ 下方独立名称行；行高随内容撑开，不压盖 */
+.ptile{position:relative;display:flex;flex-direction:column;min-width:0;border-radius:11px;overflow:hidden;cursor:pointer;border:1.5px solid var(--border);background:var(--panel-2);transition:border-color .12s ease,transform .12s ease}
 .ptile:hover{transform:translateY(-2px)}
-.ptile img{width:100%;height:100%;object-fit:cover;display:block}
-.ptile .name{position:absolute;left:0;right:0;bottom:0;font-size:10.5px;padding:3px 7px;background:rgba(255,255,255,.9);color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ptile .thumb{position:relative;aspect-ratio:1;width:100%}
+.ptile .thumb img{width:100%;height:100%;object-fit:contain;display:block}
+.ptile .zoom{position:absolute;top:6px;right:6px;width:24px;height:24px;padding:0;border-radius:7px;background:rgba(255,255,255,.92);color:var(--ink-2);display:grid;place-items:center;border:1px solid var(--border-2);cursor:zoom-in;opacity:0;pointer-events:none;transition:opacity .12s ease;z-index:2}
+.ptile:hover .zoom{opacity:1;pointer-events:auto}
+.ptile .zoom:hover{color:var(--ink-1)}
+.ptile.on .zoom{top:29px}   /* 右上角被选中序号徽标占用时，放大镜下移避让 */
+.ptile .name{flex:none;font-size:10.5px;padding:4px 8px;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-top:1px solid var(--border)}
 .ptile .tick{position:absolute;top:7px;left:7px;width:20px;height:20px;border-radius:50%;background:rgba(255,255,255,.85);border:1.5px solid var(--border-2);display:grid;place-items:center;color:transparent}
 .ptile.on{border-color:var(--accent)}
 .ptile.on .tick{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
