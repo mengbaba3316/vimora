@@ -2,6 +2,7 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { libsApi } from '../api'
+import { naturalDesc } from '../utils/naturalSort'
 
 /* 四库定义（与原型 LIBS 一致，色值取 theme token） */
 const LIBS = [
@@ -44,7 +45,8 @@ async function loadImages() {
   try {
     const params = curGroup.value === 'all' ? {} : { group_id: curGroup.value }
     const { data } = await libsApi.images(curLib.value, params)
-    images.value = asList(data)
+    /* 后端按 id 升序返回；前端按名称自然排序倒序展示（8-10 排在 8-2 前） */
+    images.value = asList(data).sort((a, b) => naturalDesc(a.original_name, b.original_name))
   } catch (e) {
     images.value = []
     ElMessage.error('加载图片失败：' + errMsg(e))
@@ -168,6 +170,12 @@ async function removeImage(img) {
     ElMessage.success('已删除（磁盘文件一并删除）')
     await refresh()
   } catch (e) { ElMessage.error('删除失败：' + errMsg(e)) }
+}
+
+/* ── 大图预览：点瓦片图片区放大，Esc / 点遮罩关闭 ── */
+const previewUrl = ref('')
+function openPreview(img) {
+  previewUrl.value = img.url
 }
 
 /* ── 上传（multipart 字段 files，group_id 为 form 字段）── */
@@ -294,13 +302,17 @@ onMounted(async () => {
         <div class="lib-grid" v-loading="loading">
           <template v-if="images.length">
             <div v-for="img in images" :key="img.id" class="gtile">
-              <img :src="img.url" :alt="img.original_name" loading="lazy">
-              <div class="ops">
-                <button title="改名" @click="renameImage(img)"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20l4-1L20 7l-3-3L5 16z"/></svg></button>
-                <button title="移动到其他组" @click="openMove(img)"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 9h10l-3-3M19 15H9l3 3"/></svg></button>
-                <button title="删除" @click="removeImage(img)"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M9 7V5h6v2M6 7l1 13h10l1-13"/></svg></button>
+              <!-- 图片区：完整缩放（contain 留白），点击放大；操作按钮悬浮其上 -->
+              <div class="thumb" title="点击放大预览" @click="openPreview(img)">
+                <img :src="img.url" :alt="img.original_name" loading="lazy">
+                <div class="ops" @click.stop>
+                  <button title="改名" @click="renameImage(img)"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20l4-1L20 7l-3-3L5 16z"/></svg></button>
+                  <button title="移动到其他组" @click="openMove(img)"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 9h10l-3-3M19 15H9l3 3"/></svg></button>
+                  <button title="删除" @click="removeImage(img)"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M9 7V5h6v2M6 7l1 13h10l1-13"/></svg></button>
+                </div>
               </div>
-              <span class="name">{{ img.original_name }} · {{ img.group_name }}</span>
+              <!-- 名称行：瓦片下方独立一行，不叠在图上，行高随内容撑开 -->
+              <span class="name" :title="`${img.original_name} · ${img.group_name}`">{{ img.original_name }} · {{ img.group_name }}</span>
             </div>
           </template>
           <div v-else-if="!loading" class="empty">
@@ -365,6 +377,15 @@ onMounted(async () => {
         </div>
       </template>
     </el-dialog>
+
+    <!-- 大图预览（teleport 到 body，层级高于页面） -->
+    <el-image-viewer
+      v-if="previewUrl"
+      :url-list="[previewUrl]"
+      teleported
+      hide-on-click-modal
+      @close="previewUrl = ''"
+    />
   </div>
 </template>
 
@@ -400,16 +421,18 @@ onMounted(async () => {
 .gops button{width:20px;height:20px;border-radius:6px;display:grid;place-items:center;color:var(--ink-3);border:0;background:none;cursor:pointer}
 .gops button:hover{background:var(--panel-3);color:var(--ink-1)}
 
-/* 图片网格 */
+/* 图片网格：瓦片 = 正方形图区（contain 完整缩放，允许留白）+ 下方独立名称行；
+ * 行高由内容自然撑开，名称不再绝对定位叠在图上，杜绝行间压盖 */
 .lib-gridwrap{display:flex;flex-direction:column;min-height:0;overflow:hidden}
 .lib-grid{flex:1;min-height:0;overflow-y:auto;padding:14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:12px;align-content:start}
-.gtile{position:relative;aspect-ratio:1;border-radius:11px;overflow:hidden;border:1px solid var(--border);background:var(--panel-2)}
-.gtile img{width:100%;height:100%;object-fit:cover;display:block}
-.gtile .ops{position:absolute;top:6px;right:6px;display:none;gap:4px}
-.gtile:hover .ops{display:flex}
+.gtile{display:flex;flex-direction:column;min-width:0;border-radius:11px;overflow:hidden;border:1px solid var(--border);background:var(--panel-2)}
+.gtile .thumb{position:relative;aspect-ratio:1;width:100%;cursor:zoom-in}
+.gtile .thumb img{width:100%;height:100%;object-fit:contain;display:block}
+.gtile .ops{position:absolute;top:6px;right:6px;display:none;gap:4px;z-index:2}
+.gtile .thumb:hover .ops{display:flex}
 .gtile .ops button{width:24px;height:24px;border-radius:7px;background:rgba(255,255,255,.92);color:var(--ink-2);display:grid;place-items:center;border:1px solid var(--border-2);cursor:pointer}
 .gtile .ops button:hover{color:var(--ink-1)}
-.gtile .name{position:absolute;left:0;right:0;bottom:0;font-size:11px;padding:4px 8px;background:rgba(255,255,255,.9);color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gtile .name{flex:none;font-size:11px;padding:5px 8px;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-top:1px solid var(--border)}
 .hidden-file{display:none}
 
 /* 弹窗公共 */
