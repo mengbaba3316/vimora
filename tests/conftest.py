@@ -45,7 +45,7 @@ def _clean(test_engine):
 def client(test_engine, settings, monkeypatch):
     from fastapi import FastAPI
     from app.database import get_db
-    from app.routers import prompts, libraries, providers, tasks
+    from app.routers import prompts, libraries, library_types, providers, tasks
     from app.services import generator, storage, task_runner
     # 存储落盘指到 tmp_path，测试不污染真实 data/ 目录
     monkeypatch.setattr(storage, "DATA_DIR", settings.DATA_DIR)
@@ -58,6 +58,7 @@ def client(test_engine, settings, monkeypatch):
     app = FastAPI()
     app.include_router(prompts.router, prefix="/api")
     app.include_router(libraries.router, prefix="/api")
+    app.include_router(library_types.router, prefix="/api")
     app.include_router(providers.router, prefix="/api")
     app.include_router(tasks.router, prefix="/api")
 

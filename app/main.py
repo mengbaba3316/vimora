@@ -8,7 +8,7 @@ from . import database
 from .config import settings
 from .database import init_app_db
 from .models import GenTask
-from .routers import prompts, libraries, providers, tasks
+from .routers import prompts, libraries, library_types, providers, tasks
 from .services import generator, storage, task_runner
 
 
@@ -25,6 +25,7 @@ def create_app():
     os.makedirs(settings.OUTPUT_DIR, exist_ok=True)
     app.include_router(prompts.router, prefix="/api")
     app.include_router(libraries.router, prefix="/api")
+    app.include_router(library_types.router, prefix="/api")
     app.include_router(providers.router, prefix="/api")
     app.include_router(tasks.router, prefix="/api")
     app.mount("/files/libraries", StaticFiles(directory=os.path.join(settings.DATA_DIR, "libraries")), name="libfiles")

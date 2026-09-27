@@ -1,7 +1,7 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
-import { libsApi, promptsApi, providersApi, tasksApi } from '../api'
+import { libsApi, libTypesApi, promptsApi, providersApi, tasksApi } from '../api'
 import { ratioToSize } from '../utils/sizeMap'
 import { store } from '../store'
 import PromptEditor from '../components/PromptEditor.vue'
@@ -15,12 +15,17 @@ import BuildTag from '../components/BuildTag.vue'
  * 提交即入队：POST /tasks 成功 → toast → 界面立即解锁、配置保留，可连续提交。
  */
 
-const LIBS = [
-  { id: 'face',   name: '人脸', color: 'var(--lib-face)' },
-  { id: 'outfit', name: '服装', color: 'var(--lib-outfit)' },
-  { id: 'socks',  name: '袜子', color: 'var(--lib-socks)' },
-  { id: 'pose',   name: '姿势', color: 'var(--lib-pose)' },
-]
+/* 一级素材库：动态加载「启用」的库（停用的库不进工作台），颜色/排序随配置 */
+const libTypes = ref([])
+
+async function loadLibTypes() {
+  try {
+    const { data } = await libTypesApi.list()
+    libTypes.value = asList(data).filter(l => l.enabled)
+  } catch {
+    libTypes.value = []
+  }
+}
 
 function errMsg(e) {
   const d = e?.response?.data?.detail
@@ -64,13 +69,14 @@ async function onPromptSaved(created) {
   }
 }
 
-/* ── 素材：四库选中状态（有序 image_id）+ id→图元信息（卡片 chip 显示名）── */
-const sel = reactive({ face: [], outfit: [], socks: [], pose: [] })
-const imgIndex = { face: new Map(), outfit: new Map(), socks: new Map(), pose: new Map() }
+/* ── 素材：各库选中状态（有序 image_id，按库 id 动态建键）+ id→图元信息（卡片 chip 显示名）── */
+const sel = reactive({})
+const imgIndex = {}
 const pickers = {}
 
 async function indexLibImages() {
-  await Promise.all(LIBS.map(async (l) => {
+  await Promise.all(libTypes.value.map(async (l) => {
+    sel[l.id] = sel[l.id] || []
     try {
       const { data } = await libsApi.images(l.id)
       imgIndex[l.id] = new Map(asList(data).map(img => [img.id, img]))
@@ -81,10 +87,10 @@ function imgName(lib, id) {
   return imgIndex[lib]?.get(id)?.original_name || `#${id}`
 }
 function removeAsset(lib, id) {
-  const i = sel[lib].indexOf(id)
+  const i = (sel[lib] || []).indexOf(id)
   if (i > -1) sel[lib].splice(i, 1)
 }
-const assetsCount = computed(() => LIBS.reduce((a, l) => a + sel[l.id].length, 0))
+const assetsCount = computed(() => libTypes.value.reduce((a, l) => a + (sel[l.id]?.length || 0), 0))
 
 const providers = ref([])                /* 仅 enabled */
 /* ── 源站与参数联动（从原型 renderParamOptions 移植）──
@@ -149,7 +155,7 @@ const submitting = ref(false)
 async function submitTask() {
   if (genReason.value || submitting.value) return
   const ep = assetsCount.value ? 'edits' : 'generations'
-  const assets = LIBS.filter(l => sel[l.id].length)
+  const assets = libTypes.value.filter(l => (sel[l.id]?.length || 0))
     .map(l => ({ library: l.id, image_ids: [...sel[l.id]] }))
   submitting.value = true
   try {
@@ -175,8 +181,9 @@ async function submitTask() {
   }
 }
 
-/* ── 挂载：并行拉提示词 / 源站 / 四库索引；消费 pendingPrompt ── */
+/* ── 挂载：先拉库定义（启用的库），再并行拉提示词 / 源站 / 库图索引；消费 pendingPrompt ── */
 onMounted(async () => {
+  await loadLibTypes()
   await Promise.all([loadPrompts(), indexLibImages(), (async () => {
     try {
       const { data } = await providersApi.list()
@@ -215,17 +222,17 @@ onMounted(async () => {
     </div>
 
     <div class="wb">
-      <!-- 左(order 0)：四库素材卡 -->
+      <!-- 左(order 0)：素材库卡（仅显示启用的库，颜色/排序随配置） -->
       <section class="col-assets">
-        <section v-for="l in LIBS" :key="l.id" class="card lib-card">
+        <section v-for="l in libTypes" :key="l.id" class="card lib-card">
           <div class="card-h">
-            <span class="ld" :style="{ background: l.color }"></span>
+            <span class="ld" :style="{ background: l.color || 'var(--ink-3)' }"></span>
             <b>{{ l.name }}库</b>
-            <span class="cnt">{{ sel[l.id].length ? `已选 ${sel[l.id].length} 张` : '未选择' }}</span>
+            <span class="cnt">{{ sel[l.id]?.length ? `已选 ${sel[l.id].length} 张` : '未选择' }}</span>
             <button class="btn sm pick-btn" @click="pickers[l.id]?.open()">选择…</button>
           </div>
           <div class="sel-strip">
-            <template v-if="sel[l.id].length">
+            <template v-if="sel[l.id]?.length">
               <span v-for="(id, i) in sel[l.id]" :key="id" class="sel-chip"
                     :style="{ '--tint': l.color, '--tint-solid': l.color }" :title="imgName(l.id, id)">
                 <span class="thumb">{{ imgName(l.id, id).slice(0, 2) }}</span>
@@ -236,8 +243,12 @@ onMounted(async () => {
             <span v-else class="empty-hint">还没有选择{{ l.name }}参考图，点「选择…」从库中挑选（可多张）</span>
           </div>
         </section>
-        <AssetPicker v-for="l in LIBS" :key="l.id" :ref="el => (pickers[l.id] = el)"
-                     :library="l.id" v-model="sel[l.id]" />
+        <AssetPicker v-for="l in libTypes" :key="l.id" :ref="el => (pickers[l.id] = el)"
+                     :library="l.id" :lib-name="l.name" :lib-color="l.color || 'var(--ink-3)'"
+                     v-model="sel[l.id]" />
+        <div v-if="!libTypes.length" class="card" style="padding:22px;text-align:center;color:var(--ink-3);font-size:12.5px">
+          还没有启用的素材库。去「素材库 → 管理库」新建或启用。
+        </div>
       </section>
 
       <!-- 中(order 1)：提示词 -->

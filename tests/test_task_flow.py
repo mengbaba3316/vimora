@@ -19,10 +19,10 @@ def _wait_terminal(client, tid, timeout=15):
 def _setup_provider_and_assets(client):
     pid = client.post("/api/providers", json={"name": "Mock", "type": "mock",
                                               "po_n_max": 10}).json()["id"]
-    gid = client.post("/api/libraries/face/groups", json={"name": "模特A"}).json()["id"]
-    client.post("/api/libraries/face/images", data={"group_id": str(gid)},
+    gid = client.post("/api/libraries/1/groups", json={"name": "模特A"}).json()["id"]
+    client.post("/api/libraries/1/images", data={"group_id": str(gid)},
                 files=[("files", ("a.png", png_bytes(), "image/png"))])
-    img = client.get(f"/api/libraries/face/images?group_id={gid}").json()[0]
+    img = client.get(f"/api/libraries/1/images?group_id={gid}").json()[0]
     return pid, img["id"]
 
 
@@ -32,7 +32,7 @@ def test_task_success_flow(client, settings, monkeypatch):
     r = client.post("/api/tasks", json={
         "prompt_name": "街拍白裙", "prompt_content": "A photo", "provider_id": pid,
         "model": "gpt-image-1", "size": "1024x1024", "quality": "high", "n": 1,
-        "assets": [{"library": "face", "image_ids": [img_id]}]})
+        "assets": [{"library": 1, "image_ids": [img_id]}]})
     assert r.status_code == 202
     tid = r.json()["id"]
     task = _wait_terminal(client, tid)
@@ -76,7 +76,7 @@ def test_missing_asset_fails(client):
     pid = client.post("/api/providers", json={"name": "Mock", "type": "mock"}).json()["id"]
     r = client.post("/api/tasks", json={"prompt_name": "x", "prompt_content": "x",
                                         "provider_id": pid,
-                                        "assets": [{"library": "face", "image_ids": [99999]}]})
+                                        "assets": [{"library": 1, "image_ids": [99999]}]})
     assert r.status_code == 400 and "不存在" in r.json()["detail"]
 
 
@@ -107,15 +107,15 @@ def test_rerun_with_deleted_asset_fails(client, settings):
     """I-1：rerun 时快照素材已被删除 → 任务 failed，错误信息含库名与缺失 id（不静默跳过）。"""
     pid = client.post("/api/providers", json={"name": "Mock", "type": "mock",
                                               "po_n_max": 10}).json()["id"]
-    gid = client.post("/api/libraries/face/groups", json={"name": "模特B"}).json()["id"]
-    client.post("/api/libraries/face/images", data={"group_id": str(gid)},
+    gid = client.post("/api/libraries/1/groups", json={"name": "模特B"}).json()["id"]
+    client.post("/api/libraries/1/images", data={"group_id": str(gid)},
                 files=[("files", ("a.png", png_bytes(), "image/png")),
                        ("files", ("b.png", png_bytes(), "image/png"))])
-    imgs = client.get(f"/api/libraries/face/images?group_id={gid}").json()
+    imgs = client.get(f"/api/libraries/1/images?group_id={gid}").json()
     assert len(imgs) == 2
     r = client.post("/api/tasks", json={
         "prompt_name": "两张参考", "prompt_content": "A photo", "provider_id": pid,
-        "n": 1, "assets": [{"library": "face", "image_ids": [imgs[0]["id"], imgs[1]["id"]]}]})
+        "n": 1, "assets": [{"library": 1, "image_ids": [imgs[0]["id"], imgs[1]["id"]]}]})
     tid = r.json()["id"]
     t = _wait_terminal(client, tid)
     assert t["status"] == "success", t.get("error_message")
@@ -123,12 +123,12 @@ def test_rerun_with_deleted_asset_fails(client, settings):
     assert t["assets"][0]["file_paths"] == [i["file_path"] for i in imgs]
 
     # 删掉其中一张素材后 rerun：快照里的 id 已查不到
-    assert client.delete(f"/api/libraries/face/images/{imgs[1]['id']}").status_code == 200
+    assert client.delete(f"/api/libraries/1/images/{imgs[1]['id']}").status_code == 200
     r2 = client.post(f"/api/tasks/{tid}/rerun")
     assert r2.status_code == 200
     t2 = _wait_terminal(client, r2.json()["id"])
     assert t2["status"] == "failed"
-    assert "face" in t2["error_message"] and str(imgs[1]["id"]) in t2["error_message"]
+    assert "1/模特B" in t2["error_message"] and str(imgs[1]["id"]) in t2["error_message"]
     assert t2["images"] == []   # 缺图任务不产生任何产物
 
 def test_rerun_copies_snapshot_and_delete_keeps_disk(client, settings):

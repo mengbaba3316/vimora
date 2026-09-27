@@ -8,7 +8,25 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .database import Base
 
-LIB = ("face", "outfit", "socks", "pose")
+class Library(Base):
+    """一级素材库（可配置）：face/outfit/socks/pose 为种子数据，可增删改/启停/排序。
+
+    key 为落盘目录名与旧枚举值映射（种子固定 face/outfit/socks/pose，新建为 lib_{id}）；
+    enabled 仅控制工作台引用入口，素材库页面始终可见可上传。
+    """
+    __tablename__ = "library"
+    __table_args__ = (
+        UniqueConstraint("name", name="uk_library_name"),
+        UniqueConstraint("key", name="uk_library_key"),
+        {"mysql_charset": "utf8mb4"},
+    )
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    key: Mapped[str] = mapped_column(String(50))
+    name: Mapped[str] = mapped_column(String(100))
+    color: Mapped[str] = mapped_column(String(40), default="")
+    sort_order: Mapped[int] = mapped_column(Integer, default=0)
+    enabled: Mapped[bool] = mapped_column(Boolean, default=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 
 class Prompt(Base):
     __tablename__ = "prompt"
@@ -27,7 +45,7 @@ class AssetGroup(Base):
         {"mysql_charset": "utf8mb4"},
     )
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
-    library: Mapped[str] = mapped_column(Enum(*LIB, name="library"))
+    library: Mapped[int] = mapped_column(BigInteger)   # library.id（旧库为枚举列，启动自愈迁移转 id）
     name: Mapped[str] = mapped_column(String(100))
     sort_order: Mapped[int] = mapped_column(Integer, default=0)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
@@ -37,7 +55,7 @@ class AssetImage(Base):
     __tablename__ = "asset_image"
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     group_id: Mapped[int] = mapped_column(ForeignKey("asset_group.id", ondelete="CASCADE"))
-    library: Mapped[str] = mapped_column(Enum(*LIB, name="library"))
+    library: Mapped[int] = mapped_column(BigInteger)   # library.id（与所属组一致，冗余存储便于按库查询）
     original_name: Mapped[str] = mapped_column(String(255))
     file_path: Mapped[str] = mapped_column(String(500))
     sort_order: Mapped[int] = mapped_column(Integer, default=0)

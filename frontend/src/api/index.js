@@ -6,6 +6,13 @@ export const promptsApi = {
   update: (id, d) => http.put(`/prompts/${id}`, d),
   remove: (id) => http.delete(`/prompts/${id}`),
 }
+/* 一级素材库管理（可配置：新建/改名/换色/排序/启停/删库） */
+export const libTypesApi = {
+  list: () => http.get('/library-types'),
+  create: (d) => http.post('/library-types', d),
+  update: (id, d) => http.put(`/library-types/${id}`, d),
+  remove: (id) => http.delete(`/library-types/${id}`),
+}
 export const libsApi = {
   groups: (lib) => http.get(`/libraries/${lib}/groups`),
   createGroup: (lib, name) => http.post(`/libraries/${lib}/groups`, { name }),

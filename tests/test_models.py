@@ -6,15 +6,15 @@ def test_prompt_roundtrip(db):
     assert p.id is not None and p.updated_at is not None
 
 def test_group_name_unique_per_library(db):
-    db.add(AssetGroup(library="face", name="模特A"))
-    db.add(AssetGroup(library="face", name="模特A"))
+    db.add(AssetGroup(library=1, name="模特A"))
+    db.add(AssetGroup(library=1, name="模特A"))
     try:
         db.commit(); assert False, "应触发同库组名唯一约束"
     except Exception: db.rollback()
 
 def test_cascade_delete_images(db):
-    g = AssetGroup(library="socks", name="白袜")
-    g.images.append(AssetImage(library="socks", original_name="a.png", file_path="socks/1/a.png"))
+    g = AssetGroup(library=3, name="白袜")
+    g.images.append(AssetImage(library=3, original_name="a.png", file_path="socks/1/a.png"))
     db.add(g); db.commit()
     gid = g.id
     db.delete(g); db.commit()

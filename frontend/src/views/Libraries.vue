@@ -1,27 +1,22 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { libsApi } from '../api'
+import { libsApi, libTypesApi } from '../api'
 import { naturalDesc } from '../utils/naturalSort'
 import BuildTag from '../components/BuildTag.vue'
 
-/* 四库定义（与原型 LIBS 一致，色值取 theme token） */
-const LIBS = [
-  { id: 'face',   name: '人脸', color: 'var(--lib-face)' },
-  { id: 'outfit', name: '服装', color: 'var(--lib-outfit)' },
-  { id: 'socks',  name: '袜子', color: 'var(--lib-socks)' },
-  { id: 'pose',   name: '姿势', color: 'var(--lib-pose)' },
-]
-
-const curLib = ref('face')
+/* 一级素材库：后端 library 表动态加载（不再写死四类），素材库页显示全部（含停用） */
+const libTypes = ref([])
+const curLib = ref(null)             /* 当前库 id（number） */
 const curGroup = ref('all')          /* 'all' = 全部组 */
-const groupsByLib = reactive({ face: [], outfit: [], socks: [], pose: [] })
+const groupsByLib = reactive({})     /* 库 id → 组列表 */
 const images = ref([])
 const loading = ref(false)
 
+const curLibDef = computed(() => libTypes.value.find(l => l.id === curLib.value))
 const curGroups = computed(() => groupsByLib[curLib.value] || [])
 const allCount = computed(() => curGroups.value.reduce((a, g) => a + (g.image_count || 0), 0))
-const libCount = lib => (groupsByLib[lib] || []).reduce((a, g) => a + (g.image_count || 0), 0)
+const libCount = lib => (groupsByLib[lib.id] || []).reduce((a, g) => a + (g.image_count || 0), 0)
 
 function errMsg(e) {
   const d = e?.response?.data?.detail
@@ -31,17 +26,23 @@ function asList(data) {
   return Array.isArray(data) ? data : (data?.items || [])
 }
 
-async function loadGroups(lib) {
+async function loadLibTypes() {
+  const { data } = await libTypesApi.list()
+  libTypes.value = asList(data)
+}
+
+async function loadGroups(libId) {
   try {
-    const { data } = await libsApi.groups(lib)
-    groupsByLib[lib] = asList(data)
+    const { data } = await libsApi.groups(libId)
+    groupsByLib[libId] = asList(data)
   } catch (e) {
-    groupsByLib[lib] = []
+    groupsByLib[libId] = []
     ElMessage.error('加载组列表失败：' + errMsg(e))
   }
 }
 
 async function loadImages() {
+  if (curLib.value == null) { images.value = []; return }
   loading.value = true
   try {
     const params = curGroup.value === 'all' ? {} : { group_id: curGroup.value }
@@ -68,6 +69,90 @@ function onTabChange() {
 function pickGroup(gid) {
   curGroup.value = gid
   loadImages()
+}
+
+/* ── 一级库管理（新建/改名/换色/排序/启停/删库） ── */
+const manageDialog = ref(false)
+
+function openManage() {
+  manageDialog.value = true
+}
+async function reloadLibTypes(keepId) {
+  await loadLibTypes()
+  if (keepId != null && libTypes.value.some(l => l.id === keepId)) curLib.value = keepId
+  else {
+    curLib.value = libTypes.value[0]?.id ?? null
+    curGroup.value = 'all'
+    if (curLib.value != null) await loadGroups(curLib.value)
+  }
+}
+async function createLib() {
+  let name
+  try {
+    ({ value: name } = await ElMessageBox.prompt('新素材库名称（将出现在工作台与素材库 tab）：', '新建素材库', {
+      confirmButtonText: '创建', cancelButtonText: '取消',
+      inputPattern: /\S/, inputErrorMessage: '名称不能为空',
+    }))
+  } catch { return }
+  try {
+    const { data } = await libTypesApi.create({ name: name.trim() })
+    ElMessage.success(`已创建素材库「${data.name}」，默认启用`)
+    await reloadLibTypes(data.id)
+  } catch (e) { ElMessage.error('创建失败：' + errMsg(e)) }
+}
+async function renameLib(l) {
+  let name
+  try {
+    ({ value: name } = await ElMessageBox.prompt(`把库「${l.name}」改名为：`, '库改名', {
+      confirmButtonText: '保存', cancelButtonText: '取消',
+      inputValue: l.name, inputPattern: /\S/, inputErrorMessage: '名称不能为空',
+    }))
+  } catch { return }
+  try {
+    await libTypesApi.update(l.id, { name: name.trim() })
+    ElMessage.success('库已改名')
+    await loadLibTypes()
+  } catch (e) { ElMessage.error('改名失败：' + errMsg(e)) }
+}
+async function recolorLib(l, ev) {
+  try {
+    await libTypesApi.update(l.id, { color: ev.target.value })
+    await loadLibTypes()
+  } catch (e) { ElMessage.error('换色失败：' + errMsg(e)) }
+}
+async function toggleLib(l) {
+  try {
+    await libTypesApi.update(l.id, { enabled: !l.enabled })
+    ElMessage.success(l.enabled ? `已停用「${l.name}」，工作台不再显示（素材仍可上传管理）`
+                                : `已启用「${l.name}」，工作台恢复显示`)
+    await loadLibTypes()
+  } catch (e) { ElMessage.error('操作失败：' + errMsg(e)) }
+}
+async function moveLib(l, dir) {
+  const idx = libTypes.value.findIndex(x => x.id === l.id)
+  const other = libTypes.value[idx + dir]
+  if (!other) return
+  try {
+    await Promise.all([
+      libTypesApi.update(l.id, { sort_order: other.sort_order }),
+      libTypesApi.update(other.id, { sort_order: l.sort_order }),
+    ])
+    await loadLibTypes()
+  } catch (e) { ElMessage.error('排序失败：' + errMsg(e)) }
+}
+async function deleteLib(l) {
+  try {
+    await ElMessageBox.confirm(
+      `确定删除素材库「${l.name}」？仅允许删除空库；若有组会被拒绝。`,
+      '删除素材库',
+      { type: 'warning', confirmButtonText: '删除', cancelButtonText: '取消' },
+    )
+  } catch { return }
+  try {
+    await libTypesApi.remove(l.id)
+    ElMessage.success(`已删除素材库「${l.name}」`)
+    await reloadLibTypes(null)
+  } catch (e) { ElMessage.error('删除失败：' + errMsg(e)) }
 }
 
 /* ── 组管理 ── */
@@ -186,6 +271,7 @@ const uploadDialog = ref(false)
 const uploadGroupId = ref(null)
 
 function triggerUpload() {
+  if (curLib.value == null) { ElMessage.warning('请先在「管理库」里新建一个素材库'); return }
   if (curGroup.value !== 'all') { fileInput.value?.click(); return }
   if (!curGroups.value.length) { ElMessage.warning('请先新建一个组，再上传图片'); return }
   if (!uploadGroupId.value || !curGroups.value.some(g => g.id === uploadGroupId.value)) {
@@ -249,7 +335,9 @@ async function runImport() {
 }
 
 onMounted(async () => {
-  await Promise.all(LIBS.map(l => loadGroups(l.id)))
+  await loadLibTypes()
+  curLib.value = libTypes.value[0]?.id ?? null
+  await Promise.all(libTypes.value.map(l => loadGroups(l.id)))
   await loadImages()
 })
 </script>
@@ -257,9 +345,12 @@ onMounted(async () => {
 <template>
   <div class="view libs-view">
     <div class="view-head">
-      <h1>素材库</h1><span class="sub">组 = 款式 / 文件夹，一张参考图属于一个组</span>
+      <h1>素材库</h1><span class="sub">一级 = 素材库（可自建/启停），二级 = 组（款式 / 文件夹）</span>
       <div class="right">
         <BuildTag />
+        <button class="btn" @click="openManage">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg>管理库
+        </button>
         <button class="btn" @click="openImport">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>导入磁盘目录
         </button>
@@ -269,18 +360,18 @@ onMounted(async () => {
       </div>
     </div>
 
-    <!-- 四库 tab -->
+    <!-- 一级库 tab（停用的库灰显：仍可上传管理，工作台不显示） -->
     <el-tabs class="libtabs" v-model="curLib" @tab-change="onTabChange">
-      <el-tab-pane v-for="l in LIBS" :key="l.id" :name="l.id">
+      <el-tab-pane v-for="l in libTypes" :key="l.id" :name="l.id">
         <template #label>
-          <span class="libtab-label">
-            <span class="ld" :style="{ background: l.color }"></span>{{ l.name }}库<span class="cnt num">{{ libCount(l.id) }}</span>
+          <span class="libtab-label" :class="{ off: !l.enabled }" :title="l.enabled ? '' : '未启用：工作台不显示，仍可上传管理'">
+            <span class="ld" :style="{ background: l.color || 'var(--ink-3)' }"></span>{{ l.name }}库<span class="cnt num">{{ libCount(l) }}</span>
           </span>
         </template>
       </el-tab-pane>
     </el-tabs>
 
-    <div class="lib-wrap">
+    <div class="lib-wrap" v-if="curLib != null">
       <!-- 左：组列表 -->
       <div class="card lib-groups">
         <div class="add-wrap"><button class="btn sm add-btn" @click="createGroup">＋ 新建组</button></div>
@@ -327,8 +418,46 @@ onMounted(async () => {
       </div>
     </div>
 
+    <div class="lib-wrap" v-else>
+      <div class="card" style="grid-column:1/-1;padding:40px;text-align:center;color:var(--ink-3)">
+        还没有任何素材库，点右上角「管理库」新建一个。
+      </div>
+    </div>
+
     <!-- 隐藏的多选文件输入 -->
     <input ref="fileInput" type="file" multiple accept=".png,.jpg,.jpeg,.webp" class="hidden-file" @change="onFileChange">
+
+    <!-- 一级库管理 -->
+    <el-dialog v-model="manageDialog" title="管理素材库" width="560px" align-center>
+      <div class="mgmt-body">
+        <div class="mgmt-tip">启用的库出现在工作台参考图选择里；停用的库仅在这里可见，仍可上传管理。排序即 tab 顺序。</div>
+        <div class="mgmt-row mgmt-head">
+          <span class="c">色</span><span class="n">名称</span><span class="g">组数</span><span class="e">启用</span><span class="o">操作</span>
+        </div>
+        <div v-for="(l, i) in libTypes" :key="l.id" class="mgmt-row">
+          <label class="c" title="点击换色">
+            <span class="dot" :style="{ background: l.color || 'var(--ink-3)' }"></span>
+            <input type="color" class="color-input" :value="l.color?.startsWith('#') ? l.color : '#888888'"
+                   @change="recolorLib(l, $event)">
+          </label>
+          <span class="n" :class="{ off: !l.enabled }">{{ l.name }}</span>
+          <span class="g num">{{ l.group_count }}</span>
+          <span class="e"><el-switch :model-value="l.enabled" @change="toggleLib(l)" /></span>
+          <span class="o">
+            <button class="btn sm" :disabled="i === 0" title="上移" @click="moveLib(l, -1)">↑</button>
+            <button class="btn sm" :disabled="i === libTypes.length - 1" title="下移" @click="moveLib(l, 1)">↓</button>
+            <button class="btn sm" @click="renameLib(l)">改名</button>
+            <button class="btn sm danger" @click="deleteLib(l)">删除</button>
+          </span>
+        </div>
+        <button class="btn sm add-lib" @click="createLib">＋ 新建素材库</button>
+      </div>
+      <template #footer>
+        <div class="dlg-foot">
+          <button class="btn primary" @click="manageDialog = false">完成</button>
+        </div>
+      </template>
+    </el-dialog>
 
     <!-- 上传位置选择（当前处于「全部组」时） -->
     <el-dialog v-model="uploadDialog" title="上传图片" width="380px" align-center>
@@ -394,7 +523,7 @@ onMounted(async () => {
 <style scoped>
 .view{flex:1;min-height:0;display:flex;flex-direction:column}
 
-/* 四库 tab（el-tabs 定制成原型的胶囊 libtab） */
+/* 一级库 tab（el-tabs 定制成原型的胶囊 libtab） */
 .libtabs{flex:none;padding:12px 22px 0}
 .libtabs :deep(.el-tabs__header){margin:0}
 .libtabs :deep(.el-tabs__nav-wrap::after){display:none}
@@ -403,6 +532,7 @@ onMounted(async () => {
 .libtabs :deep(.el-tabs__item:hover){color:var(--ink-1)}
 .libtabs :deep(.el-tabs__item.is-active){background:var(--panel-2);color:var(--ink-1);border-color:var(--border)}
 .libtab-label{display:inline-flex;align-items:center;gap:7px}
+.libtab-label.off{opacity:.45}
 .libtab-label .ld{width:8px;height:8px;border-radius:50%;flex:none}
 .libtab-label .cnt{font-size:11px;color:var(--ink-3)}
 
@@ -436,6 +566,23 @@ onMounted(async () => {
 .gtile .ops button:hover{color:var(--ink-1)}
 .gtile .name{flex:none;font-size:11px;padding:5px 8px;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-top:1px solid var(--border)}
 .hidden-file{display:none}
+
+/* 库管理弹窗 */
+.mgmt-tip{font-size:12px;color:var(--ink-3);line-height:1.7;margin-bottom:12px}
+.mgmt-row{display:flex;align-items:center;gap:10px;padding:7px 4px;border-bottom:1px solid var(--border)}
+.mgmt-row.mgmt-head{font-size:11px;color:var(--ink-3);border-bottom:1px solid var(--border-2)}
+.mgmt-row .c{width:26px;flex:none;display:grid;place-items:center}
+.mgmt-row .n{flex:1;min-width:0;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mgmt-row .n.off{color:var(--ink-3);text-decoration:line-through}
+.mgmt-row .g{width:44px;flex:none;font-size:12px;color:var(--ink-3)}
+.mgmt-row .e{width:44px;flex:none}
+.mgmt-row .o{flex:none;display:flex;gap:4px}
+.mgmt-row .o .btn{padding:3px 8px;font-size:11px}
+.mgmt-row .o .btn.danger:hover{color:var(--down);border-color:var(--down)}
+.mgmt-row .dot{width:14px;height:14px;border-radius:50%;display:block;cursor:pointer}
+.mgmt-row .color-input{width:0;height:0;opacity:0;padding:0;border:0}
+.mgmt-row .c:hover .dot{outline:2px solid var(--border-2);cursor:pointer}
+.add-lib{margin-top:12px;width:100%}
 
 /* 弹窗公共 */
 .dlg-foot{display:flex;gap:8px;justify-content:flex-end}

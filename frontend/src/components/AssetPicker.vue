@@ -12,17 +12,12 @@ import { naturalDesc } from '../utils/naturalSort'
  * 确定 → emit('update:modelValue', 有序 image_id 数组)；取消 / 关闭不改值。
  */
 const props = defineProps({
-  library: { type: String, required: true },          /* face / outfit / socks / pose */
-  modelValue: { type: Array, default: () => [] },     /* 有序 image_id 数组 */
+  library: { type: [String, Number], required: true },  /* 一级素材库 id */
+  libName: { type: String, default: '素材' },            /* 抽屉标题显示用 */
+  libColor: { type: String, default: 'var(--ink-3)' },
+  modelValue: { type: Array, default: () => [] },       /* 有序 image_id 数组 */
 })
 const emit = defineEmits(['update:modelValue'])
-
-const LIBS = [
-  { id: 'face',   name: '人脸', color: 'var(--lib-face)' },
-  { id: 'outfit', name: '服装', color: 'var(--lib-outfit)' },
-  { id: 'socks',  name: '袜子', color: 'var(--lib-socks)' },
-  { id: 'pose',   name: '姿势', color: 'var(--lib-pose)' },
-]
 
 const drawer = ref(false)
 const loading = ref(false)
@@ -31,7 +26,7 @@ const images = ref([])
 const curGroup = ref('all')   /* 'all' = 全部组 */
 const draft = ref([])         /* 点选顺序维护的已选 id */
 
-const libMeta = computed(() => LIBS.find(l => l.id === props.library) || { name: '素材', color: 'var(--ink-3)' })
+const libMeta = computed(() => ({ name: props.libName, color: props.libColor }))
 const subText = computed(() => `已选 ${draft.value.length} 张，按点选顺序传给接口`)
 
 function errMsg(e) {

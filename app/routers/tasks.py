@@ -6,14 +6,14 @@ from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from ..database import get_db
-from ..models import AssetImage, GenTask, Provider
+from ..models import AssetImage, GenTask, Library, Provider
 from ..services import task_runner
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
 
 
 class AssetIn(BaseModel):
-    library: str
+    library: int          # 一级素材库 id（library 表）
     image_ids: List[int]
 
 
@@ -110,14 +110,17 @@ def create_task(body: TaskIn, db: Session = Depends(get_db)):
         for i in a.image_ids:
             r = found.get(i)
             if r is None or r.library != a.library:
-                raise HTTPException(400, f"{a.library} 库中不存在图片 id={i}")
+                raise HTTPException(400, f"库 {a.library} 中不存在图片 id={i}")
     endpoint = "edits" if flat_ids else "generations"
-    # 快照按规格 §4.1 补全 group_id/group_name（组信息取该条素材的首张图）
+    # 快照按规格 §4.1 补全 group_id/group_name（组信息取该条素材的首张图）；
+    # library 存 id + 名称，库后续改名/删除不影响历史快照可读
+    lib_names = {lb.id: lb.name for lb in db.query(Library).filter(
+        Library.id.in_({a.library for a in assets})).all()} if assets else {}
     snap_assets = []
     for a in assets:
         rows = [found[i] for i in a.image_ids]
         snap_assets.append({
-            "library": a.library,
+            "library": a.library, "library_name": lib_names.get(a.library),
             "group_id": rows[0].group_id if rows else None,
             "group_name": rows[0].group.name if rows else None,
             "image_ids": a.image_ids,
@@ -151,7 +154,7 @@ def rerun_task(tid: int, db: Session = Depends(get_db)):
                 prompt_content=old.prompt_content, provider_id=old.provider_id,
                 provider_name=old.provider_name, endpoint=old.endpoint,
                 model=old.model, size=old.size, quality=old.quality,
-                n=old.n, extra=old.extra, assets=old.assets)
+                n=old.n, extra=old.extra, assets=_norm_legacy_assets(db, old.assets))
     db.add(t)
     db.commit()
     db.refresh(t)
@@ -173,3 +176,27 @@ def _one(db: Session, tid: int) -> GenTask:
     if not t:
         raise HTTPException(404, "任务不存在")
     return t
+
+
+def _norm_legacy_assets(db: Session, assets):
+    """旧任务快照的 assets.library 是字符串枚举（face/...），素材库换 id 结构后
+    重跑须先映射回 id；新快照（int）透传并补 library_name。"""
+    if not assets:
+        return assets
+    by_key = {lb.key: lb for lb in db.query(Library).all()}
+    out = []
+    for a in assets:
+        a = dict(a)
+        raw = a.get("library")
+        if isinstance(raw, str):
+            lib = by_key.get(raw)
+            if lib is None:
+                raise HTTPException(400, f"快照中的素材库「{raw}」已不存在，无法重跑")
+        else:
+            lib = db.get(Library, raw or 0)
+            if lib is None:
+                raise HTTPException(400, f"快照中的素材库 id={raw} 已不存在，无法重跑")
+        a["library"] = lib.id
+        a["library_name"] = lib.name
+        out.append(a)
+    return out

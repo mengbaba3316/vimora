@@ -2,7 +2,7 @@
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { tasksApi } from '../api'
+import { tasksApi, libTypesApi } from '../api'
 import { useTaskPolling } from '../composables/useTaskPolling'
 import BuildTag from '../components/BuildTag.vue'
 
@@ -13,12 +13,8 @@ import BuildTag from '../components/BuildTag.vue'
  * 状态五值：queued 灰 / running 黑·心跳 / success 绿 / partial 琥珀 / failed 红。
  */
 
-const LIBS = [
-  { id: 'face',   name: '人脸', color: 'var(--lib-face)' },
-  { id: 'outfit', name: '服装', color: 'var(--lib-outfit)' },
-  { id: 'socks',  name: '袜子', color: 'var(--lib-socks)' },
-  { id: 'pose',   name: '姿势', color: 'var(--lib-pose)' },
-]
+/* 一级库定义：详情快照按 library id（旧任务为 face 等字符串 key）显示库名与色点 */
+const libTypes = ref([])
 
 const STATUS_META = {
   queued:  { label: '排队中',   cls: 'st-queued' },
@@ -122,7 +118,13 @@ const hasActive = () =>
 useTaskPolling(refresh, hasActive)
 
 /* 初始加载（轮询的即时 tick 只在已有 queued/running 时触发，空列表时靠这里） */
-onMounted(() => refresh(false))
+onMounted(async () => {
+  refresh(false)
+  try {
+    const { data } = await libTypesApi.list()
+    libTypes.value = Array.isArray(data) ? data : (data?.items || [])
+  } catch { /* 库名显示退化为快照原始值 */ }
+})
 
 function okCount(t) { return t.images?.length || 0 }
 
@@ -161,8 +163,8 @@ const assetGroups = computed(() => {
     const thumbs = entryThumbs(a)
     if (!thumbs.length) continue
     if (!map.has(a.library)) {
-      const meta = LIBS.find(l => l.id === a.library)
-        || { id: a.library, name: a.library, color: 'var(--ink-3)' }
+      const meta = libTypes.value.find(l => l.id === a.library || l.key === a.library)
+        || { id: a.library, name: a.library_name || a.library, color: 'var(--ink-3)' }
       const g = { ...meta, count: 0, minis: [] }
       map.set(a.library, g)
       order.push(g)
