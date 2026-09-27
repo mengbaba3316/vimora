@@ -122,10 +122,10 @@ html, body{overflow-x:clip}
 /* ═══ 配色板（新增 7 套经典配色，dark 族挂 html.dark 跟随 EP dark 变量）═══
  * 注册表见 theme.js（PALETTES）；每套 token 结构与上方两块一致：
  * 主色一 = accent（按钮/高亮/激活态），主色二 = 页面底色家族的基调。 */
-:root[data-theme='bauhaus']{          /* 包豪斯红 #D82E2F · 哑光黑 #222222 */
-  --page:#1b1b1c; --bg:#222222; --panel-2:#2b2b2c; --panel-3:#353537;
-  --border:rgba(255,255,255,.08); --border-2:rgba(255,255,255,.16);
-  --ink-1:#f5f4f4; --ink-2:#c7c5c5; --ink-3:#949292;
+:root[data-theme='bauhaus']{          /* 包豪斯红 #D82E2F · 哑光黑 #222222：全文暖白偏红、面板红染 */
+  --page:#1d1a1a; --bg:#242020; --panel-2:#2e2828; --panel-3:#3a3131;
+  --border:rgba(216,46,47,.14); --border-2:rgba(216,46,47,.26);
+  --ink-1:#f7eded; --ink-2:#cbb2b2; --ink-3:#9b8282;
   --accent:#D82E2F; --accent-hi:#E84344; --on-accent:#ffffff;
   --accent-soft:rgba(216,46,47,.16);
   --up:#4ade80; --down:#f87171; --warn:#fbbf24;
@@ -133,18 +133,20 @@ html, body{overflow-x:clip}
   --down-line:rgba(248,113,113,.35); --warn-line:rgba(251,191,36,.35);
   --lib-face:#ec6a80; --lib-outfit:#f0854f; --lib-socks:#4db8e8; --lib-pose:#c478dd;
   --glow:rgba(216,46,47,.25); --shadow-1:0 1px 3px rgba(0,0,0,.45);
-  --img-chip-bg:rgba(28,28,29,.92); --img-chip-bg-soft:rgba(28,28,29,.85);
-  --row-hover:rgba(216,46,47,.06);
+  --img-chip-bg:rgba(34,28,28,.92); --img-chip-bg-soft:rgba(34,28,28,.85);
+  --row-hover:rgba(216,46,47,.07);
   color-scheme:dark;
   --el-color-primary:var(--accent); --el-color-primary-light-3:#972021;
   --el-color-primary-light-5:#6b1717; --el-color-primary-light-7:#410e0f;
   --el-color-primary-light-8:#2b0909; --el-color-primary-light-9:#160404;
   --el-color-primary-dark-2:#e64648;
+  --el-border-color:var(--border-2); --el-border-color-light:var(--border-2);
+  --el-border-color-lighter:var(--border); --el-border-color-extra-light:var(--border);
 }
-:root[data-theme='sweetpink']{        /* 甜酷玫粉 #E6397C · 炭黑 #1A1A1D */
-  --page:#141416; --bg:#1A1A1D; --panel-2:#232327; --panel-3:#2d2d32;
-  --border:rgba(255,255,255,.08); --border-2:rgba(255,255,255,.16);
-  --ink-1:#f5f4f6; --ink-2:#c5c3ca; --ink-3:#8f8d98;
+:root[data-theme='sweetpink']{        /* 甜酷玫粉 #E6397C · 炭黑 #1A1A1D：粉染面板与文字 */
+  --page:#171316; --bg:#1E181C; --panel-2:#292129; --panel-3:#352A33;
+  --border:rgba(230,57,124,.13); --border-2:rgba(230,57,124,.24);
+  --ink-1:#f8edf3; --ink-2:#d0b3c4; --ink-3:#9c8290;
   --accent:#E6397C; --accent-hi:#ef5490; --on-accent:#ffffff;
   --accent-soft:rgba(230,57,124,.16);
   --up:#4ade80; --down:#f87171; --warn:#fbbf24;
@@ -152,18 +154,20 @@ html, body{overflow-x:clip}
   --down-line:rgba(248,113,113,.35); --warn-line:rgba(251,191,36,.35);
   --lib-face:#ec6a80; --lib-outfit:#f0854f; --lib-socks:#4db8e8; --lib-pose:#c478dd;
   --glow:rgba(230,57,124,.25); --shadow-1:0 1px 3px rgba(0,0,0,.45);
-  --img-chip-bg:rgba(24,24,26,.92); --img-chip-bg-soft:rgba(24,24,26,.85);
-  --row-hover:rgba(230,57,124,.06);
+  --img-chip-bg:rgba(28,22,26,.92); --img-chip-bg-soft:rgba(28,22,26,.85);
+  --row-hover:rgba(230,57,124,.07);
   color-scheme:dark;
   --el-color-primary:var(--accent); --el-color-primary-light-3:#a12757;
   --el-color-primary-light-5:#731a3e; --el-color-primary-light-7:#451025;
   --el-color-primary-light-8:#2e0b19; --el-color-primary-light-9:#17050c;
   --el-color-primary-dark-2:#ec5390;
+  --el-border-color:var(--border-2); --el-border-color-light:var(--border-2);
+  --el-border-color-lighter:var(--border); --el-border-color-extra-light:var(--border);
 }
-:root[data-theme='taro']{             /* 香芋紫 #C98EFF · 莫黑 #0B0C10 */
-  --page:#07080b; --bg:#0B0C10; --panel-2:#14151b; --panel-3:#1d1f27;
-  --border:rgba(255,255,255,.08); --border-2:rgba(255,255,255,.16);
-  --ink-1:#f2f0f7; --ink-2:#c0bdcf; --ink-3:#8b889c;
+:root[data-theme='taro']{             /* 香芋紫 #C98EFF · 莫黑 #0B0C10：紫染面板与文字 */
+  --page:#0a0910; --bg:#100E18; --panel-2:#1A1724; --panel-3:#242031;
+  --border:rgba(201,142,255,.11); --border-2:rgba(201,142,255,.21);
+  --ink-1:#f3eefc; --ink-2:#c7bcdf; --ink-3:#928aad;
   --accent:#C98EFF; --accent-hi:#d8a5ff; --on-accent:#201233;
   --accent-soft:rgba(201,142,255,.16);
   --up:#4ade80; --down:#f87171; --warn:#fbbf24;
@@ -171,92 +175,102 @@ html, body{overflow-x:clip}
   --down-line:rgba(248,113,113,.35); --warn-line:rgba(251,191,36,.35);
   --lib-face:#ec6a80; --lib-outfit:#f0854f; --lib-socks:#4db8e8; --lib-pose:#c478dd;
   --glow:rgba(201,142,255,.22); --shadow-1:0 1px 3px rgba(0,0,0,.5);
-  --img-chip-bg:rgba(13,14,18,.92); --img-chip-bg-soft:rgba(13,14,18,.85);
-  --row-hover:rgba(201,142,255,.05);
+  --img-chip-bg:rgba(16,14,24,.92); --img-chip-bg-soft:rgba(16,14,24,.85);
+  --row-hover:rgba(201,142,255,.06);
   color-scheme:dark;
   --el-color-primary:var(--accent); --el-color-primary-light-3:#8d63b2;
   --el-color-primary-light-5:#64467f; --el-color-primary-light-7:#3b2a4c;
   --el-color-primary-light-8:#271c33; --el-color-primary-light-9:#140e1a;
   --el-color-primary-dark-2:#d4a2f4;
   --el-color-white:#201233;           /* primary 色面上的文字/勾划/开关旋钮取深紫 */
+  --el-border-color:var(--border-2); --el-border-color-light:var(--border-2);
+  --el-border-color-lighter:var(--border); --el-border-color-extra-light:var(--border);
 }
-:root[data-theme='klein']{            /* 克莱因蓝 #012696 · 艾绿 #A4E2C6 */
-  --page:#A4E2C6; --bg:#f2fbf6; --panel-2:#e2f4ea; --panel-3:#cfeadc;
-  --border:rgba(9,42,28,.10); --border-2:rgba(9,42,28,.18);
-  --ink-1:#101d17; --ink-2:#3b4b43; --ink-3:#5d6f65;
+:root[data-theme='klein']{            /* 克莱因蓝 #012696 · 艾绿 #A4E2C6：正文深克莱因蓝、卡片艾绿染、描边蓝染 */
+  --page:#A4E2C6; --bg:#eefaf3; --panel-2:#dcf2e6; --panel-3:#c4e7d5;
+  --border:rgba(1,38,150,.13); --border-2:rgba(1,38,150,.22);
+  --ink-1:#0b2050; --ink-2:#3a4f74; --ink-3:#6a7a94;
   --accent:#012696; --accent-hi:#0a2fb0; --on-accent:#ffffff;
   --accent-soft:rgba(1,38,150,.08);
   --up:#1E8A5F; --down:#D0453C; --warn:#B77A16;
   --up-soft:rgba(30,138,95,.10); --down-soft:rgba(208,69,60,.09); --warn-soft:rgba(183,122,22,.11);
   --down-line:rgba(208,69,60,.30); --warn-line:rgba(183,122,22,.30);
   --lib-face:#C2435B; --lib-outfit:#D9642A; --lib-socks:#0E7FA8; --lib-pose:#A93D80;
-  --glow:rgba(1,38,150,.18); --shadow-1:0 1px 3px rgba(9,42,28,.08);
+  --glow:rgba(1,38,150,.18); --shadow-1:0 1px 3px rgba(1,38,150,.10);
   --img-chip-bg:rgba(255,255,255,.92); --img-chip-bg-soft:rgba(255,255,255,.85);
-  --row-hover:rgba(1,38,150,.03);
+  --row-hover:rgba(1,38,150,.04);
   color-scheme:light;
   --el-color-primary:var(--accent); --el-color-primary-light-3:#4d5eb4;
   --el-color-primary-light-5:#8092ca; --el-color-primary-light-7:#b3c6e0;
   --el-color-primary-light-8:#ccd7ea; --el-color-primary-light-9:#e6ebf5;
   --el-color-primary-dark-2:#011e78;
+  --el-border-color:var(--border-2); --el-border-color-light:var(--border-2);
+  --el-border-color-lighter:var(--border); --el-border-color-extra-light:var(--border);
 }
-:root[data-theme='cream']{            /* 星光蓝 #41BBC8 · 米白 #FCF9E8 */
-  --page:#FCF9E8; --bg:#fffef8; --panel-2:#f8f3e0; --panel-3:#f1ead0;
-  --border:rgba(64,58,32,.10); --border-2:rgba(64,58,32,.18);
-  --ink-1:#22231f; --ink-2:#4d4f48; --ink-3:#71736a;
+:root[data-theme='cream']{            /* 星光蓝 #41BBC8 · 米白 #FCF9E8：正文深星光青、卡片米白染、描边青染 */
+  --page:#FCF9E8; --bg:#fffdf4; --panel-2:#f7f1da; --panel-3:#efe7c6;
+  --border:rgba(14,90,96,.13); --border-2:rgba(14,90,96,.22);
+  --ink-1:#0d3a40; --ink-2:#3d5c60; --ink-3:#6a8489;
   --accent:#41BBC8; --accent-hi:#5cc8d3; --on-accent:#073338;
   --accent-soft:rgba(65,187,200,.12);
   --up:#1E8A5F; --down:#D0453C; --warn:#B77A16;
   --up-soft:rgba(30,138,95,.10); --down-soft:rgba(208,69,60,.09); --warn-soft:rgba(183,122,22,.11);
   --down-line:rgba(208,69,60,.30); --warn-line:rgba(183,122,22,.30);
   --lib-face:#C2435B; --lib-outfit:#D9642A; --lib-socks:#0E7FA8; --lib-pose:#A93D80;
-  --glow:rgba(65,187,200,.22); --shadow-1:0 1px 3px rgba(64,58,32,.08);
+  --glow:rgba(65,187,200,.22); --shadow-1:0 1px 3px rgba(14,90,96,.10);
   --img-chip-bg:rgba(255,255,255,.92); --img-chip-bg-soft:rgba(255,255,255,.85);
-  --row-hover:rgba(65,187,200,.05);
+  --row-hover:rgba(65,187,200,.06);
   color-scheme:light;
   --el-color-primary:var(--accent); --el-color-primary-light-3:#6cc9d4;
   --el-color-primary-light-5:#98d9e0; --el-color-primary-light-7:#c3e9ed;
   --el-color-primary-light-8:#daf2f4; --el-color-primary-light-9:#edf8f9;
   --el-color-primary-dark-2:#37a5b1;
   --el-color-white:#073338;
+  --el-border-color:var(--border-2); --el-border-color-light:var(--border-2);
+  --el-border-color-lighter:var(--border); --el-border-color-extra-light:var(--border);
 }
-:root[data-theme='apple']{            /* 苹果青 #73AE52 · 奶酪色 #FBF1D7 */
-  --page:#FBF1D7; --bg:#fefbf2; --panel-2:#f6ecd4; --panel-3:#efe2c0;
-  --border:rgba(58,52,20,.10); --border-2:rgba(58,52,20,.18);
-  --ink-1:#21231c; --ink-2:#4d5044; --ink-3:#72756a;
+:root[data-theme='apple']{            /* 苹果青 #73AE52 · 奶酪色 #FBF1D7：正文深橄榄、卡片奶酪染、描边青染 */
+  --page:#FBF1D7; --bg:#fefaf0; --panel-2:#f5ebcf; --panel-3:#ecdfba;
+  --border:rgba(64,84,28,.13); --border-2:rgba(64,84,28,.22);
+  --ink-1:#26331a; --ink-2:#4f5c40; --ink-3:#767f68;
   --accent:#73AE52; --accent-hi:#86bd69; --on-accent:#1e3311;
   --accent-soft:rgba(115,174,82,.14);
   --up:#1E8A5F; --down:#D0453C; --warn:#B77A16;
   --up-soft:rgba(30,138,95,.10); --down-soft:rgba(208,69,60,.09); --warn-soft:rgba(183,122,22,.11);
   --down-line:rgba(208,69,60,.30); --warn-line:rgba(183,122,22,.30);
   --lib-face:#C2435B; --lib-outfit:#D9642A; --lib-socks:#0E7FA8; --lib-pose:#A93D80;
-  --glow:rgba(115,174,82,.25); --shadow-1:0 1px 3px rgba(58,52,20,.08);
+  --glow:rgba(115,174,82,.25); --shadow-1:0 1px 3px rgba(64,84,28,.10);
   --img-chip-bg:rgba(255,255,255,.92); --img-chip-bg-soft:rgba(255,255,255,.85);
-  --row-hover:rgba(115,174,82,.05);
+  --row-hover:rgba(115,174,82,.06);
   color-scheme:light;
   --el-color-primary:var(--accent); --el-color-primary-light-3:#95c176;
   --el-color-primary-light-5:#b8d59f; --el-color-primary-light-7:#d6e7c8;
   --el-color-primary-light-8:#e6f0da; --el-color-primary-light-9:#f3f8ec;
   --el-color-primary-dark-2:#629646;
   --el-color-white:#1e3311;
+  --el-border-color:var(--border-2); --el-border-color-light:var(--border-2);
+  --el-border-color-lighter:var(--border); --el-border-color-extra-light:var(--border);
 }
-:root[data-theme='mars']{             /* 马尔斯绿 #01847F · 玫瑰粉 #F9D2E4 */
-  --page:#F9D2E4; --bg:#fdf0f6; --panel-2:#f8e1eb; --panel-3:#f1d1e0;
-  --border:rgba(70,26,48,.10); --border-2:rgba(70,26,48,.18);
-  --ink-1:#241820; --ink-2:#51444c; --ink-3:#776a72;
+:root[data-theme='mars']{             /* 马尔斯绿 #01847F · 玫瑰粉 #F9D2E4：正文深马尔斯绿、卡片粉染、描边绿染 */
+  --page:#F9D2E4; --bg:#fdf1f6; --panel-2:#f7dfe9; --panel-3:#f0cddd;
+  --border:rgba(1,90,86,.13); --border-2:rgba(1,90,86,.22);
+  --ink-1:#0d3d3a; --ink-2:#3f5c5a; --ink-3:#6d8583;
   --accent:#01847F; --accent-hi:#02968f; --on-accent:#ffffff;
   --accent-soft:rgba(1,132,127,.10);
   --up:#1E8A5F; --down:#D0453C; --warn:#B77A16;
   --up-soft:rgba(30,138,95,.10); --down-soft:rgba(208,69,60,.09); --warn-soft:rgba(183,122,22,.11);
   --down-line:rgba(208,69,60,.30); --warn-line:rgba(183,122,22,.30);
   --lib-face:#C2435B; --lib-outfit:#D9642A; --lib-socks:#0E7FA8; --lib-pose:#A93D80;
-  --glow:rgba(1,132,127,.22); --shadow-1:0 1px 3px rgba(70,26,48,.08);
+  --glow:rgba(1,132,127,.22); --shadow-1:0 1px 3px rgba(1,90,86,.10);
   --img-chip-bg:rgba(255,255,255,.92); --img-chip-bg-soft:rgba(255,255,255,.85);
-  --row-hover:rgba(1,132,127,.04);
+  --row-hover:rgba(1,132,127,.05);
   color-scheme:light;
   --el-color-primary:var(--accent); --el-color-primary-light-3:#349795;
   --el-color-primary-light-5:#67aeab; --el-color-primary-light-7:#9bc5c3;
   --el-color-primary-light-8:#c0d9d8; --el-color-primary-light-9:#e5efee;
   --el-color-primary-dark-2:#016f6b;
+  --el-border-color:var(--border-2); --el-border-color-light:var(--border-2);
+  --el-border-color-lighter:var(--border); --el-border-color-extra-light:var(--border);
 }
 
 /* 深色族配色板的 el-switch 旋钮（同 dark 块规则） */
