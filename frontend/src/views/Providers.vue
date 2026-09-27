@@ -65,19 +65,38 @@ async function toggle(p) {
   }
 }
 
-/* ── 连通性测试：POST /providers/{id}/test → {ok, status_code, model_count, message} ── */
+/* ── 连通性测试：结果按 provider id+updated_at 存 localStorage（不建表），
+ * 切页/刷新后仍显示；源站被编辑（updated_at 变化）自然失效重测 ── */
+const TKEY = 'providerTestResults'
 const testing = reactive({})
-const testResults = reactive({}) /* id → { ok, text } */
+
+function loadTestResults() {
+  try { return JSON.parse(localStorage.getItem(TKEY) || '{}') } catch { return {} }
+}
+const testStore = reactive(loadTestResults())
+function resultKey(p) { return `${p.id}:${p.updated_at || ''}` }
+function saveTestResults() {
+  try { localStorage.setItem(TKEY, JSON.stringify(testStore)) } catch { /* 隐私模式忽略 */ }
+}
+function testState(p) {
+  if (testing[p.id]) return { k: 'testing' }
+  const r = testStore[resultKey(p)]
+  if (r) return { k: r.ok ? 'ok' : 'bad', text: r.text }
+  return { k: 'untested' }
+}
 
 async function test(p) {
   testing[p.id] = true
   try {
     const { data } = await providersApi.test(p.id)
-    testResults[p.id] = data.ok
-      ? { ok: true, text: `✓ ${data.status_code ?? 200} · ${data.model_count ?? 0} 个模型可用` }
-      : { ok: false, text: `✗ ${data.message || '测试失败'}` }
+    const text = data.ok
+      ? `✓ ${data.status_code ?? 200} · ${data.model_count ?? 0} 个模型可用`
+      : `✗ ${data.message || '测试失败'}`
+    testStore[resultKey(p)] = { ok: !!data.ok, text }
+    saveTestResults()
   } catch (e) {
-    testResults[p.id] = { ok: false, text: `✗ ${errMsg(e)}` }
+    testStore[resultKey(p)] = { ok: false, text: `✗ ${errMsg(e)}` }
+    saveTestResults()
   } finally {
     testing[p.id] = false
   }
@@ -218,13 +237,13 @@ onMounted(load)
         <table>
           <thead>
             <tr>
-              <th style="width:150px">名称</th>
-              <th style="width:80px">类型</th>
+              <th style="width:140px">名称</th>
+              <th style="width:130px">类型</th>
               <th>Base URL</th>
-              <th style="width:120px">默认模型</th>
-              <th style="width:70px">启用</th>
-              <th style="width:210px">连通性</th>
-              <th style="width:150px"></th>
+              <th style="width:170px">默认模型</th>
+              <th style="width:64px">启用</th>
+              <th style="width:200px">连通性</th>
+              <th style="width:110px"></th>
             </tr>
           </thead>
           <tbody>
@@ -244,7 +263,8 @@ onMounted(load)
                 <div class="test-cell">
                   <button class="btn sm" :disabled="!p.enabled || testing[p.id]" @click="test(p)">测试</button>
                   <span v-if="testing[p.id]" class="testing">请求中…</span>
-                  <span v-else-if="testResults[p.id]" class="test-result" :class="testResults[p.id].ok ? 'ok' : 'bad'">{{ testResults[p.id].text }}</span>
+                  <span v-else-if="testState(p).k === 'ok' || testState(p).k === 'bad'"
+                        class="test-result" :class="testState(p).k === 'ok' ? 'ok' : 'bad'">{{ testState(p).text }}</span>
                   <span v-else class="chip mute">未测试</span>
                 </div>
               </td>

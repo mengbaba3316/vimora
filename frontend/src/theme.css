@@ -245,7 +245,7 @@ html, body{overflow-x:clip}
 body{background:var(--page);color:var(--ink-1);margin:0;font-family:var(--sans);font-size:14px;line-height:1.55;-webkit-font-smoothing:antialiased;transition:background-color .18s ease,color .18s ease}
 
 /* ── 视图骨架公共（原型 .view-head / .view-body）────────── */
-.view-head{flex:none;display:flex;align-items:center;gap:14px;padding:16px 22px 14px;border-bottom:1px solid var(--border)}
+.view-head{flex:none;display:flex;align-items:center;gap:14px;height:58px;padding:0 22px;border-bottom:1px solid var(--border)}
 .view-head h1{font-size:17px;font-weight:700;letter-spacing:-.01em;margin:0}
 .view-head .sub{font-size:12px;color:var(--ink-3)}
 .view-head .right{margin-left:auto;display:flex;gap:8px;align-items:center}
@@ -255,12 +255,14 @@ body{background:var(--page);color:var(--ink-1);margin:0;font-family:var(--sans);
 
 /* ── 通用控件（原型「通用控件」段）────────────────────── */
 .num{font-family:var(--mono);font-variant-numeric:tabular-nums}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:7px 14px;border-radius:11px;background:var(--panel-2);border:1px solid var(--border);font-size:13px;font-weight:600;white-space:nowrap;transition:background .15s ease,border-color .15s ease;cursor:pointer;font-family:inherit;color:var(--ink-1)}
-.btn:hover{background:var(--panel-3);border-color:var(--border-2)}
+/* 次级按钮：辅助色系（accent-soft 底 + accent 字），与主按钮同族——深色主题下
+ * accent-soft 近白、彩色主题下取各自主色调，随配色板自动适配 */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:7px 14px;border-radius:11px;background:var(--accent-soft);border:1px solid transparent;font-size:13px;font-weight:600;white-space:nowrap;transition:background .15s ease,border-color .15s ease;cursor:pointer;font-family:inherit;color:var(--accent)}
+.btn:hover{border-color:var(--accent)}
 .btn.primary{background:var(--accent);color:var(--on-accent);border-color:transparent}
 .btn.primary:hover{background:var(--accent-hi)}
-.btn.danger{color:var(--down)}
-.btn.danger:hover{background:var(--down-soft)}
+.btn.danger{color:var(--down);background:var(--down-soft)}
+.btn.danger:hover{border-color:var(--down)}
 .btn:disabled{opacity:.45;cursor:not-allowed;pointer-events:none}
 .btn.sm{padding:4px 10px;font-size:12px;border-radius:8px}
 .field{display:block;margin-bottom:8px}
