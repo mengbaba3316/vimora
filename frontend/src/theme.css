@@ -188,7 +188,8 @@ html, body{overflow-x:clip}
   --el-border-color-lighter:var(--border); --el-border-color-extra-light:var(--border);
 }
 :root[data-theme='cream']{            /* 星光蓝 #41BBC8 · 米白 #FCF9E8：分割线/描边取星光青，蓝底按钮配米白字 */
-  --page:#FCF9E8; --bg:#fbf7e6; --panel-2:#f7f2dd; --panel-3:#f0e9d0;
+  --page:#FCF9E8; --bg:#fbf7e6; --panel-2:#f9f5e4; --panel-3:#f2ecda;
+  --input-bg:#fdfbf0;                  /* 输入框近白：不用页面奶油底（否则查找替换区发深） */
   --border:rgba(65,187,200,.30); --border-2:rgba(65,187,200,.46);
   --ink-1:#0d3a40; --ink-2:#35646b; --ink-3:#628a90;
   --accent:#41BBC8; --accent-hi:#5cc8d3; --on-accent:#FCF9E8;
@@ -210,7 +211,8 @@ html, body{overflow-x:clip}
   --el-border-color-lighter:var(--border); --el-border-color-extra-light:var(--border);
 }
 :root[data-theme='apple']{            /* 苹果青 #73AE52 · 奶酪色 #FBF1D7：分割线/描边取苹果青，青底按钮配奶酪字 */
-  --page:#FBF1D7; --bg:#f9f1d8; --panel-2:#f7f0da; --panel-3:#f0e8c8;
+  --page:#FBF1D7; --bg:#f9f1d8; --panel-2:#f9f3de; --panel-3:#f2ebd0;
+  --input-bg:#fdfaf0;                  /* 输入框近白：不用页面奶酪底 */
   --border:rgba(115,174,82,.32); --border-2:rgba(115,174,82,.48);
   --ink-1:#2c3d1a; --ink-2:#556b40; --ink-3:#7f8f6a;
   --accent:#73AE52; --accent-hi:#86bd69; --on-accent:#FBF1D7;
@@ -264,7 +266,7 @@ body{background:var(--page);color:var(--ink-1);margin:0;font-family:var(--sans);
 .field{display:block;margin-bottom:8px}
 .field>span{display:block;font-size:12px;font-weight:600;color:var(--ink-3);margin-bottom:6px}
 .field>span .req{color:var(--down);font-style:normal}
-.input,.select,.textarea{width:100%;background:var(--page);border:1px solid var(--border-2);border-radius:11px;padding:7px 11px;font-size:13.5px;transition:border-color .15s ease;font-family:inherit;color:var(--ink-1);box-sizing:border-box}
+.input,.select,.textarea{width:100%;background:var(--input-bg,var(--page));border:1px solid var(--border-2);border-radius:11px;padding:7px 11px;font-size:13.5px;transition:border-color .15s ease;font-family:inherit;color:var(--ink-1);box-sizing:border-box}
 .input:focus,.select:focus,.textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
 .input::placeholder,.textarea::placeholder{color:var(--ink-3);opacity:.7}
 .textarea{resize:vertical;line-height:1.7}
