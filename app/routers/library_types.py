@@ -1,3 +1,5 @@
+import re
+import uuid
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -49,16 +51,18 @@ def list_libraries(db: Session = Depends(get_db)):
 def create_library(body: LibraryIn, db: Session = Depends(get_db)):
     if db.query(Library).filter_by(name=body.name).first():
         raise HTTPException(400, "已存在同名素材库")
-    lb = Library(name=body.name,
+    # key 列非空且需 id 参与（lib_{id}）：先插占位 key，flush 拿到 id 后再定稿
+    lb = Library(key=f"__tmp_{uuid.uuid4().hex[:8]}",
+                 name=body.name,
                  color=body.color or _PALETTE[db.query(Library).count() % len(_PALETTE)],
                  sort_order=body.sort_order if body.sort_order is not None
                  else (db.query(Library).count() + 1),
                  enabled=True if body.enabled is None else body.enabled)
-    db.add(lb); db.commit(); db.refresh(lb)
-    # key 仅作落盘目录名与旧数据映射：ASCII 名直接用，否则 lib_{id}（flush 后才有 id）
-    import re
+    db.add(lb); db.flush()
     slug = re.sub(r"[^a-z0-9_-]", "", body.name.lower())[:50]
-    lb.key = slug or f"lib_{lb.id}"
+    if not slug or db.query(Library).filter(Library.key == slug, Library.id != lb.id).first():
+        slug = f"{slug}_{lb.id}" if slug else f"lib_{lb.id}"
+    lb.key = slug
     db.commit(); db.refresh(lb)
     return to_dict(lb)
 
