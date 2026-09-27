@@ -1,15 +1,18 @@
 <script setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
+import { PALETTES, applyTheme, currentTheme } from './theme'
 
-/* 主题切换：初始值由 index.html/main.js 写在 <html> 上，这里只读与翻转。
- * 默认炭黑；手动选择持久化到 localStorage.theme。 */
-const theme = ref(document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark')
+/* 配色板：初始值由 index.html/main.js 写在 <html> 上，这里只读与切换。
+ * 选择持久化到 localStorage.theme（key 与 theme.css 的 token 块一一对应）。 */
+const theme = ref(currentTheme())
+const paletteOpen = ref(false)
+const current = computed(() => PALETTES.find(p => p.key === theme.value))
+const currentName = computed(() => current.value?.name || '配色板')
 
-function toggleTheme() {
-  theme.value = theme.value === 'dark' ? 'light' : 'dark'
-  document.documentElement.setAttribute('data-theme', theme.value)
-  document.documentElement.classList.toggle('dark', theme.value === 'dark')
-  localStorage.setItem('theme', theme.value)
+function pickTheme(key) {
+  theme.value = key
+  applyTheme(key)
+  paletteOpen.value = false
 }
 </script>
 
@@ -45,17 +48,26 @@ function toggleTheme() {
         </router-link>
       </nav>
       <div class="rail-foot">
-        <button
-          class="theme-btn"
-          type="button"
-          :title="theme === 'dark' ? '切换到纯白主题' : '切换到炭黑主题'"
-          :aria-label="theme === 'dark' ? '切换到纯白主题' : '切换到炭黑主题'"
-          @click="toggleTheme"
-        >
-          <!-- 炭黑下显示太阳（点击去纯白）；纯白下显示月亮（点击去炭黑） -->
-          <svg v-if="theme === 'dark'" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.6v2.6M12 18.8v2.6M2.6 12h2.6M18.8 12h2.6M5.4 5.4l1.8 1.8M16.8 16.8l1.8 1.8M18.6 5.4l-1.8 1.8M7.2 16.8l-1.8 1.8"/></svg>
-          <svg v-else width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 14.2A8.4 8.4 0 019.8 3.4a8.4 8.4 0 1010.8 10.8z"/></svg>
-        </button>
+        <el-popover v-model:visible="paletteOpen" placement="top-start" :width="196" trigger="click">
+          <template #reference>
+            <button class="theme-btn" type="button" title="配色板"
+                    :aria-label="'配色板（当前：' + currentName + '）'">
+              <!-- 双色圆点显示当前配色 -->
+              <span class="palette-dot" v-if="current">
+                <span :style="{ background: current.c1 }"></span>
+                <span :style="{ background: current.c2 }"></span>
+              </span>
+            </button>
+          </template>
+          <div class="palette-list">
+            <button v-for="p in PALETTES" :key="p.key" class="palette-item"
+                    :class="{ on: p.key === theme }" @click="pickTheme(p.key)">
+              <span class="sw"><span :style="{ background: p.c1 }"></span><span :style="{ background: p.c2 }"></span></span>
+              <span class="pn">{{ p.name }}</span>
+              <svg v-if="p.key === theme" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 12.5l5 5L20 7"/></svg>
+            </button>
+          </div>
+        </el-popover>
       </div>
     </aside>
     <main>
@@ -84,6 +96,23 @@ function toggleTheme() {
 .rail-foot{flex:none;display:flex;align-items:center;gap:8px;padding:10px 12px;border-top:1px solid var(--border)}
 .theme-btn{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;background:var(--panel-2);border:1px solid var(--border);color:var(--ink-2);cursor:pointer;transition:background .15s ease,border-color .15s ease,color .15s ease;font-family:inherit;padding:0}
 .theme-btn:hover{background:var(--panel-3);border-color:var(--border-2);color:var(--ink-1)}
-
+/* 当前配色双色圆点 */
+.palette-dot{display:flex}
+.palette-dot span{width:11px;height:11px;border-radius:50%;display:block}
+.palette-dot span:first-child{transform:translateX(2px)}
+.palette-dot span:last-child{transform:translateX(-2px);border:1px solid var(--panel-2)}
 main{flex:1;min-width:0;min-height:0;display:flex;flex-direction:column;overflow-y:auto;overflow-x:clip}
+</style>
+
+<style>
+/* 配色板弹出列表：el-popover teleport 到 body，须用全局作用域 */
+.palette-list{display:flex;flex-direction:column}
+.palette-item{display:flex;align-items:center;gap:9px;width:100%;padding:7px 8px;border:0;border-radius:9px;background:none;font-family:inherit;font-size:12.5px;color:var(--ink-2);cursor:pointer;text-align:left}
+.palette-item:hover{background:var(--panel-2)}
+.palette-item.on{background:var(--panel-2);color:var(--ink-1);font-weight:600}
+.palette-item .sw{display:flex;flex:none}
+.palette-item .sw span{width:13px;height:13px;border-radius:50%;display:block}
+.palette-item .sw span:first-child{transform:translateX(2px)}
+.palette-item .sw span:last-child{transform:translateX(-2px);border:1px solid var(--panel-2)}
+.palette-item .pn{flex:1;min-width:0}
 </style>
