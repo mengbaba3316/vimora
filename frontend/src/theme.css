@@ -126,7 +126,7 @@ html, body{overflow-x:clip}
   --page:#1d1a1a; --bg:#242020; --panel-2:#2e2828; --panel-3:#3a3131;
   --border:rgba(216,46,47,.14); --border-2:rgba(216,46,47,.26);
   --ink-1:#f7eded; --ink-2:#cbb2b2; --ink-3:#9b8282;
-  --accent:#D82E2F; --accent-hi:#E84344; --on-accent:#ffffff;
+  --accent:#D82E2F; --accent-hi:#E84344; --on-accent:#1c1212;
   --accent-soft:rgba(216,46,47,.16);
   --up:#4ade80; --down:#f87171; --warn:#fbbf24;
   --up-soft:rgba(74,222,128,.12); --down-soft:rgba(248,113,113,.12); --warn-soft:rgba(251,191,36,.12);
@@ -140,6 +140,7 @@ html, body{overflow-x:clip}
   --el-color-primary-light-5:#6b1717; --el-color-primary-light-7:#410e0f;
   --el-color-primary-light-8:#2b0909; --el-color-primary-light-9:#160404;
   --el-color-primary-dark-2:#e64648;
+  --el-color-white:#1c1212;           /* 红底上文字/勾划/开关旋钮取黑（包豪斯红黑对撞） */
   --el-border-color:var(--border-2); --el-border-color-light:var(--border-2);
   --el-border-color-lighter:var(--border); --el-border-color-extra-light:var(--border);
 }
@@ -187,7 +188,7 @@ html, body{overflow-x:clip}
   --el-border-color-lighter:var(--border); --el-border-color-extra-light:var(--border);
 }
 :root[data-theme='klein']{            /* 克莱因蓝 #012696 · 艾绿 #A4E2C6：正文深克莱因蓝、卡片艾绿染、描边蓝染 */
-  --page:#A4E2C6; --bg:#eefaf3; --panel-2:#dcf2e6; --panel-3:#c4e7d5;
+  --page:#A4E2C6; --bg:#d9f2e4; --panel-2:#c6ecd8; --panel-3:#ade2c8;
   --border:rgba(1,38,150,.13); --border-2:rgba(1,38,150,.22);
   --ink-1:#0b2050; --ink-2:#3a4f74; --ink-3:#6a7a94;
   --accent:#012696; --accent-hi:#0a2fb0; --on-accent:#ffffff;
@@ -208,7 +209,7 @@ html, body{overflow-x:clip}
   --el-border-color-lighter:var(--border); --el-border-color-extra-light:var(--border);
 }
 :root[data-theme='cream']{            /* 星光蓝 #41BBC8 · 米白 #FCF9E8：正文深星光青、卡片米白染、描边青染 */
-  --page:#FCF9E8; --bg:#fffdf4; --panel-2:#f7f1da; --panel-3:#efe7c6;
+  --page:#FCF9E8; --bg:#f7f0d2; --panel-2:#efe7bd; --panel-3:#e6daa4;
   --border:rgba(14,90,96,.13); --border-2:rgba(14,90,96,.22);
   --ink-1:#0d3a40; --ink-2:#3d5c60; --ink-3:#6a8489;
   --accent:#41BBC8; --accent-hi:#5cc8d3; --on-accent:#073338;
@@ -230,7 +231,7 @@ html, body{overflow-x:clip}
   --el-border-color-lighter:var(--border); --el-border-color-extra-light:var(--border);
 }
 :root[data-theme='apple']{            /* 苹果青 #73AE52 · 奶酪色 #FBF1D7：正文深橄榄、卡片奶酪染、描边青染 */
-  --page:#FBF1D7; --bg:#fefaf0; --panel-2:#f5ebcf; --panel-3:#ecdfba;
+  --page:#FBF1D7; --bg:#f5ecc8; --panel-2:#eee2b4; --panel-3:#e4d49f;
   --border:rgba(64,84,28,.13); --border-2:rgba(64,84,28,.22);
   --ink-1:#26331a; --ink-2:#4f5c40; --ink-3:#767f68;
   --accent:#73AE52; --accent-hi:#86bd69; --on-accent:#1e3311;
@@ -252,7 +253,7 @@ html, body{overflow-x:clip}
   --el-border-color-lighter:var(--border); --el-border-color-extra-light:var(--border);
 }
 :root[data-theme='mars']{             /* 马尔斯绿 #01847F · 玫瑰粉 #F9D2E4：正文深马尔斯绿、卡片粉染、描边绿染 */
-  --page:#F9D2E4; --bg:#fdf1f6; --panel-2:#f7dfe9; --panel-3:#f0cddd;
+  --page:#F9D2E4; --bg:#f9d8e8; --panel-2:#f6c9dc; --panel-3:#f1b7cf;
   --border:rgba(1,90,86,.13); --border-2:rgba(1,90,86,.22);
   --ink-1:#0d3d3a; --ink-2:#3f5c5a; --ink-3:#6d8583;
   --accent:#01847F; --accent-hi:#02968f; --on-accent:#ffffff;
