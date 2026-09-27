@@ -2,6 +2,7 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { providersApi } from '../api'
+import BuildTag from '../components/BuildTag.vue'
 
 /* ── 列表（全量含停用）── */
 const list = ref([])
@@ -42,6 +43,9 @@ function rowPayload(p, extra = {}) {
     default_size: p.default_size || '1024x1024',
     default_quality: p.default_quality ?? '',
     timeout_seconds: p.timeout_seconds ?? 300,
+    mode: p.mode || 'sync',
+    task_query_path: p.task_query_path || '',
+    poll_interval_seconds: p.poll_interval_seconds ?? 10,
     extra_params: p.extra_params ?? null,
     param_options: p.param_options ?? null,
     remark: p.remark || '',
@@ -89,7 +93,8 @@ function blankForm() {
     name: '', type: 'openai', base_url: '', api_key: '',
     gen_path: '/v1/images/generations', edits_path: '/v1/images/edits', image_field: 'image[]',
     default_model: 'gpt-image-1', default_size: '1024x1024', default_quality: 'high',
-    timeout_seconds: 300, extraText: '', optionsText: '', modelsText: '', remark: '', enabled: true,
+    timeout_seconds: 300, mode: 'sync', task_query_path: '', poll_interval_seconds: 10,
+    extraText: '', optionsText: '', modelsText: '', remark: '', enabled: true,
   }
 }
 const form = ref(blankForm())
@@ -119,6 +124,9 @@ function openEdit(p) {
     default_size: p.default_size || '1024x1024',
     default_quality: p.default_quality ?? 'high',
     timeout_seconds: p.timeout_seconds ?? 300,
+    mode: p.mode || 'sync',
+    task_query_path: p.task_query_path || '',
+    poll_interval_seconds: p.poll_interval_seconds ?? 10,
     extraText: jsonText(p.extra_params),
     optionsText: jsonText(p.param_options),
     modelsText: (Array.isArray(p.param_options?.models) ? p.param_options.models : []).join(', '),
@@ -151,6 +159,9 @@ function parseModels(text) {
 async function save() {
   const f = form.value
   if (!f.name.trim()) { ElMessage.warning('名称必填'); return }
+  if (f.mode === 'async' && !f.task_query_path.trim()) {
+    ElMessage.warning('异步模式必须填写任务查询路径（如 /api/image-tasks）'); return
+  }
   const extra = parseJson(f.extraText, '附加参数 JSON')
   if (!extra.ok) { ElMessage.warning(extra.msg); return }
   const options = parseJson(f.optionsText, '参数可选值方案 JSON')
@@ -164,7 +175,9 @@ async function save() {
   if (optionsValue && !Object.keys(optionsValue).length) optionsValue = null
 
   const payload = rowPayload(
-    { ...f, name: f.name.trim(), timeout_seconds: Number(f.timeout_seconds) || 300 },
+    { ...f, name: f.name.trim(), timeout_seconds: Number(f.timeout_seconds) || 300,
+      poll_interval_seconds: Number(f.poll_interval_seconds) || 10,
+      task_query_path: (f.task_query_path || '').trim() },
     { extra_params: extra.value, param_options: optionsValue },
   )
   if (f.api_key.trim()) payload.api_key = f.api_key.trim()
@@ -196,6 +209,7 @@ onMounted(load)
     <div class="view-head">
       <h1>API 源站</h1><span class="sub">OpenAI 兼容中转站，路径与默认参数可按站覆盖</span>
       <div class="right">
+        <BuildTag />
         <button class="btn primary" @click="openCreate">新建源站</button>
       </div>
     </div>
@@ -219,7 +233,10 @@ onMounted(load)
                 <span class="name">{{ p.name }}</span>
                 <div v-if="p.remark" class="remark">{{ p.remark }}</div>
               </td>
-              <td><span class="chip mute">{{ p.type === 'mock' ? 'mock' : 'openai' }}</span></td>
+              <td>
+                <span class="chip mute">{{ p.type === 'mock' ? 'mock' : 'openai' }}</span>
+                <span v-if="p.mode === 'async'" class="chip mute" title="202 + task_id 轮询取图">异步</span>
+              </td>
               <td class="mono-cell">{{ p.base_url || '—' }}</td>
               <td class="mono-cell">{{ p.default_model }}</td>
               <td><el-switch v-model="p.enabled" @change="toggle(p)" /></td>
@@ -277,7 +294,7 @@ onMounted(load)
           <label class="field" style="margin:0"><span>多图字段名</span>
             <input class="input num" v-model="form.image_field">
           </label>
-          <label class="field" style="margin:0"><span>超时（秒）</span>
+          <label class="field" style="margin:0"><span>超时（秒）<template v-if="form.mode === 'async'"> · 异步=总等待上限</template></span>
             <input class="input num" v-model.number="form.timeout_seconds" type="number" min="1">
           </label>
           <label class="field" style="margin:0"><span>默认模型</span>
@@ -293,6 +310,20 @@ onMounted(load)
             <input class="input" v-model="form.remark" placeholder="给这个源站记点什么">
           </label>
         </div>
+        <div class="snap-grid">
+          <label class="field" style="margin:0"><span>提交模式</span>
+            <select class="select" v-model="form.mode" :disabled="isMock">
+              <option value="sync">同步（默认，等响应返回）</option>
+              <option value="async">异步（202 + task_id 轮询）</option>
+            </select>
+          </label>
+          <label class="field" style="margin:0" v-if="form.mode === 'async'"><span>轮询间隔（秒）</span>
+            <input class="input num" v-model.number="form.poll_interval_seconds" type="number" min="1" max="120">
+          </label>
+        </div>
+        <label class="field" v-if="form.mode === 'async'"><span>任务查询路径（必填）</span>
+          <input class="input num" v-model="form.task_query_path" placeholder="/api/image-tasks（凭 task_id 轮询取图）">
+        </label>
         <label class="field"><span>可选模型（逗号分隔，留空=仅默认模型）</span>
           <input class="input" v-model="form.modelsText" placeholder="gpt-image-1, sora-image（工作台可选、可手输其他）">
         </label>

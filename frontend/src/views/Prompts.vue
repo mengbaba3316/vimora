@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { promptsApi } from '../api'
 import { store } from '../store'
+import BuildTag from '../components/BuildTag.vue'
 
 const router = useRouter()
 
@@ -119,6 +120,7 @@ onMounted(load)
     <div class="view-head">
       <h1>提示词库</h1><span class="sub">沉淀可复用的生图提示词，名称会用作输出目录名</span>
       <div class="right">
+        <BuildTag />
         <button class="btn primary" @click="openCreate">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>新建提示词
         </button>

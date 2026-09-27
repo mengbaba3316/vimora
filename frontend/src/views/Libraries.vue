@@ -3,6 +3,7 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { libsApi } from '../api'
 import { naturalDesc } from '../utils/naturalSort'
+import BuildTag from '../components/BuildTag.vue'
 
 /* 四库定义（与原型 LIBS 一致，色值取 theme token） */
 const LIBS = [
@@ -258,6 +259,7 @@ onMounted(async () => {
     <div class="view-head">
       <h1>素材库</h1><span class="sub">组 = 款式 / 文件夹，一张参考图属于一个组</span>
       <div class="right">
+        <BuildTag />
         <button class="btn" @click="openImport">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>导入磁盘目录
         </button>

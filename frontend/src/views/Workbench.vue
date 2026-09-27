@@ -6,6 +6,7 @@ import { ratioToSize } from '../utils/sizeMap'
 import { store } from '../store'
 import PromptEditor from '../components/PromptEditor.vue'
 import AssetPicker from '../components/AssetPicker.vue'
+import BuildTag from '../components/BuildTag.vue'
 
 /*
  * 生图工作台（原型 #view-workbench）：
@@ -210,6 +211,7 @@ onMounted(async () => {
   <div class="view">
     <div class="view-head">
       <h1>生图工作台</h1><span class="sub">选词 → 改词 → 选图 → 生成；任务入队后即可连续提交，进度在历史任务页查看</span>
+      <BuildTag />
     </div>
 
     <div class="wb">
