@@ -11,6 +11,8 @@ outputs/
 # 前端
 node_modules/
 frontend/dist/
+build/
+dist/
 
 __pycache__/
 

@@ -33,8 +33,13 @@ def create_app():
     # 托管前端 SPA（frontend 任务 8 遗留）：dist 存在才挂载，且必须在所有 /api 路由与
     # /files 挂载之后注册——Mount("/") 会兜住其余全部路径，先注册会遮蔽 API 与文件服务。
     # dist 缺失（未执行 npm run build）时跳过，纯后端模式不受影响。
-    dist = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-                        "frontend", "dist")
+    import sys
+    if getattr(sys, "frozen", False):
+        # PyInstaller 冻结态：dist 作为数据文件打进包里，位于 _MEIPASS/frontend/dist
+        dist = os.path.join(sys._MEIPASS, "frontend", "dist")
+    else:
+        dist = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                            "frontend", "dist")
     if os.path.isdir(dist):
         index_html = os.path.join(dist, "index.html")
 

@@ -1,11 +1,35 @@
 import pymysql
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, event, text
 from sqlalchemy.orm import sessionmaker, DeclarativeBase
 from .config import settings
 
 class Base(DeclarativeBase): pass
 
 def ensure_database(s=settings):
+    """按 DB_BACKEND 初始化存储并返回 engine：sqlite = 单文件本地库；mysql = 现行为不变。"""
+    if s.is_sqlite:
+        return _ensure_sqlite(s)
+    return _ensure_mysql(s)
+
+def _ensure_sqlite(s):
+    """SQLite 本地库：单文件落在 DATA_DIR/platform.db，WAL + 线程安全 + 建表 + 种子。"""
+    engine = create_engine(s.db_url, connect_args={"check_same_thread": False})
+
+    @event.listens_for(engine, "connect")
+    def _sqlite_pragma(dbapi_conn, _):   # 后台线程并发写必须 WAL + busy_timeout
+        cur = dbapi_conn.cursor()
+        cur.execute("PRAGMA journal_mode=WAL")
+        cur.execute("PRAGMA synchronous=NORMAL")
+        cur.execute("PRAGMA foreign_keys=ON")
+        cur.execute("PRAGMA busy_timeout=5000")
+        cur.close()
+
+    Base.metadata.create_all(engine)   # 新库直接建当前 schema，无需 MySQL 的补列/枚举迁移
+    _seed_libraries(engine)
+    print(f"[存储] SQLite 本地库：{s.db_url.replace('sqlite:///', '')}")
+    return engine
+
+def _ensure_mysql(s=settings):
     """库不存在则创建（utf8mb4），返回绑定该库的 engine。"""
     try:
         raw = pymysql.connect(host=s.DB_HOST, port=s.DB_PORT, user=s.DB_USER,
@@ -56,20 +80,26 @@ _LIBRARY_SEED = [
     ("pose", "姿势", "var(--lib-pose)", 4),
 ]
 
+def _seed_libraries(engine):
+    """library 表为空则灌入四类种子（跨方言：MySQL/SQLite 通用，幂等）。"""
+    with engine.begin() as conn:
+        has_rows = conn.execute(text("SELECT 1 FROM `library` LIMIT 1")).fetchone()
+        if has_rows:
+            return
+        for key, name, color, sort in _LIBRARY_SEED:
+            conn.execute(text(
+                "INSERT INTO `library` (`key`, name, color, sort_order, enabled) "
+                "VALUES (:k, :n, :c, :s, 1)"),
+                {"k": key, "n": name, "c": color, "s": sort})
+
 def _migrate_libraries(engine):
-    """素材库可配置化迁移（幂等）：
+    """素材库可配置化迁移（幂等，MySQL 专用）：
     1. library 表为空 → 灌入四类种子数据；
     2. asset_group/asset_image 的 library 列若仍是旧枚举 → 按 key 映射转 BIGINT id，
        磁盘目录名用 key（file_path 不变），存量素材零迁移。
     """
+    _seed_libraries(engine)
     with engine.connect() as conn:
-        has_rows = conn.exec_driver_sql("SELECT 1 FROM `library` LIMIT 1").fetchone()
-        if not has_rows:
-            for i, (key, name, color, sort) in enumerate(_LIBRARY_SEED):
-                conn.exec_driver_sql(
-                    "INSERT INTO `library` (`key`, name, color, sort_order, enabled) "
-                    "VALUES (%s, %s, %s, %s, 1)", (key, name, color, sort))
-            conn.commit()
         for table in ("asset_group", "asset_image"):
             dtype = conn.exec_driver_sql(
                 "SELECT DATA_TYPE FROM information_schema.COLUMNS "

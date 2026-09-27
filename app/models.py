@@ -8,6 +8,10 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .database import Base
 
+# 主键统一类型：MySQL 用 BIGINT；SQLite 上渲染为 INTEGER PRIMARY KEY（rowid 别名），
+# 否则 BIGINT 主键在 SQLite 不自增、插入报 NOT NULL
+_PK = BigInteger().with_variant(Integer, "sqlite")
+
 class Library(Base):
     """一级素材库（可配置）：face/outfit/socks/pose 为种子数据，可增删改/启停/排序。
 
@@ -20,7 +24,7 @@ class Library(Base):
         UniqueConstraint("key", name="uk_library_key"),
         {"mysql_charset": "utf8mb4"},
     )
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(_PK, primary_key=True, autoincrement=True)
     key: Mapped[str] = mapped_column(String(50))
     name: Mapped[str] = mapped_column(String(100))
     color: Mapped[str] = mapped_column(String(40), default="")
@@ -30,7 +34,7 @@ class Library(Base):
 
 class Prompt(Base):
     __tablename__ = "prompt"
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(_PK, primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(100))
     content: Mapped[str] = mapped_column(Text().with_variant(MEDIUMTEXT(), "mysql"))
     tags: Mapped[str] = mapped_column(String(255), default="")
@@ -44,7 +48,7 @@ class AssetGroup(Base):
         UniqueConstraint("library", "name", name="uk_group_library_name"),
         {"mysql_charset": "utf8mb4"},
     )
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(_PK, primary_key=True, autoincrement=True)
     library: Mapped[int] = mapped_column(BigInteger)   # library.id（旧库为枚举列，启动自愈迁移转 id）
     name: Mapped[str] = mapped_column(String(100))
     sort_order: Mapped[int] = mapped_column(Integer, default=0)
@@ -53,7 +57,7 @@ class AssetGroup(Base):
 
 class AssetImage(Base):
     __tablename__ = "asset_image"
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(_PK, primary_key=True, autoincrement=True)
     group_id: Mapped[int] = mapped_column(ForeignKey("asset_group.id", ondelete="CASCADE"))
     library: Mapped[int] = mapped_column(BigInteger)   # library.id（与所属组一致，冗余存储便于按库查询）
     original_name: Mapped[str] = mapped_column(String(255))
@@ -64,7 +68,7 @@ class AssetImage(Base):
 
 class Provider(Base):
     __tablename__ = "provider"
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(_PK, primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(100))
     type: Mapped[str] = mapped_column(Enum("openai", "mock"), default="openai")
     base_url: Mapped[str] = mapped_column(String(300), default="")
@@ -89,7 +93,7 @@ class Provider(Base):
 
 class GenTask(Base):
     __tablename__ = "gen_task"
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(_PK, primary_key=True, autoincrement=True)
     prompt_id: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
     prompt_name: Mapped[str] = mapped_column(String(100))
     prompt_content: Mapped[str] = mapped_column(Text().with_variant(MEDIUMTEXT(), "mysql"))
@@ -114,7 +118,7 @@ class GenTask(Base):
 
 class TaskImage(Base):
     __tablename__ = "task_image"
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(_PK, primary_key=True, autoincrement=True)
     task_id: Mapped[int] = mapped_column(ForeignKey("gen_task.id", ondelete="CASCADE"))
     file_path: Mapped[str] = mapped_column(String(500))
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
