@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Literal, Optional
 
-from pydantic import BaseModel, Field, field_serializer
+from pydantic import BaseModel, Field, field_serializer, model_validator
 
 
 class PromptIn(BaseModel):
@@ -43,6 +43,16 @@ class ProviderIn(BaseModel):
     default_size: str = "1024x1024"
     default_quality: str = "high"
     timeout_seconds: int = 600
+    # 提交模式：sync=同步等响应（默认，适配多数中转站）；async=202+task_id 轮询取图
+    mode: Literal["sync", "async"] = "sync"
+    task_query_path: str = ""
+    poll_interval_seconds: int = Field(default=10, ge=1, le=120)
     extra_params: Optional[dict] = None
     param_options: Optional[dict] = None
     remark: str = ""
+
+    @model_validator(mode="after")
+    def _async_needs_query_path(self):
+        if self.mode == "async" and not self.task_query_path.strip():
+            raise ValueError("异步模式必须填写任务查询路径（如 /api/image-tasks）")
+        return self

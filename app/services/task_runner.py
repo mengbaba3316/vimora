@@ -1,5 +1,6 @@
 import concurrent.futures
 import os
+import threading
 import time
 import traceback
 from datetime import datetime
@@ -9,19 +10,38 @@ import requests
 
 from . import generator
 from ..models import AssetGroup, AssetImage, GenTask, Provider, TaskImage
-from ..utils.filenames import safe_dirname, stamp
+from ..utils.filenames import stamp
 
 executor: Optional[concurrent.futures.ThreadPoolExecutor] = None
 SessionLocal = None
+# 每源站并发信号量（键=provider_id），同一站同时最多 per_provider_limit 个任务在跑；
+# 全局线程池容量 = 每站上限 × 站数余量，真正的限流由信号量执行
+_provider_sems: dict = {}
+_per_provider_limit = 2
+_sems_lock = threading.Lock()
 
 _MIMES = {".png": "image/png", ".jpg": "image/jpeg",
           ".jpeg": "image/jpeg", ".webp": "image/webp"}
 
 
 def init_runner(session_factory, max_workers: int):
-    global executor, SessionLocal
+    """max_workers 语义：单个源站的并发上限（.env MAX_CONCURRENT_TASKS，默认 2）。
+    全局线程池给足余量（上限×8），各站互不挤占；真实限流靠每站信号量。"""
+    global executor, SessionLocal, _per_provider_limit, _provider_sems
     SessionLocal = session_factory
-    executor = concurrent.futures.ThreadPoolExecutor(max_workers=max_workers)
+    _per_provider_limit = max(1, max_workers)
+    _provider_sems = {}
+    executor = concurrent.futures.ThreadPoolExecutor(
+        max_workers=_per_provider_limit * 8)
+
+
+def _provider_sem(provider_id: int) -> threading.BoundedSemaphore:
+    with _sems_lock:
+        sem = _provider_sems.get(provider_id)
+        if sem is None:
+            sem = threading.BoundedSemaphore(_per_provider_limit)
+            _provider_sems[provider_id] = sem
+        return sem
 
 
 def submit(task_id: int):
@@ -43,6 +63,7 @@ def shutdown(wait: bool = True):
 def _run(task_id: int):
     db = SessionLocal()
     t = None
+    sem = None
     try:
         t = db.get(GenTask, task_id)
         if t is None:
@@ -53,6 +74,8 @@ def _run(task_id: int):
         p = db.get(Provider, t.provider_id)
         if p is None:
             raise RuntimeError("源站不存在或已删除")
+        sem = _provider_sem(p.id)   # 同一站并发到上限时，任务在此等待站内空位
+        sem.acquire()
         files = []
         if t.endpoint == "edits":
             for grp in (t.assets or []):
@@ -81,6 +104,13 @@ def _run(task_id: int):
             resp = mock_provider.generate(prompt=t.prompt_content, model=t.model,
                                           size=t.size, n=t.n, quality=t.quality,
                                           extra=t.extra)
+        elif p.mode == "async":
+            from . import async_adapter
+            # 提交成功即落库 remote_task_id：即使后续轮询失败/超时，
+            # 用户也能凭此 id 到中转站后台追回（可能已扣费出图）
+            t.remote_task_id = async_adapter.submit(p, url, kwargs)
+            db.commit()
+            resp, _ = async_adapter.poll_until_terminal(p, t.remote_task_id)
         else:
             try:
                 resp = requests.post(url, **kwargs)
@@ -92,8 +122,8 @@ def _run(task_id: int):
                 # 规格 §8：非 200 响应不抛请求层异常，任务置 failed 并留全量诊断信息
                 raise RuntimeError(f"HTTP {resp.status_code}\n{resp.text[:2000]}")
             resp = resp.json()
-        out_dir = os.path.join(generator.OUTPUT_DIR, safe_dirname(t.prompt_name),
-                               f"{stamp()}_{t.id}")
+        # 按天归档：outputs/YYYY-MM-DD/，所有源站的成果图共用，不按提示词/任务分层
+        out_dir = os.path.join(generator.OUTPUT_DIR, stamp("%Y-%m-%d"))
         paths, missing = generator.save_results(t, resp, out_dir=out_dir)
         if not paths:
             detail = "；".join(m.get("reason", "") for m in missing if m.get("reason"))
@@ -104,7 +134,7 @@ def _run(task_id: int):
             db.add(TaskImage(task_id=t.id, file_path=rel))
         t.output_dir = os.path.relpath(out_dir, generator.OUTPUT_DIR).replace("\\", "/")
         t.status = "success"
-        t.finished_at = datetime.now()   # 置终态之后写 task.json，快照即最终状态
+        t.finished_at = datetime.now()   # 置终态之后写 task_{id}.json，快照即最终状态
         generator.write_task_json(out_dir, _snapshot(t), paths,
                                   time.time() - started, missing=missing)
     except Exception as e:
@@ -112,6 +142,8 @@ def _run(task_id: int):
             t.status = "failed"
             t.error_message = (str(e) or traceback.format_exc())[:2000]
     finally:
+        if sem is not None:
+            sem.release()
         if t is not None:
             if t.finished_at is None:
                 t.finished_at = datetime.now()
@@ -126,14 +158,14 @@ def _run(task_id: int):
 
 
 def _snapshot(t: GenTask) -> dict:
-    """任务全字段快照，供输出目录的 task.json（人类可读、可脱离平台检索）。"""
+    """任务全字段快照，供输出目录的 task_{id}.json（人类可读、可脱离平台检索）。"""
     return {
         "id": t.id, "prompt_id": t.prompt_id, "prompt_name": t.prompt_name,
         "prompt_content": t.prompt_content, "provider_id": t.provider_id,
         "provider_name": t.provider_name, "endpoint": t.endpoint, "model": t.model,
         "size": t.size, "quality": t.quality, "n": t.n, "extra": t.extra,
         "assets": t.assets, "status": t.status,
-        "output_dir": t.output_dir,
+        "output_dir": t.output_dir, "remote_task_id": t.remote_task_id,
         "created_at": t.created_at.strftime("%Y-%m-%d %H:%M:%S") if t.created_at else None,
         "started_at": t.started_at.strftime("%Y-%m-%d %H:%M:%S") if t.started_at else None,
         "finished_at": t.finished_at.strftime("%Y-%m-%d %H:%M:%S") if t.finished_at else None,

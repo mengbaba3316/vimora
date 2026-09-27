@@ -12,6 +12,7 @@ class Settings:
         self.TEST_DB_NAME = os.getenv("TEST_DB_NAME", "image_gen_platform_test")
         self.DATA_DIR = os.getenv("DATA_DIR", "data")
         self.OUTPUT_DIR = os.getenv("OUTPUT_DIR", "outputs")
+        # 语义：单个源站的并发上限（每站各自独立计数），不是全局总数
         self.MAX_CONCURRENT_TASKS = int(os.getenv("MAX_CONCURRENT_TASKS", "2"))
         self.APP_PORT = int(os.getenv("APP_PORT", "8765"))
 

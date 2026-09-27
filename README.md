@@ -20,7 +20,7 @@
 | `TEST_DB_NAME` | `image_gen_platform_test` | 测试库（pytest 用，自动建删） |
 | `DATA_DIR` | `data` | 素材库落盘根目录（`data/libraries/<库>/…`） |
 | `OUTPUT_DIR` | `outputs` | 生图结果落盘根目录 |
-| `MAX_CONCURRENT_TASKS` | `2` | 后台生图线程数 |
+| `MAX_CONCURRENT_TASKS` | `2` | 单个源站的并发上限（每站独立计数） |
 | `APP_PORT` | `8765` | 服务端口 |
 
 启动时自动建库建表（`CREATE DATABASE IF NOT EXISTS … DEFAULT CHARSET utf8mb4`）。连接失败会打印中文诊断；若账号无建库权限，请先手工执行：
@@ -62,7 +62,7 @@ python run.py
 2. `POST /api/providers`：`{"name": "Mock", "type": "mock"}`；
 3. `POST /api/libraries/face/groups` 建组，`POST /api/libraries/face/images` 上传图片；
 4. `POST /api/tasks`（provider 指向 Mock，可带 assets）→ 轮询 `GET /api/tasks/{id}` 至 `success`；
-5. 确认 `outputs/<提示词名>/<时间戳_任务id>/` 下有结果图与 `task.json`（任务全字段快照，含 finished_at/error_message），图片可经返回的 `/files/outputs/...` URL 直接访问。
+5. 确认 `outputs/<YYYY-MM-DD>/`（按天归档）下有结果图与 `task_<任务id>.json`（任务全字段快照，含 finished_at/error_message），图片可经返回的 `/files/outputs/...` URL 直接访问。
 
 ## 测试
 

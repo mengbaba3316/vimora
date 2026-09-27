@@ -24,7 +24,28 @@ def ensure_database(s=settings):
     raw.commit(); raw.close()
     engine = create_engine(s.db_url, pool_pre_ping=True, pool_recycle=1800)
     Base.metadata.create_all(engine)
+    _ensure_columns(engine)
     return engine
+
+# create_all 只建缺表不补列：存量表的新增列在此自愈（幂等，缺才 ALTER）。
+# (表, 列, DDL 片段) —— 新列默认值必须与 models.py 一致，存量行不受影响。
+_MISSING_COLUMNS = [
+    ("provider", "mode", "ENUM('sync','async') NOT NULL DEFAULT 'sync'"),
+    ("provider", "task_query_path", "VARCHAR(200) NOT NULL DEFAULT ''"),
+    ("provider", "poll_interval_seconds", "INT NOT NULL DEFAULT 10"),
+    ("gen_task", "remote_task_id", "VARCHAR(200) NULL"),
+]
+
+def _ensure_columns(engine):
+    with engine.connect() as conn:
+        for table, col, ddl in _MISSING_COLUMNS:
+            has = conn.exec_driver_sql(
+                f"SELECT 1 FROM information_schema.COLUMNS "
+                f"WHERE TABLE_SCHEMA = DATABASE() "
+                f"AND TABLE_NAME = '{table}' AND COLUMN_NAME = '{col}'").fetchone()
+            if not has:
+                conn.exec_driver_sql(f"ALTER TABLE `{table}` ADD COLUMN `{col}` {ddl}")
+        conn.commit()
 
 engine = None
 SessionLocal = None

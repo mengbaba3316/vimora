@@ -19,6 +19,8 @@ def to_dict(p: Provider) -> dict:
         "edits_path": p.edits_path, "image_field": p.image_field,
         "default_model": p.default_model, "default_size": p.default_size,
         "default_quality": p.default_quality, "timeout_seconds": p.timeout_seconds,
+        "mode": p.mode, "task_query_path": p.task_query_path,
+        "poll_interval_seconds": p.poll_interval_seconds,
         "extra_params": p.extra_params, "param_options": p.param_options,
         "remark": p.remark,
         "created_at": p.created_at.strftime("%Y-%m-%d %H:%M:%S") if p.created_at else None,

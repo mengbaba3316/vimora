@@ -59,6 +59,10 @@ class Provider(Base):
     default_size: Mapped[str] = mapped_column(String(30), default="1024x1024")
     default_quality: Mapped[str] = mapped_column(String(30), default="high")
     timeout_seconds: Mapped[int] = mapped_column(Integer, default=600)
+    # 提交模式：sync=同步等响应（多数中转站）；async=202+task_id 轮询取图（如噜皮）
+    mode: Mapped[str] = mapped_column(Enum("sync", "async"), default="sync")
+    task_query_path: Mapped[str] = mapped_column(String(200), default="")
+    poll_interval_seconds: Mapped[int] = mapped_column(Integer, default=10)
     extra_params: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
     param_options: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
     remark: Mapped[str] = mapped_column(String(500), default="")
@@ -83,6 +87,8 @@ class GenTask(Base):
     status: Mapped[str] = mapped_column(Enum("pending", "running", "success", "failed"), default="pending")
     error_message: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     output_dir: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    # 异步源站返回的中转站任务 id（响应丢失时凭此到中转站后台/查询接口追回成果）
+    remote_task_id: Mapped[Optional[str]] = mapped_column(String(200), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     started_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     finished_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)

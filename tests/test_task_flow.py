@@ -45,7 +45,7 @@ def test_task_success_flow(client, settings, monkeypatch):
     assert os.path.exists(os.path.join(settings.OUTPUT_DIR,
                                        *img0["file_path"].split("/")))
     assert os.path.exists(os.path.join(settings.OUTPUT_DIR,
-                                       *task["output_dir"].split("/"), "task.json"))
+                                       *task["output_dir"].split("/"), f"task_{tid}.json"))
     assert client.post(f"/api/tasks/{tid}/rerun").status_code == 200
 
 

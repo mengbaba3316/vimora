@@ -49,13 +49,14 @@ def save_results(t, resp_json: dict, out_dir: str) -> Tuple[List[str], List[dict
     url 分支按 Content-Type 修正扩展名（jpeg→.jpg、webp→.webp，默认 .png）。
     单张失败（下载异常 / b64 解码失败）不连坐：计入 missing（含序号 / url / 原因）
     后继续下一张；全部失败时返回空列表，由调用方判 failed。
+    out_dir 为按天归档的共享目录（outputs/YYYY-MM-DD/），文件名带任务 id 防同秒跨任务碰撞。
     """
     os.makedirs(out_dir, exist_ok=True)
     paths: List[str] = []
     missing: List[dict] = []
     ts = stamp()
     for i, item in enumerate(resp_json.get("data", []), start=1):
-        fp = os.path.join(out_dir, f"{ts}_{i}.png")
+        fp = os.path.join(out_dir, f"{ts}_{t.id}_{i}.png")
         try:
             final = fp
             if item.get("b64_json"):
@@ -79,9 +80,11 @@ def save_results(t, resp_json: dict, out_dir: str) -> Tuple[List[str], List[dict
 
 def write_task_json(out_dir: str, task_dict: dict, files: List[str], elapsed: float,
                     missing: Optional[List[dict]] = None):
+    """任务快照写入按天归档目录；文件名带任务 id（同目录多任务共存不覆盖）。"""
     meta = {**task_dict, "ok": len(files), "n": task_dict.get("n"),
             "missing": missing or [],
             "files": [os.path.basename(f) for f in files],
             "elapsed_seconds": elapsed}
-    with open(os.path.join(out_dir, "task.json"), "w", encoding="utf-8") as f:
+    with open(os.path.join(out_dir, f"task_{task_dict.get('id')}.json"),
+              "w", encoding="utf-8") as f:
         json.dump(meta, f, ensure_ascii=False, indent=2)

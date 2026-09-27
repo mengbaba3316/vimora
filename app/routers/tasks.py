@@ -61,7 +61,7 @@ def to_dict(t: GenTask, file_paths: Optional[dict] = None) -> dict:
         "provider_id": t.provider_id, "provider_name": t.provider_name,
         "endpoint": t.endpoint, "model": t.model, "size": t.size,
         "quality": t.quality, "n": t.n, "extra": t.extra, "assets": assets,
-        "output_dir": t.output_dir,
+        "output_dir": t.output_dir, "remote_task_id": t.remote_task_id,
         "images": [{"id": im.id, "file_path": im.file_path,
                     "url": f"/files/outputs/{im.file_path}"} for im in t.images],
         "created_at": _fmt(t.created_at), "started_at": _fmt(t.started_at),
