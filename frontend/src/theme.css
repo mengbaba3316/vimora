@@ -187,33 +187,11 @@ html, body{overflow-x:clip}
   --el-border-color:var(--border-2); --el-border-color-light:var(--border-2);
   --el-border-color-lighter:var(--border); --el-border-color-extra-light:var(--border);
 }
-:root[data-theme='klein']{            /* 克莱因蓝 #012696 · 艾绿 #A4E2C6：正文/菜单深克莱因蓝、蓝底按钮配艾绿字、卡片艾绿染 */
-  --page:#A4E2C6; --bg:#bde9d3; --panel-2:#ace1c5; --panel-3:#96d7b6;
-  --border:rgba(1,38,150,.14); --border-2:rgba(1,38,150,.24);
-  --ink-1:#0e2266; --ink-2:#41538c; --ink-3:#7583ad;
-  --accent:#012696; --accent-hi:#0a2fb0; --on-accent:#A4E2C6;
-  --accent-soft:rgba(1,38,150,.08);
-  --up:#1E8A5F; --down:#D0453C; --warn:#B77A16;
-  --up-soft:rgba(30,138,95,.10); --down-soft:rgba(208,69,60,.09); --warn-soft:rgba(183,122,22,.11);
-  --down-line:rgba(208,69,60,.30); --warn-line:rgba(183,122,22,.30);
-  --lib-face:#C2435B; --lib-outfit:#D9642A; --lib-socks:#0E7FA8; --lib-pose:#A93D80;
-  --glow:rgba(1,38,150,.18); --shadow-1:0 1px 3px rgba(1,38,150,.10);
-  --img-chip-bg:rgba(255,255,255,.92); --img-chip-bg-soft:rgba(255,255,255,.85);
-  --row-hover:rgba(1,38,150,.04);
-  color-scheme:light;
-  --el-color-primary:var(--accent); --el-color-primary-light-3:#4d5eb4;
-  --el-color-primary-light-5:#8092ca; --el-color-primary-light-7:#b3c6e0;
-  --el-color-primary-light-8:#ccd7ea; --el-color-primary-light-9:#e6ebf5;
-  --el-color-primary-dark-2:#011e78;
-  --el-color-white:#A4E2C6;           /* 蓝底按钮文字/勾划/旋钮取艾绿（主次对撞） */
-  --el-border-color:var(--border-2); --el-border-color-light:var(--border-2);
-  --el-border-color-lighter:var(--border); --el-border-color-extra-light:var(--border);
-}
-:root[data-theme='cream']{            /* 星光蓝 #41BBC8 · 米白 #FCF9E8：正文深星光青、卡片米白染 */
+:root[data-theme='cream']{            /* 星光蓝 #41BBC8 · 米白 #FCF9E8：分割线/描边取星光青，蓝底按钮配米白字 */
   --page:#FCF9E8; --bg:#fbf7e6; --panel-2:#f4eed2; --panel-3:#ebe3c0;
-  --border:rgba(14,90,96,.13); --border-2:rgba(14,90,96,.22);
+  --border:rgba(65,187,200,.30); --border-2:rgba(65,187,200,.46);
   --ink-1:#0d3a40; --ink-2:#35646b; --ink-3:#628a90;
-  --accent:#41BBC8; --accent-hi:#5cc8d3; --on-accent:#073338;
+  --accent:#41BBC8; --accent-hi:#5cc8d3; --on-accent:#FCF9E8;
   --accent-soft:rgba(65,187,200,.12);
   --up:#1E8A5F; --down:#D0453C; --warn:#B77A16;
   --up-soft:rgba(30,138,95,.10); --down-soft:rgba(208,69,60,.09); --warn-soft:rgba(183,122,22,.11);
@@ -227,15 +205,15 @@ html, body{overflow-x:clip}
   --el-color-primary-light-5:#98d9e0; --el-color-primary-light-7:#c3e9ed;
   --el-color-primary-light-8:#daf2f4; --el-color-primary-light-9:#edf8f9;
   --el-color-primary-dark-2:#37a5b1;
-  --el-color-white:#073338;
+  --el-color-white:#FCF9E8;           /* 青底按钮文字/勾划/旋钮取米白（主次对撞） */
   --el-border-color:var(--border-2); --el-border-color-light:var(--border-2);
   --el-border-color-lighter:var(--border); --el-border-color-extra-light:var(--border);
 }
-:root[data-theme='apple']{            /* 苹果青 #73AE52 · 奶酪色 #FBF1D7：正文深橄榄、卡片奶酪染 */
+:root[data-theme='apple']{            /* 苹果青 #73AE52 · 奶酪色 #FBF1D7：分割线/描边取苹果青，青底按钮配奶酪字 */
   --page:#FBF1D7; --bg:#f9f1d8; --panel-2:#f2e9c6; --panel-3:#e9dcaa;
-  --border:rgba(64,84,28,.13); --border-2:rgba(64,84,28,.22);
+  --border:rgba(115,174,82,.32); --border-2:rgba(115,174,82,.48);
   --ink-1:#2c3d1a; --ink-2:#556b40; --ink-3:#7f8f6a;
-  --accent:#73AE52; --accent-hi:#86bd69; --on-accent:#1e3311;
+  --accent:#73AE52; --accent-hi:#86bd69; --on-accent:#FBF1D7;
   --accent-soft:rgba(115,174,82,.14);
   --up:#1E8A5F; --down:#D0453C; --warn:#B77A16;
   --up-soft:rgba(30,138,95,.10); --down-soft:rgba(208,69,60,.09); --warn-soft:rgba(183,122,22,.11);
@@ -249,29 +227,7 @@ html, body{overflow-x:clip}
   --el-color-primary-light-5:#b8d59f; --el-color-primary-light-7:#d6e7c8;
   --el-color-primary-light-8:#e6f0da; --el-color-primary-light-9:#f3f8ec;
   --el-color-primary-dark-2:#629646;
-  --el-color-white:#1e3311;
-  --el-border-color:var(--border-2); --el-border-color-light:var(--border-2);
-  --el-border-color-lighter:var(--border); --el-border-color-extra-light:var(--border);
-}
-:root[data-theme='mars']{             /* 马尔斯绿 #01847F · 玫瑰粉 #F9D2E4：主次对调——底色家族浅马尔斯绿，粉色只作绿底按钮文字点缀 */
-  --page:#d7ebe7; --bg:#e7f3f0; --panel-2:#d8ebe7; --panel-3:#c3e0da;
-  --border:rgba(1,90,86,.13); --border-2:rgba(1,90,86,.22);
-  --ink-1:#0d3d3a; --ink-2:#3f5c5a; --ink-3:#6d8583;
-  --accent:#01847F; --accent-hi:#02968f; --on-accent:#F9D2E4;
-  --accent-soft:rgba(1,132,127,.10);
-  --up:#1E8A5F; --down:#D0453C; --warn:#B77A16;
-  --up-soft:rgba(30,138,95,.10); --down-soft:rgba(208,69,60,.09); --warn-soft:rgba(183,122,22,.11);
-  --down-line:rgba(208,69,60,.30); --warn-line:rgba(183,122,22,.30);
-  --lib-face:#C2435B; --lib-outfit:#D9642A; --lib-socks:#0E7FA8; --lib-pose:#A93D80;
-  --glow:rgba(1,132,127,.22); --shadow-1:0 1px 3px rgba(1,90,86,.10);
-  --img-chip-bg:rgba(255,255,255,.92); --img-chip-bg-soft:rgba(255,255,255,.85);
-  --row-hover:rgba(1,132,127,.05);
-  color-scheme:light;
-  --el-color-primary:var(--accent); --el-color-primary-light-3:#349795;
-  --el-color-primary-light-5:#67aeab; --el-color-primary-light-7:#9bc5c3;
-  --el-color-primary-light-8:#c0d9d8; --el-color-primary-light-9:#e5efee;
-  --el-color-primary-dark-2:#016f6b;
-  --el-color-white:#F9D2E4;           /* 绿底按钮文字/勾划/旋钮取玫瑰粉（主次对撞） */
+  --el-color-white:#FBF1D7;           /* 青底按钮文字/勾划/旋钮取奶酪色（主次对撞） */
   --el-border-color:var(--border-2); --el-border-color-light:var(--border-2);
   --el-border-color-lighter:var(--border); --el-border-color-extra-light:var(--border);
 }

@@ -5,12 +5,10 @@ export const PALETTES = [
   { key: 'dark',      name: '炭黑 · 默认',       c1: '#f4f5f7', c2: '#131417', dark: true },
   { key: 'light',     name: '纯白',             c1: '#17181a', c2: '#ffffff', dark: false },
   { key: 'bauhaus',   name: '包豪斯红 · 哑光黑', c1: '#D82E2F', c2: '#222222', dark: true },
-  { key: 'klein',     name: '克莱因蓝 · 艾绿',   c1: '#012696', c2: '#A4E2C6', dark: false },
   { key: 'sweetpink', name: '甜酷玫粉 · 炭黑',   c1: '#E6397C', c2: '#1A1A1D', dark: true },
   { key: 'cream',     name: '米白 · 星光蓝',     c1: '#41BBC8', c2: '#FCF9E8', dark: false },
   { key: 'apple',     name: '苹果青 · 奶酪色',   c1: '#73AE52', c2: '#FBF1D7', dark: false },
   { key: 'taro',      name: '香芋紫 · 莫黑',     c1: '#C98EFF', c2: '#0B0C10', dark: true },
-  { key: 'mars',      name: '马尔斯绿 · 玫瑰粉', c1: '#01847F', c2: '#F9D2E4', dark: false },
 ]
 
 const DARK_KEYS = new Set(PALETTES.filter(p => p.dark).map(p => p.key))

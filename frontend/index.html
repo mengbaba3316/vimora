@@ -10,7 +10,7 @@
        * 默认炭黑；深色族需同时挂 html.dark（EP dark 变量跟随）（防闪白/闪错色） */
       (function () {
         var darkKeys = { dark: 1, bauhaus: 1, sweetpink: 1, taro: 1 }
-        var lightKeys = { light: 1, klein: 1, cream: 1, apple: 1, mars: 1 }
+        var lightKeys = { light: 1, cream: 1, apple: 1 }
         var t = localStorage.getItem('theme')
         if (!darkKeys[t] && !lightKeys[t]) t = 'dark'
         var el = document.documentElement
