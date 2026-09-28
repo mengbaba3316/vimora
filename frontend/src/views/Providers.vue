@@ -292,10 +292,10 @@ onMounted(load)
             <input class="input" v-model="form.name" placeholder="中转站A">
           </label>
           <label class="field" style="margin:0"><span>类型</span>
-            <select class="select" v-model="form.type">
-              <option value="openai">OpenAI 兼容</option>
-              <option value="mock">Mock 本地（联调）</option>
-            </select>
+            <el-select v-model="form.type" class="wselect">
+              <el-option value="openai" label="OpenAI 兼容" />
+              <el-option value="mock" label="Mock 本地（联调）" />
+            </el-select>
           </label>
         </div>
         <label class="field"><span>Base URL</span>
@@ -332,10 +332,10 @@ onMounted(load)
         </div>
         <div class="snap-grid">
           <label class="field" style="margin:0"><span>提交模式</span>
-            <select class="select" v-model="form.mode" :disabled="isMock">
-              <option value="sync">同步（默认，等响应返回）</option>
-              <option value="async">异步（202 + task_id 轮询）</option>
-            </select>
+            <el-select v-model="form.mode" class="wselect" :disabled="isMock">
+              <el-option value="sync" label="同步（默认，等响应返回）" />
+              <el-option value="async" label="异步（202 + task_id 轮询）" />
+            </el-select>
           </label>
           <label class="field" style="margin:0" v-if="form.mode === 'async'"><span>轮询间隔（秒）</span>
             <input class="input num" v-model.number="form.poll_interval_seconds" type="number" min="1" max="120">

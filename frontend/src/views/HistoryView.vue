@@ -281,14 +281,14 @@ async function copyError() {
 
     <div class="view-body">
       <div class="toolbar">
-        <select id="hisStatus" v-model="filterStatus" class="select" style="width:130px" @change="onStatusChange">
-          <option value="">全部状态</option>
-          <option value="queued">排队中</option>
-          <option value="running">生成中</option>
-          <option value="success">成功</option>
-          <option value="partial">部分成功</option>
-          <option value="failed">失败</option>
-        </select>
+        <el-select id="hisStatus" v-model="filterStatus" class="wselect" style="width:130px" @change="onStatusChange">
+          <el-option value="" label="全部状态" />
+          <el-option value="queued" label="排队中" />
+          <el-option value="running" label="生成中" />
+          <el-option value="success" label="成功" />
+          <el-option value="partial" label="部分成功" />
+          <el-option value="failed" label="失败" />
+        </el-select>
         <input id="hisSearch" v-model="filterKw" class="input grow" placeholder="搜索提示词名 / 内容…">
         <span id="hisTotal" class="chip mute num">{{ total }} 条</span>
       </div>

@@ -255,10 +255,9 @@ onMounted(async () => {
       <section class="card col-prompt">
         <div class="card-h"><b>提示词</b><span class="cnt">本次可自由修改，不回写库</span></div>
         <div class="prompt-pick">
-          <select id="promptSel" v-model="selectedPromptId" class="select" @change="onPromptChange">
-            <option :value="null" disabled>选择提示词…</option>
-            <option v-for="p in prompts" :key="p.id" :value="p.id">{{ p.name }}</option>
-          </select>
+          <el-select id="promptSel" v-model="selectedPromptId" class="wselect" placeholder="选择提示词…" @change="onPromptChange">
+            <el-option v-for="p in prompts" :key="p.id" :value="p.id" :label="p.name" />
+          </el-select>
         </div>
         <PromptEditor ref="promptEditorRef" v-model="editorText" :prompt="editingPrompt" @saved="onPromptSaved" />
       </section>
@@ -268,41 +267,39 @@ onMounted(async () => {
         <div class="card-h"><b>源站与参数</b></div>
         <div class="params-body">
           <label class="field"><span>API 源站 <i class="req">*</i></span>
-            <select id="provSel" v-model="form.providerId" class="select" @change="onProviderChange">
-              <option :value="null" disabled>请选择 API 源站</option>
-              <option v-for="p in providers" :key="p.id" :value="p.id">
-                {{ p.name }}{{ p.type === 'mock' ? '（联调）' : '' }}
-              </option>
-            </select>
+            <el-select id="provSel" v-model="form.providerId" class="wselect" placeholder="请选择 API 源站" @change="onProviderChange">
+              <el-option v-for="p in providers" :key="p.id" :value="p.id"
+                         :label="p.name + (p.type === 'mock' ? '（联调）' : '')" />
+            </el-select>
             <div v-if="currentProvider?.remark" id="provRemark" class="prov-remark">{{ currentProvider.remark }}</div>
           </label>
           <div class="field"><span>模型</span>
-            <el-select id="pModel" v-model="form.model" class="model-select" filterable allow-create
+            <el-select id="pModel" v-model="form.model" class="wselect" filterable allow-create
                        default-first-option placeholder="选择或输入模型">
               <el-option v-for="m in modelOptions" :key="m" :value="m" :label="m" />
             </el-select>
           </div>
           <label v-if="sizeMode" class="field"><span>尺寸</span>
-            <select id="pSize" v-model="form.size" class="select">
-              <option v-for="s in sizeOptions" :key="s" :value="s">{{ s }}</option>
-            </select>
+            <el-select id="pSize" v-model="form.size" class="wselect">
+              <el-option v-for="s in sizeOptions" :key="s" :value="s" :label="s" />
+            </el-select>
           </label>
           <template v-else>
             <label id="ratioField" class="field"><span>比例</span>
-              <select id="pRatio" v-model="form.ratio" class="select">
-                <option v-for="r in ratioOptions" :key="r" :value="r">{{ r }}</option>
-              </select>
+              <el-select id="pRatio" v-model="form.ratio" class="wselect">
+                <el-option v-for="r in ratioOptions" :key="r" :value="r" :label="r" />
+              </el-select>
             </label>
             <label id="resField" class="field"><span>清晰度</span>
-              <select id="pRes" v-model="form.resolution" class="select">
-                <option v-for="r in resolutionKs" :key="r" :value="r">{{ r }}</option>
-              </select>
+              <el-select id="pRes" v-model="form.resolution" class="wselect">
+                <el-option v-for="r in resolutionKs" :key="r" :value="r" :label="r" />
+              </el-select>
             </label>
           </template>
           <label class="field"><span>质量</span>
-            <select id="pQuality" v-model="form.quality" class="select">
-              <option v-for="q in qualityOptions" :key="q" :value="q">{{ q }}</option>
-            </select>
+            <el-select id="pQuality" v-model="form.quality" class="wselect">
+              <el-option v-for="q in qualityOptions" :key="q" :value="q" :label="q" />
+            </el-select>
           </label>
           <label class="field"><span>生成张数</span>
             <div class="n-row">
@@ -368,7 +365,7 @@ onMounted(async () => {
 .col-params{order:2;display:flex;flex-direction:column;min-height:0;overflow:hidden}
 .params-body{padding:13px 16px;flex:1;min-height:0;overflow-y:auto}
 .prov-remark{margin-top:6px;font-size:12px;color:var(--ink-3);line-height:1.45}
-.model-select{width:100%}
+
 .n-row{display:flex;gap:6px;align-items:center}
 .n-hint{font-size:11.5px;color:var(--ink-3)}
 .iconbtn{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;color:var(--ink-2);flex:none;border:1px solid var(--border);background:none;cursor:pointer;font-family:inherit}
