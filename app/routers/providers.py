@@ -71,10 +71,16 @@ def test_conn(pid: int, db: Session = Depends(get_db)):
                 "message": "Mock 源站，本地联调"}
     try:
         r = http.get(f"{p.base_url}/v1/models",
-                     headers={"Authorization": f"Bearer {p.api_key}"}, timeout=5)
-    except Exception as e:
+                     headers={"Authorization": f"Bearer {p.api_key}"}, timeout=15)
+    except http.exceptions.Timeout:
         return {"ok": False, "status_code": 0, "model_count": 0, "models": [],
-                "message": str(e)[:200]}
+                "message": "连接超时（15 秒无响应）：站点可能波动中，稍后再试"}
+    except Exception as e:
+        msg = str(e)
+        if "443" in msg or "Connection" in msg:
+            msg = "无法连接到站点（网络不通或站点挂了）：" + msg.split('(')[0].strip()
+        return {"ok": False, "status_code": 0, "model_count": 0, "models": [],
+                "message": msg[:200]}
     if r.status_code != 200:
         return {"ok": False, "status_code": r.status_code, "model_count": 0,
                 "models": [], "message": f"HTTP {r.status_code}"}
