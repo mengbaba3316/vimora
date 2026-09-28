@@ -224,7 +224,7 @@ onMounted(async () => {
 <template>
   <div class="view">
     <div class="view-head">
-      <h1>生图工作台</h1><span class="sub">选词 → 改词 → 选图 → 生成；任务入队后即可连续提交，进度在历史任务页查看</span>
+      <span class="sub">选词 → 改词 → 选图 → 生成；任务入队后即可连续提交，进度在历史任务页查看</span>
       <BuildTag />
     </div>
 

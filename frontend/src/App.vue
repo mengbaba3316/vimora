@@ -81,7 +81,7 @@ function pickTheme(key) {
 
 /* ── 左轨（抄 prototype .rail）── */
 .rail{width:216px;flex:none;background:var(--page);border-right:1px solid var(--border);display:flex;flex-direction:column;min-height:0}
-.brand{display:flex;align-items:center;justify-content:center;gap:11px;height:58px;flex:none;padding:0;border-bottom:1px solid var(--border);color:var(--accent)}
+.brand{display:flex;align-items:center;gap:11px;height:58px;flex:none;padding:0 18px;border-bottom:1px solid var(--border);color:var(--accent)}
 .brand-logo :deep(svg){height:32px;width:auto;display:block}
 .brand-word :deep(svg){height:14px;width:auto;display:block}
 .nav{padding:14px 12px 14px 18px;flex:1;min-height:0;overflow-y:auto}
