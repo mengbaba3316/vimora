@@ -86,6 +86,8 @@ class Provider(Base):
     task_query_path: Mapped[str] = mapped_column(String(200), default="")
     poll_interval_seconds: Mapped[int] = mapped_column(Integer, default=10)
     extra_params: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
+    # 连通性测试成功时缓存的全量模型列表（/v1/models 的 id 集合）；工作台模型下拉备用
+    available_models: Mapped[Optional[list]] = mapped_column(JSON, nullable=True)
     param_options: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
     remark: Mapped[str] = mapped_column(String(500), default="")
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())

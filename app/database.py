@@ -25,9 +25,29 @@ def _ensure_sqlite(s):
         cur.close()
 
     Base.metadata.create_all(engine)   # 新库直接建当前 schema，无需 MySQL 的补列/枚举迁移
+    _ensure_columns_sqlite(engine)     # 存量老库文件补新列（create_all 不改已有表）
     _seed_libraries(engine)
     print(f"[存储] SQLite 本地库：{s.db_url.replace('sqlite:///', '')}")
     return engine
+
+# SQLite 补列（MySQL 版用 information_schema；SQLite 走 PRAGMA，JSON/VARCHAR 均按 TEXT）
+_SQLITE_MISSING_COLUMNS = {
+    "provider": {"mode": "TEXT NOT NULL DEFAULT 'sync'",
+                 "task_query_path": "TEXT NOT NULL DEFAULT ''",
+                 "poll_interval_seconds": "INTEGER NOT NULL DEFAULT 10",
+                 "available_models": "JSON NULL"},
+    "gen_task": {"remote_task_id": "TEXT NULL"},
+}
+
+def _ensure_columns_sqlite(engine):
+    with engine.begin() as conn:
+        for table, cols in _SQLITE_MISSING_COLUMNS.items():
+            have = {r[1] for r in conn.exec_driver_sql(f"PRAGMA table_info(`{table}`)").fetchall()}
+            if not have:   # 表尚不存在（create_all 刚建齐）则无需补
+                continue
+            for col, ddl in cols.items():
+                if col not in have:
+                    conn.exec_driver_sql(f"ALTER TABLE `{table}` ADD COLUMN `{col}` {ddl}")
 
 def _ensure_mysql(s=settings):
     """库不存在则创建（utf8mb4），返回绑定该库的 engine。"""
@@ -58,6 +78,7 @@ _MISSING_COLUMNS = [
     ("provider", "mode", "ENUM('sync','async') NOT NULL DEFAULT 'sync'"),
     ("provider", "task_query_path", "VARCHAR(200) NOT NULL DEFAULT ''"),
     ("provider", "poll_interval_seconds", "INT NOT NULL DEFAULT 10"),
+    ("provider", "available_models", "JSON NULL"),
     ("gen_task", "remote_task_id", "VARCHAR(200) NULL"),
 ]
 

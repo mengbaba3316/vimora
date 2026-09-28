@@ -22,6 +22,7 @@ def to_dict(p: Provider) -> dict:
         "mode": p.mode, "task_query_path": p.task_query_path,
         "poll_interval_seconds": p.poll_interval_seconds,
         "extra_params": p.extra_params, "param_options": p.param_options,
+        "available_models": p.available_models,
         "remark": p.remark,
         "created_at": p.created_at.strftime("%Y-%m-%d %H:%M:%S") if p.created_at else None,
         "updated_at": p.updated_at.strftime("%Y-%m-%d %H:%M:%S") if p.updated_at else None,
@@ -62,20 +63,28 @@ def delete(pid: int, db: Session = Depends(get_db)):
 
 @router.post("/{pid}/test")
 def test_conn(pid: int, db: Session = Depends(get_db)):
-    """连通性测试：GET {base_url}/v1/models，超时 5s。mock 类型不发起网络请求。"""
+    """连通性测试：GET {base_url}/v1/models，超时 5s。mock 类型不发起网络请求。
+    成功时把拉到的全量模型 id 缓存进 available_models，供工作台模型下拉使用。"""
     p = _one(db, pid)
     if p.type == "mock":
-        return {"ok": True, "status_code": 0, "model_count": 0, "message": "Mock 源站，本地联调"}
+        return {"ok": True, "status_code": 0, "model_count": 0, "models": [],
+                "message": "Mock 源站，本地联调"}
     try:
         r = http.get(f"{p.base_url}/v1/models",
                      headers={"Authorization": f"Bearer {p.api_key}"}, timeout=5)
-        if r.status_code == 200:
-            n = len((r.json() or {}).get("data", []))
-            return {"ok": True, "status_code": 200, "model_count": n, "message": "连通正常"}
-        return {"ok": False, "status_code": r.status_code, "model_count": 0,
-                "message": f"HTTP {r.status_code}"}
     except Exception as e:
-        return {"ok": False, "status_code": 0, "model_count": 0, "message": str(e)[:200]}
+        return {"ok": False, "status_code": 0, "model_count": 0, "models": [],
+                "message": str(e)[:200]}
+    if r.status_code != 200:
+        return {"ok": False, "status_code": r.status_code, "model_count": 0,
+                "models": [], "message": f"HTTP {r.status_code}"}
+    data = (r.json() or {}).get("data", [])
+    ids = [str(m.get("id")) for m in data if m.get("id")][:300]
+    # 缓存进源站记录：更新时间随之刷新，工作台重新选择源站即拿到新列表
+    p.available_models = ids
+    db.commit()
+    return {"ok": True, "status_code": 200, "model_count": len(ids),
+            "models": ids, "message": "连通正常"}
 
 
 def _one(db: Session, pid: int) -> Optional[Provider]:

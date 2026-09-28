@@ -124,10 +124,17 @@ function renderParamOptions() {
   }
   form.quality = qualityOptions.value[0]   /* 默认取第一项（如 high），避免无配置源站落到 low */
   form.n = Math.min(nMax.value, Math.max(1, form.n || 1))
-  /* 模型：param_options.models 为可选列表，未配置则只有默认模型；默认值取默认模型（在列表中时） */
+  /* 模型来源优先级：手填白名单（param_options.models）> 测试缓存的全量列表
+     （available_models）> 仅默认模型。默认模型始终在列并优先选中，仍可手输其他。 */
   const dm = p?.default_model || 'gpt-image-1'
-  modelOptions.value = Array.isArray(po.models) && po.models.length ? po.models : [dm]
-  form.model = modelOptions.value.includes(dm) ? dm : modelOptions.value[0]
+  const fetched = Array.isArray(p?.available_models) ? p.available_models : []
+  let opts
+  if (Array.isArray(po.models) && po.models.length) opts = [...po.models]
+  else if (fetched.length) opts = [...fetched]
+  else opts = [dm]
+  if (!opts.includes(dm)) opts.unshift(dm)
+  modelOptions.value = opts
+  form.model = dm
 }
 function onProviderChange() { renderParamOptions() }
 function nMinus() { form.n = Math.max(1, form.n - 1) }
