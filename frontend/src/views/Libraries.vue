@@ -547,13 +547,14 @@ onMounted(async () => {
 .glist{display:flex;flex-direction:column}
 .pg-item{position:relative;width:100%;text-align:left;padding:8px 11px;border-radius:11px;font-size:13px;color:var(--ink-2);display:flex;align-items:center;gap:8px;margin-bottom:2px;cursor:pointer;border:0;background:none;font-family:inherit}
 .pg-item:hover{background:var(--panel-2)}
-.pg-item.on{background:var(--panel-2);color:var(--ink-1);font-weight:600}
+.pg-item.on{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.pg-item.on .n{color:var(--accent)}
 .pg-item .gname{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pg-item .n{font-size:11px;color:var(--ink-3);flex:none}
 .pg-item .gops{display:none;gap:2px;flex:none}
 .pg-item:hover .gops{display:flex}
 .pg-item.has-ops:hover .n{display:none}
-.gops button{width:20px;height:20px;border-radius:6px;display:grid;place-items:center;color:var(--ink-3);border:0;background:none;cursor:pointer}
+.gops button{width:20px;height:20px;border-radius:6px;display:grid;place-items:center;color:var(--accent);border:0;background:none;cursor:pointer}
 .gops button:hover{background:var(--panel-3);color:var(--ink-1)}
 
 /* 图片网格：瓦片 = 正方形图区（contain 完整缩放，允许留白）+ 下方独立名称行；

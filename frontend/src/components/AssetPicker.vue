@@ -178,7 +178,8 @@ defineExpose({ open })
 .picker-groups{border-right:1px solid var(--border);overflow-y:auto;padding:10px}
 .pg-item{position:relative;width:100%;text-align:left;padding:8px 11px;border-radius:11px;font-size:13px;color:var(--ink-2);display:flex;align-items:center;gap:8px;margin-bottom:2px;cursor:pointer;border:0;background:none;font-family:inherit}
 .pg-item:hover{background:var(--panel-2)}
-.pg-item.on{background:var(--panel-2);color:var(--ink-1);font-weight:600}
+.pg-item.on{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.pg-item.on .n{color:var(--accent)}
 .pg-item .gname{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pg-item .n{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--ink-3);flex:none}
 
