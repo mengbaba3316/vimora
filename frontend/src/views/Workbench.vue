@@ -6,7 +6,7 @@ import { ratioToSize } from '../utils/sizeMap'
 import { store } from '../store'
 import PromptEditor from '../components/PromptEditor.vue'
 import AssetPicker from '../components/AssetPicker.vue'
-import BuildTag from '../components/BuildTag.vue'
+import PaletteButton from '../components/PaletteButton.vue'
 
 /*
  * 生图工作台（原型 #view-workbench）：
@@ -225,7 +225,7 @@ onMounted(async () => {
   <div class="view">
     <div class="view-head">
       <span class="sub">选词 → 改词 → 选图 → 生成；任务入队后即可连续提交，进度在历史任务页查看</span>
-      <BuildTag />
+      <PaletteButton style="margin-left:auto" />
     </div>
 
     <div class="wb">

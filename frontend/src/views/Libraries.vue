@@ -3,7 +3,7 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { libsApi, libTypesApi } from '../api'
 import { naturalDesc } from '../utils/naturalSort'
-import BuildTag from '../components/BuildTag.vue'
+import PaletteButton from '../components/PaletteButton.vue'
 
 /* 一级素材库：后端 library 表动态加载（不再写死四类），素材库页显示全部（含停用） */
 const libTypes = ref([])
@@ -352,7 +352,7 @@ onMounted(async () => {
     <div class="view-head">
       <h1>素材库</h1><span class="sub">一级 = 素材库（可自建/启停），二级 = 组（款式 / 文件夹）</span>
       <div class="right">
-        <BuildTag />
+        <PaletteButton />
         <button class="btn" @click="openManage">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg>管理库
         </button>

@@ -6,3 +6,7 @@ const build = __APP_BUILD__
 <template>
   <span class="build-tag num" :title="`页面构建号 ${build}，与导航处构建号不一致说明命中了缓存旧页`">{{ build }}</span>
 </template>
+
+<style scoped>
+.build-tag{font-size:11px;color:var(--ink-3);font-family:var(--mono);white-space:nowrap}
+</style>

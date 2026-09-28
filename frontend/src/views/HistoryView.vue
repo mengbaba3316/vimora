@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { tasksApi, libTypesApi } from '../api'
 import { useTaskPolling } from '../composables/useTaskPolling'
-import BuildTag from '../components/BuildTag.vue'
+import PaletteButton from '../components/PaletteButton.vue'
 
 /*
  * 历史任务页（原型 #view-history + #taskDrawer）：
@@ -274,7 +274,7 @@ async function copyError() {
     <div class="view-head">
       <h1>历史任务</h1><span class="sub">每次运行按「提示词名 / 时间戳」归档，参数快照可回看可重跑</span>
       <div class="right">
-        <BuildTag />
+        <PaletteButton />
         <span class="chip mute"><span class="d live-dot"></span>排队 / 生成中的任务每 2 秒自动刷新状态</span>
       </div>
     </div>

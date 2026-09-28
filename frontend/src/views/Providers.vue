@@ -2,7 +2,7 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { providersApi } from '../api'
-import BuildTag from '../components/BuildTag.vue'
+import PaletteButton from '../components/PaletteButton.vue'
 
 /* ── 列表（全量含停用）── */
 const list = ref([])
@@ -228,7 +228,7 @@ onMounted(load)
     <div class="view-head">
       <h1>API 源站</h1><span class="sub">OpenAI 兼容中转站，路径与默认参数可按站覆盖</span>
       <div class="right">
-        <BuildTag />
+        <PaletteButton />
         <button class="btn primary" @click="openCreate">新建源站</button>
       </div>
     </div>
