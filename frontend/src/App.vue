@@ -2,7 +2,7 @@
 import { onMounted, ref, watch } from 'vue'
 import logoMark from './assets/logo-mark.svg?raw'
 import logoWord from './assets/logo-wordmark.svg?raw'
-import BuildTag from './components/BuildTag.vue'
+import LiveClock from './components/LiveClock.vue'
 </script>
 
 <template>
@@ -35,7 +35,7 @@ import BuildTag from './components/BuildTag.vue'
         </router-link>
       </nav>
       <div class="rail-foot">
-        <BuildTag />
+        <LiveClock />
       </div>
     </aside>
     <main>
