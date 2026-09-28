@@ -1,6 +1,8 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { PALETTES, applyTheme, currentTheme } from './theme'
+import logoMark from './assets/logo-mark.svg?raw'
+import logoWord from './assets/logo-wordmark.svg?raw'
 
 /* 配色板：初始值由 index.html/main.js 写在 <html> 上，这里只读与切换。
  * 选择持久化到 localStorage.theme（key 与 theme.css 的 token 块一一对应）。 */
@@ -19,11 +21,9 @@ function pickTheme(key) {
 <template>
   <div class="app-shell">
     <aside class="rail">
-      <div class="brand">
-        <div class="mk">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 3l1.9 5.6L20 10l-6.1 1.4L12 17l-1.9-5.6L4 10l6.1-1.4z"/></svg>
-        </div>
-        <b>生图工作台</b>
+      <div class="brand" title="Vimora">
+        <span class="brand-logo" v-html="logoMark"></span>
+        <span class="brand-word" v-html="logoWord"></span>
       </div>
       <nav class="nav">
         <router-link to="/" class="nav-item" exact-active-class="on">
@@ -81,9 +81,9 @@ function pickTheme(key) {
 
 /* ── 左轨（抄 prototype .rail）── */
 .rail{width:216px;flex:none;background:var(--page);border-right:1px solid var(--border);display:flex;flex-direction:column;min-height:0}
-.brand{display:flex;align-items:center;gap:10px;height:58px;flex:none;padding:0 16px;border-bottom:1px solid var(--border)}
-.brand .mk{width:28px;height:28px;border-radius:9px;flex:none;display:grid;place-items:center;background:var(--accent);color:var(--on-accent)}
-.brand b{font-size:14.5px;font-weight:700;letter-spacing:-.01em;color:var(--ink-1)}
+.brand{display:flex;align-items:center;gap:11px;height:58px;flex:none;padding:0 16px;border-bottom:1px solid var(--border);color:var(--accent)}
+.brand-logo :deep(svg){height:32px;width:auto;display:block}
+.brand-word :deep(svg){height:14px;width:auto;display:block}
 .nav{padding:14px 12px 14px 18px;flex:1;min-height:0;overflow-y:auto}
 .nav-item{position:relative;width:100%;display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:11px;color:var(--ink-1);font-size:13.5px;font-weight:500;margin-bottom:2px;transition:background .15s ease,color .15s ease;text-align:left;text-decoration:none;cursor:pointer}
 .nav-item svg{flex:none;opacity:1}
