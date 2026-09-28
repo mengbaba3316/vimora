@@ -66,6 +66,11 @@ function onTabChange() {
   curGroup.value = 'all'
   refresh()
 }
+function switchTab(l) {
+  if (curLib.value === l.id) return
+  curLib.value = l.id
+  onTabChange()
+}
 function pickGroup(gid) {
   curGroup.value = gid
   loadImages()
@@ -360,16 +365,17 @@ onMounted(async () => {
       </div>
     </div>
 
-    <!-- 一级库 tab（停用的库灰显：仍可上传管理，工作台不显示） -->
-    <el-tabs class="libtabs" v-model="curLib" @tab-change="onTabChange">
-      <el-tab-pane v-for="l in libTypes" :key="l.id" :name="l.id">
-        <template #label>
-          <span class="libtab-label" :class="{ off: !l.enabled }" :title="l.enabled ? '' : '未启用：工作台不显示，仍可上传管理'">
-            <span class="ld" :style="{ background: l.color || 'var(--ink-3)' }"></span>{{ l.name }}库<span class="cnt num">{{ libCount(l) }}</span>
-          </span>
-        </template>
-      </el-tab-pane>
-    </el-tabs>
+    <!-- 一级库 tab：自定义胶囊（统一内距/圆点/计数，停用的库灰显：仍可上传管理，工作台不显示） -->
+    <div class="libtabs">
+      <button v-for="l in libTypes" :key="l.id" type="button" class="libtab"
+              :class="{ on: curLib === l.id, off: !l.enabled }"
+              :title="l.enabled ? '' : '未启用：工作台不显示，仍可上传管理'"
+              @click="switchTab(l)">
+        <span class="ld" :style="{ background: l.color || 'var(--ink-3)' }"></span>
+        <span class="lt">{{ l.name }}库</span>
+        <span class="cnt num">{{ libCount(l) }}</span>
+      </button>
+    </div>
 
     <div class="lib-wrap" v-if="curLib != null">
       <!-- 左：组列表 -->
@@ -523,18 +529,15 @@ onMounted(async () => {
 <style scoped>
 .view{flex:1;min-height:0;display:flex;flex-direction:column}
 
-/* 一级库 tab（el-tabs 定制成原型的胶囊 libtab） */
-.libtabs{flex:none;padding:12px 22px 0}
-.libtabs :deep(.el-tabs__header){margin:0}
-.libtabs :deep(.el-tabs__nav-wrap::after){display:none}
-.libtabs :deep(.el-tabs__active-bar){display:none}
-.libtabs :deep(.el-tabs__item){height:34px;line-height:34px;padding:0 14px;margin-right:6px;border:1px solid transparent;border-radius:11px;color:var(--ink-3);font-weight:600;font-size:13px}
-.libtabs :deep(.el-tabs__item:hover){color:var(--ink-1)}
-.libtabs :deep(.el-tabs__item.is-active){background:var(--panel-2);color:var(--ink-1);border-color:var(--border)}
-.libtab-label{display:inline-flex;align-items:center;gap:7px}
-.libtab-label.off{opacity:.45}
-.libtab-label .ld{width:8px;height:8px;border-radius:50%;flex:none}
-.libtab-label .cnt{font-size:11px;color:var(--ink-3)}
+/* 一级库 tab：自定义胶囊按钮（统一内距/圆点/计数间距，激活态只换底色和描边） */
+.libtabs{flex:none;display:flex;flex-wrap:wrap;gap:8px;padding:12px 22px 0}
+.libtab{display:inline-flex;align-items:center;gap:7px;height:34px;padding:0 14px;border:1px solid transparent;border-radius:11px;background:none;font-family:inherit;font-size:13px;font-weight:600;color:var(--ink-3);cursor:pointer;transition:background .15s ease,border-color .15s ease,color .15s ease}
+.libtab:hover{color:var(--ink-1)}
+.libtab.on{background:var(--panel-2);border-color:var(--border);color:var(--ink-1)}
+.libtab.off{opacity:.45}
+.libtab .ld{width:8px;height:8px;border-radius:50%;flex:none}
+.libtab .lt{white-space:nowrap}
+.libtab .cnt{font-size:11px;color:var(--ink-3)}
 
 /* 布局：220px 组列 | 1fr 网格 */
 .lib-wrap{flex:1;min-height:0;display:grid;grid-template-columns:220px minmax(0,1fr);gap:14px;padding:14px 22px 20px}
