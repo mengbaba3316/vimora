@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { libsApi, libTypesApi } from '../api'
 import { naturalDesc } from '../utils/naturalSort'
@@ -13,9 +13,25 @@ const groupsByLib = reactive({})     /* 库 id → 组列表 */
 const images = ref([])
 const loading = ref(false)
 const imgPage = ref(1)
-const imgSize = 50
+const imgSize = ref(24)          /* 动态：按网格实际尺寸算一页摆多少张（分辨率自适应） */
 const imgTotal = ref(0)
-const imgPageCount = computed(() => Math.max(1, Math.ceil(imgTotal.value / imgSize)))
+const gridEl = ref(null)
+let gridObs = null
+
+function measureGrid() {
+  const el = gridEl.value
+  if (!el) return
+  const w = el.clientWidth, h = el.clientHeight
+  const cols = Math.max(2, Math.floor((w + 12) / (132 + 12)))   /* 132px 瓦片 + 12px 间距 */
+  const rows = Math.max(1, Math.floor((h + 12) / (158 + 12)))   /* 瓦片 132 + 名称行 ≈ 158 */
+  const size = Math.min(cols * rows, 400)
+  if (size && size !== imgSize.value) {
+    imgSize.value = size
+    imgPage.value = 1
+    loadImages()
+  }
+}
+const imgPageCount = computed(() => Math.max(1, Math.ceil(imgTotal.value / imgSize.value)))
 
 function gotoImg(p) {
   const next = Math.min(imgPageCount.value, Math.max(1, p))
@@ -56,8 +72,8 @@ async function loadImages() {
   if (curLib.value == null) { images.value = []; return }
   loading.value = true
   try {
-    const params = curGroup.value === 'all' ? { page: imgPage.value, size: imgSize }
-                                            : { group_id: curGroup.value, page: imgPage.value, size: imgSize }
+    const params = curGroup.value === 'all' ? { page: imgPage.value, size: imgSize.value }
+                                            : { group_id: curGroup.value, page: imgPage.value, size: imgSize.value }
     const { data } = await libsApi.images(curLib.value, params)
     /* 分页形态 {items,total}；后端按 id 升序，页内按名称自然排序倒序展示 */
     images.value = asList(data.items).sort((a, b) => naturalDesc(a.original_name, b.original_name))
@@ -355,6 +371,10 @@ async function runImport() {
 }
 
 onMounted(async () => {
+  await nextTick()
+  measureGrid()
+  gridObs = new ResizeObserver(() => measureGrid())
+  if (gridEl.value) gridObs.observe(gridEl.value)
   await loadLibTypes()
   curLib.value = libTypes.value[0]?.id ?? null
   await Promise.all(libTypes.value.map(l => loadGroups(l.id)))
@@ -413,7 +433,7 @@ onMounted(async () => {
 
       <!-- 右：图片网格 -->
       <div class="card lib-gridwrap">
-        <div class="lib-grid" v-loading="loading">
+        <div class="lib-grid" ref="gridEl" v-loading="loading">
           <template v-if="images.length">
             <div v-for="img in images" :key="img.id" class="gtile">
               <!-- 图片区：完整缩放（contain 留白），点击放大；操作按钮悬浮其上 -->
@@ -436,17 +456,17 @@ onMounted(async () => {
             <button class="btn sm primary" @click="openImport">去导入</button>
           </div>
         </div>
+        <div class="ipager num">
+          <button class="btn sm" :disabled="imgPage <= 1" @click="gotoImg(imgPage - 1)">上一页</button>
+          <span>第 {{ imgPage }}/{{ imgPageCount }} 页 · 共 {{ imgTotal }} 张</span>
+          <button class="btn sm" :disabled="imgPage >= imgPageCount" @click="gotoImg(imgPage + 1)">下一页</button>
+        </div>
       </div>
     </div>
 
     <div class="lib-wrap" v-else>
       <div class="card" style="grid-column:1/-1;padding:40px;text-align:center;color:var(--ink-3)">
         还没有任何素材库，点右上角「管理库」新建一个。
-      </div>
-      <div class="ipager num" v-if="curLib != null">
-        <button class="btn sm" :disabled="imgPage <= 1" @click="gotoImg(imgPage - 1)">上一页</button>
-        <span>第 {{ imgPage }}/{{ imgPageCount }} 页 · 共 {{ imgTotal }} 张</span>
-        <button class="btn sm" :disabled="imgPage >= imgPageCount" @click="gotoImg(imgPage + 1)">下一页</button>
       </div>
     </div>
 
@@ -580,7 +600,7 @@ onMounted(async () => {
 /* 图片网格：瓦片 = 正方形图区（contain 完整缩放，允许留白）+ 下方独立名称行；
  * 行高由内容自然撑开，名称不再绝对定位叠在图上，杜绝行间压盖 */
 .lib-gridwrap{display:flex;flex-direction:column;min-height:0;overflow:hidden}
-.lib-grid{flex:1;min-height:0;overflow-y:auto;padding:14px;display:grid;grid-template-columns:repeat(auto-fill,132px);grid-auto-rows:max-content;gap:12px;align-items:start;align-content:start}
+.lib-grid{flex:1;min-height:0;overflow:hidden;padding:14px;display:grid;grid-template-columns:repeat(auto-fill,132px);grid-auto-rows:max-content;gap:12px;align-items:start;align-content:start}
 .gtile{display:flex;flex-direction:column;width:100%;min-width:0;border-radius:11px;overflow:hidden;border:1px solid var(--border);background:var(--panel-2)}
 .gtile .thumb{position:relative;height:132px;width:100%;cursor:zoom-in}
 .gtile .thumb img{width:100%;height:100%;object-fit:contain;display:block}
