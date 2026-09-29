@@ -73,11 +73,25 @@ def delete_group(library_id: int, gid: int, db: Session = Depends(get_db)):
 
 @router.get("/{library_id}/images")
 def list_images(library_id: int, group_id: Optional[int] = None, keyword: str = "",
+                page: Optional[int] = None, size: Optional[int] = None,
                 db: Session = Depends(get_db)):
+    """带 page+size → 分页形态 {items,total,page,size}（素材库网格翻页）；
+    不带 → 全量数组（工作台 chip 索引 / 选图抽屉需要全量）。"""
     lb = _lib(library_id, db)
     q = db.query(AssetImage).filter_by(library=lb.id)
     if group_id: q = q.filter_by(group_id=group_id)
     if keyword: q = q.filter(AssetImage.original_name.like(f"%{keyword}%"))
+    if page is not None and size:
+        total = q.count()
+        rows = (q.order_by(AssetImage.id)
+                 .offset((max(1, page) - 1) * size).limit(size).all())
+        return {"items": [{
+                    "id": i.id, "group_id": i.group_id, "group_name": i.group.name,
+                    "library": i.library, "original_name": i.original_name,
+                    "file_path": i.file_path, "sort_order": i.sort_order,
+                    "url": f"/files/libraries/{i.file_path}",
+                    "created_at": str(i.created_at)} for i in rows],
+                "total": total, "page": page, "size": size}
     return [{"id": i.id, "group_id": i.group_id, "group_name": i.group.name,
              "library": i.library, "original_name": i.original_name,
              "file_path": i.file_path, "sort_order": i.sort_order,

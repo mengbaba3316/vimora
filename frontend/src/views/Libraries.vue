@@ -12,6 +12,17 @@ const curGroup = ref('all')          /* 'all' = 全部组 */
 const groupsByLib = reactive({})     /* 库 id → 组列表 */
 const images = ref([])
 const loading = ref(false)
+const imgPage = ref(1)
+const imgSize = 50
+const imgTotal = ref(0)
+const imgPageCount = computed(() => Math.max(1, Math.ceil(imgTotal.value / imgSize)))
+
+function gotoImg(p) {
+  const next = Math.min(imgPageCount.value, Math.max(1, p))
+  if (next === imgPage.value) return
+  imgPage.value = next
+  loadImages()
+}
 
 const curLibDef = computed(() => libTypes.value.find(l => l.id === curLib.value))
 const curGroups = computed(() => groupsByLib[curLib.value] || [])
@@ -45,10 +56,12 @@ async function loadImages() {
   if (curLib.value == null) { images.value = []; return }
   loading.value = true
   try {
-    const params = curGroup.value === 'all' ? {} : { group_id: curGroup.value }
+    const params = curGroup.value === 'all' ? { page: imgPage.value, size: imgSize }
+                                            : { group_id: curGroup.value, page: imgPage.value, size: imgSize }
     const { data } = await libsApi.images(curLib.value, params)
-    /* 后端按 id 升序返回；前端按名称自然排序倒序展示（8-10 排在 8-2 前） */
-    images.value = asList(data).sort((a, b) => naturalDesc(a.original_name, b.original_name))
+    /* 分页形态 {items,total}；后端按 id 升序，页内按名称自然排序倒序展示 */
+    images.value = asList(data.items).sort((a, b) => naturalDesc(a.original_name, b.original_name))
+    imgTotal.value = data.total ?? images.value.length
   } catch (e) {
     images.value = []
     ElMessage.error('加载图片失败：' + errMsg(e))
@@ -64,6 +77,7 @@ async function refresh() {
 
 function onTabChange() {
   curGroup.value = 'all'
+  imgPage.value = 1
   refresh()
 }
 function switchTab(l) {
@@ -73,6 +87,7 @@ function switchTab(l) {
 }
 function pickGroup(gid) {
   curGroup.value = gid
+  imgPage.value = 1
   loadImages()
 }
 
@@ -428,6 +443,11 @@ onMounted(async () => {
       <div class="card" style="grid-column:1/-1;padding:40px;text-align:center;color:var(--ink-3)">
         还没有任何素材库，点右上角「管理库」新建一个。
       </div>
+      <div class="ipager num" v-if="imgTotal > imgSize">
+        <button class="btn sm" :disabled="imgPage <= 1" @click="gotoImg(imgPage - 1)">上一页</button>
+        <span>第 {{ imgPage }}/{{ imgPageCount }} 页 · 共 {{ imgTotal }} 张</span>
+        <button class="btn sm" :disabled="imgPage >= imgPageCount" @click="gotoImg(imgPage + 1)">下一页</button>
+      </div>
     </div>
 
     <!-- 隐藏的多选文件输入 -->
@@ -547,7 +567,7 @@ onMounted(async () => {
 .glist{display:flex;flex-direction:column}
 .pg-item{position:relative;width:100%;text-align:left;padding:8px 11px;border-radius:11px;font-size:13px;color:var(--ink-2);display:flex;align-items:center;gap:8px;margin-bottom:2px;cursor:pointer;border:0;background:none;font-family:inherit}
 .pg-item:hover{background:var(--panel-2)}
-.pg-item.on{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.pg-item.on{background:color-mix(in srgb,var(--accent) 16%,var(--panel-2));color:var(--accent);font-weight:600}
 .pg-item.on .n{color:var(--accent)}
 .pg-item .gname{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pg-item .n{font-size:11px;color:var(--ink-3);flex:none}
@@ -587,6 +607,8 @@ onMounted(async () => {
 .mgmt-row .color-input{width:0;height:0;opacity:0;padding:0;border:0}
 .mgmt-row .c:hover .dot{outline:2px solid var(--border-2);cursor:pointer}
 .add-lib{margin-top:12px;width:100%}
+
+.ipager{display:flex;align-items:center;justify-content:center;gap:12px;padding:10px;border-top:1px solid var(--border);font-size:12px;color:var(--ink-3);flex:none}
 
 /* 弹窗公共 */
 .dlg-foot{display:flex;gap:8px;justify-content:flex-end}

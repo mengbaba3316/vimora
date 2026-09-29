@@ -16,6 +16,7 @@ const keyword = ref('')
 
 let searchTimer = null
 function onSearchInput() {
+  page.value = 1
   clearTimeout(searchTimer)
   searchTimer = setTimeout(load, 300)
 }
@@ -25,10 +26,24 @@ function errMsg(e) {
   return typeof d === 'string' ? d : (e?.message || '未知错误')
 }
 
+const page = ref(1)
+const pageSize = 50
+const pageCount = computed(() => Math.max(1, Math.ceil(total.value / pageSize)))
+
+function gotoPage(p) {
+  const next = Math.min(pageCount.value, Math.max(1, p))
+  if (next === page.value) return
+  page.value = next
+  load()
+}
+
 async function load() {
   loading.value = true
   try {
-    const { data } = await promptsApi.list({ keyword: keyword.value.trim() || undefined, size: 200 })
+    const { data } = await promptsApi.list({
+      keyword: keyword.value.trim() || undefined,
+      page: page.value, size: pageSize,
+    })
     list.value = data.items || []
     total.value = data.total ?? list.value.length
   } catch (e) {
@@ -165,6 +180,14 @@ onMounted(load)
           </tbody>
         </table>
       </div>
+
+      <div class="ppager num" v-if="total > pageSize">
+        <span>共 {{ total }} 条 · 第 {{ page }}/{{ pageCount }} 页</span>
+        <span class="pager-ops">
+          <button class="btn sm" :disabled="page <= 1" @click="gotoPage(page - 1)">上一页</button>
+          <button class="btn sm" :disabled="page >= pageCount" @click="gotoPage(page + 1)">下一页</button>
+        </span>
+      </div>
     </div>
 
     <el-drawer v-model="drawer" size="560px" :title="editId ? `编辑「${form.name}」` : '新建提示词'">
@@ -202,4 +225,8 @@ onMounted(load)
 .pf-content{font-family:var(--mono);font-size:12.5px;line-height:1.7}
 .drawer-foot{display:flex;gap:8px;width:100%}
 .drawer-foot .cancel{margin-left:auto}
+
+/* 提示词翻页器 */
+.ppager{display:flex;align-items:center;justify-content:space-between;margin-top:12px;font-size:12px;color:var(--ink-3)}
+.ppager .pager-ops{display:flex;gap:8px}
 </style>

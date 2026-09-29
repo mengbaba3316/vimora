@@ -42,13 +42,17 @@ function errMsg(e) {
 /* ── 列表 + 筛选 + 分页 ── */
 const list = ref([])
 const total = ref(0)
-const page = ref(1)
+const rawTotal = ref(0)          /* 后端 total（partial 过滤前） */
+const pages = ref(1)             /* 已加载页数（无限滚动逐页累加） */
 const pageSize = 50
+const loadingMore = ref(false)
+const MAX_PAGES = 10   /* 无限滚动上限：10 页 × 50 = 最新 500 条，压力可控 */
+const noMore = computed(() => pages.value >= MAX_PAGES || pages.value * pageSize >= rawTotal.value)
+const capped = computed(() => pages.value >= MAX_PAGES && rawTotal.value > pages.value * pageSize)
 const loading = ref(false)
 const filterStatus = ref('')
 const filterKw = ref('')
 
-const pageCount = computed(() => Math.max(1, Math.ceil(total.value / pageSize)))
 
 async function refresh(silent = true) {
   if (!silent) loading.value = true
@@ -57,14 +61,17 @@ async function refresh(silent = true) {
        「排队中」→ 请求 status=pending；「部分成功」→ 请求 status=success 后
        客户端按 ok<n 过滤（partial 是派生态，后端无法直接查询）；其余直传。 */
     const fs = filterStatus.value
-    const { data } = await tasksApi.list({
-      status: fs === 'queued' ? 'pending' : (fs === 'partial' ? 'success' : fs),
-      keyword: filterKw.value.trim(),
-      page: page.value,
-      size: pageSize,
-    })
-    let items = data.items || []
-    let count = data.total || 0
+    /* 无限滚动：一次性并行拉取已加载的 1..pages 页，轮询刷新也走这里 */
+    const responses = await Promise.all(
+      Array.from({ length: pages.value }, (_, i) => tasksApi.list({
+        status: fs === 'queued' ? 'pending' : (fs === 'partial' ? 'success' : fs),
+        keyword: filterKw.value.trim(),
+        page: i + 1,
+        size: pageSize,
+      })))
+    let items = responses.flatMap(r => r.data.items || [])
+    let count = responses[0]?.data?.total || 0
+    rawTotal.value = count
     if (fs === 'partial') {
       items = items.filter(t => normStatus(t) === 'partial')
       count = items.length   /* success 总数含全部成功会虚高，展示客户端过滤后的条数 */
@@ -84,7 +91,7 @@ async function refresh(silent = true) {
 }
 
 function onStatusChange() {
-  page.value = 1
+  pages.value = 1
   refresh(false)
 }
 
@@ -101,15 +108,39 @@ function clearFilters() {
   filterStatus.value = ''
   filterKw.value = ''
   clearTimeout(kwTimer)
-  page.value = 1
+  pages.value = 1
   refresh(false)
 }
 
-function goto(p) {
-  const next = Math.min(pageCount.value, Math.max(1, p))
-  if (next === page.value) return
-  page.value = next
-  refresh(false)
+/* 滚动到底加载下一页（去分页器） */
+async function loadMore() {
+  if (loadingMore.value || loading.value || noMore.value) return
+  loadingMore.value = true
+  try {
+    const fs = filterStatus.value
+    const { data } = await tasksApi.list({
+      status: fs === 'queued' ? 'pending' : (fs === 'partial' ? 'success' : fs),
+      keyword: filterKw.value.trim(),
+      page: pages.value + 1,
+      size: pageSize,
+    })
+    pages.value += 1
+    rawTotal.value = data.total || 0
+    let items = data.items || []
+    if (fs === 'partial') items = items.filter(t => normStatus(t) === 'partial')
+    const seen = new Set(list.value.map(x => x.id))   /* 翻页期间新任务插入导致页偏移时去重 */
+    list.value = [...list.value, ...items.filter(x => !seen.has(x.id))]
+    total.value = fs === 'partial' ? list.value.length : rawTotal.value
+  } catch (e) {
+    ElMessage.error('加载更多失败：' + errMsg(e))
+  } finally {
+    loadingMore.value = false
+  }
+}
+
+function onTableScroll(e) {
+  const el = e.target
+  if (el.scrollTop + el.clientHeight >= el.scrollHeight - 120) loadMore()
 }
 
 /* ── 轮询：列表存在 queued/running 时每 2 秒静默刷新 ── */
@@ -293,7 +324,7 @@ async function copyError() {
         <span id="hisTotal" class="chip mute num">{{ total }} 条</span>
       </div>
 
-      <div class="card table-card his-table" v-loading="loading">
+      <div class="card table-card his-table" v-loading="loading" @scroll="onTableScroll">
         <table class="sticky-head">
           <thead>
             <tr>
@@ -344,12 +375,9 @@ async function copyError() {
         </table>
       </div>
 
-      <div class="pager">
-        <span class="num">共 {{ total }} 条 · 第 {{ page }}/{{ pageCount }} 页</span>
-        <span class="pager-ops">
-          <button class="btn sm" :disabled="page <= 1" @click="goto(page - 1)">上一页</button>
-          <button class="btn sm" :disabled="page >= pageCount" @click="goto(page + 1)">下一页</button>
-        </span>
+      <div class="his-end num" v-if="list.length">
+        {{ capped ? `已显示最新 ${pages * pageSize} 条 · 更早记录请用筛选缩小范围`
+                  : (noMore ? `共 ${total} 条 · 已全部加载` : `已加载 ${list.length}/${rawTotal} 条 · 继续滚动加载…`) }}
       </div>
     </div>
 
@@ -461,8 +489,7 @@ async function copyError() {
 .mono-cell{font-family:var(--mono);font-size:12px}
 
 /* 分页（原型 .pager） */
-.pager{display:flex;align-items:center;justify-content:space-between;margin-top:12px;font-size:12px;color:var(--ink-3)}
-.pager-ops{display:flex;gap:8px}
+.his-end{padding:12px;text-align:center;font-size:11px;color:var(--ink-3)}
 
 /* ── 抽屉内（原型 #tdBody 各区块）── */
 .td-h{display:flex;align-items:baseline;gap:10px;min-width:0}

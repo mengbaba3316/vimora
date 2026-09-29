@@ -44,7 +44,7 @@ const promptEditorRef = ref(null)
 
 async function loadPrompts() {
   try {
-    const { data } = await promptsApi.list({ size: 200 })
+    const { data } = await promptsApi.list({ size: 500 })
     prompts.value = data.items || []
   } catch {
     prompts.value = []
