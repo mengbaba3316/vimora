@@ -1,5 +1,6 @@
 import mimetypes
 import os
+import re
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
@@ -71,6 +72,12 @@ def delete_group(library_id: int, gid: int, db: Session = Depends(get_db)):
     db.delete(g); db.commit(); return {"ok": True}
 
 
+def _natural_key(name: str):
+    """自然排序键：数字段按数值、其余按小写文本（8-10 排在 8-2 前）。"""
+    return [(1, int(t)) if t.isdigit() else (0, t.lower())
+            for t in re.split(r"(\d+)", name)]
+
+
 @router.get("/{library_id}/images")
 def list_images(library_id: int, group_id: Optional[int] = None, keyword: str = "",
                 page: Optional[int] = None, size: Optional[int] = None,
@@ -81,10 +88,11 @@ def list_images(library_id: int, group_id: Optional[int] = None, keyword: str = 
     q = db.query(AssetImage).filter_by(library=lb.id)
     if group_id: q = q.filter_by(group_id=group_id)
     if keyword: q = q.filter(AssetImage.original_name.like(f"%{keyword}%"))
+    # 自然排序在 Python 侧做（SQL 做不了数字感知排序），分页切片前全局有序
+    rows = sorted(q.all(), key=lambda r: _natural_key(r.original_name), reverse=True)
+    total = len(rows)
     if page is not None and size:
-        total = q.count()
-        rows = (q.order_by(AssetImage.id)
-                 .offset((max(1, page) - 1) * size).limit(size).all())
+        rows = rows[(max(1, page) - 1) * size: (max(1, page) - 1) * size + size]
         return {"items": [{
                     "id": i.id, "group_id": i.group_id, "group_name": i.group.name,
                     "library": i.library, "original_name": i.original_name,
@@ -92,7 +100,7 @@ def list_images(library_id: int, group_id: Optional[int] = None, keyword: str = 
                     "url": f"/files/libraries/{i.file_path}",
                     "created_at": str(i.created_at)} for i in rows],
                 "total": total, "page": page, "size": size}
-    return [{"id": i.id, "group_id": i.group_id, "group_name": i.group.name,
+    return [{   # 全量形态同样自然倒排"id": i.id, "group_id": i.group_id, "group_name": i.group.name,
              "library": i.library, "original_name": i.original_name,
              "file_path": i.file_path, "sort_order": i.sort_order,
              "url": f"/files/libraries/{i.file_path}",

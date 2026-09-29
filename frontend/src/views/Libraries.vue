@@ -20,7 +20,7 @@ let gridObs = null
 
 function measureGrid() {
   const el = gridEl.value
-  if (!el) return
+  if (!el || !el.clientHeight) return false
   const w = el.clientWidth, h = el.clientHeight
   const cols = Math.max(2, Math.floor((w + 12) / (132 + 12)))   /* 132px 瓦片 + 12px 间距 */
   const rows = Math.max(1, Math.floor((h + 12) / (158 + 12)))   /* 瓦片 132 + 名称行 ≈ 158 */
@@ -28,7 +28,15 @@ function measureGrid() {
   if (size && size !== imgSize.value) {
     imgSize.value = size
     imgPage.value = 1
-    loadImages()
+    return true
+  }
+  return false
+}
+
+function ensureGridObserver() {
+  if (!gridObs && gridEl.value) {
+    gridObs = new ResizeObserver(() => { if (measureGrid()) loadImages() })
+    gridObs.observe(gridEl.value)
   }
 }
 const imgPageCount = computed(() => Math.max(1, Math.ceil(imgTotal.value / imgSize.value)))
@@ -70,6 +78,9 @@ async function loadGroups(libId) {
 
 async function loadImages() {
   if (curLib.value == null) { images.value = []; return }
+  await nextTick()
+  ensureGridObserver()   /* 网格渲染出来后再挂尺寸监听（挂载时 curLib 还没赋值，元素不存在） */
+  measureGrid()          /* 每次加载前重算一页张数：分辨率/窗口变化即时生效 */
   loading.value = true
   try {
     const params = curGroup.value === 'all' ? { page: imgPage.value, size: imgSize.value }
@@ -371,10 +382,6 @@ async function runImport() {
 }
 
 onMounted(async () => {
-  await nextTick()
-  measureGrid()
-  gridObs = new ResizeObserver(() => measureGrid())
-  if (gridEl.value) gridObs.observe(gridEl.value)
   await loadLibTypes()
   curLib.value = libTypes.value[0]?.id ?? null
   await Promise.all(libTypes.value.map(l => loadGroups(l.id)))
