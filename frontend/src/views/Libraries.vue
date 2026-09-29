@@ -21,10 +21,14 @@ let gridObs = null
 function measureGrid() {
   const el = gridEl.value
   if (!el || !el.clientHeight) return false
-  const w = el.clientWidth, h = el.clientHeight
-  const cols = Math.max(2, Math.floor((w + 12) / (132 + 12)))   /* 132px 瓦片 + 12px 间距 */
-  const rows = Math.max(1, Math.floor((h + 12) / (158 + 12)))   /* 瓦片 132 + 名称行 ≈ 158 */
-  const size = Math.min(cols * rows, 400)
+  const w = el.clientWidth - 28, h = el.clientHeight - 28   /* 网格内边距 14×2 */
+  let cols = Math.max(2, Math.floor((w + 12) / 144))         /* 132px 最小瓦片 + 12px 间距 */
+  let rows = Math.max(1, Math.floor((h + 12) / 170))         /* 最小行高 ≈ 158 + 间距 */
+  while (rows > 1 && (h - (rows - 1) * 12) / rows < 110) rows--   /* 行高过低就减行数 */
+  const rowH = Math.floor((h - (rows - 1) * 12) / rows)      /* 行高均分：撑满无底部空隙 */
+  el.style.setProperty('--cols', cols)
+  el.style.setProperty('--rowh', rowH + 'px')
+  const size = cols * rows
   if (size && size !== imgSize.value) {
     imgSize.value = size
     imgPage.value = 1
@@ -607,9 +611,9 @@ onMounted(async () => {
 /* 图片网格：瓦片 = 正方形图区（contain 完整缩放，允许留白）+ 下方独立名称行；
  * 行高由内容自然撑开，名称不再绝对定位叠在图上，杜绝行间压盖 */
 .lib-gridwrap{display:flex;flex-direction:column;min-height:0;overflow:hidden}
-.lib-grid{flex:1;min-height:0;overflow:hidden;padding:14px;display:grid;grid-template-columns:repeat(auto-fill,132px);grid-auto-rows:max-content;gap:12px;align-items:start;align-content:start}
-.gtile{display:flex;flex-direction:column;width:100%;min-width:0;border-radius:11px;overflow:hidden;border:1px solid var(--border);background:var(--panel-2)}
-.gtile .thumb{position:relative;height:132px;width:100%;cursor:zoom-in}
+.lib-grid{flex:1;min-height:0;overflow:hidden;padding:14px;display:grid;grid-template-columns:repeat(var(--cols,5),1fr);grid-auto-rows:var(--rowh,170px);gap:12px;align-items:stretch}
+.gtile{display:flex;flex-direction:column;width:100%;min-width:0;border-radius:11px;overflow:hidden;border:1px solid var(--border);background:var(--panel-2);height:100%}
+.gtile .thumb{position:relative;height:calc(var(--rowh,170px) - 27px);width:100%;cursor:zoom-in}
 .gtile .thumb img{width:100%;height:100%;object-fit:contain;display:block}
 .gtile .ops{position:absolute;top:6px;right:6px;display:none;gap:4px;z-index:2}
 .gtile .thumb:hover .ops{display:flex}
