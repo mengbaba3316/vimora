@@ -1,15 +1,16 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { libsApi } from '../api'
-import { naturalDesc } from '../utils/naturalSort'
 
 /*
- * 四库通用素材选择抽屉。
+ * 素材选择抽屉（分页版）：左侧组筛选，右侧图片网格按页加载。
+ * 每页张数按抽屉网格实际尺寸动态计算（分辨率自适应），无滚动条。
  * 用法（工作台）：
- *   <AssetPicker ref="facePicker" library="face" v-model="sel.face" />
- *   facePicker.value.open()
+ *   <AssetPicker ref="x" :library="id" :lib-name="名" :lib-color="色" v-model="sel" />
+ *   x.value.open()
  * 确定 → emit('update:modelValue', 有序 image_id 数组)；取消 / 关闭不改值。
+ * 跨页点选：draft 按 id 维护，翻页不影响已选与顺序。
  */
 const props = defineProps({
   library: { type: [String, Number], required: true },  /* 一级素材库 id */
@@ -26,8 +27,17 @@ const images = ref([])
 const curGroup = ref('all')   /* 'all' = 全部组 */
 const draft = ref([])         /* 点选顺序维护的已选 id */
 
+/* 分页：每页张数按网格实际尺寸动态计算 */
+const page = ref(1)
+const size = ref(12)
+const imgTotal = ref(0)
+const gridEl = ref(null)
+let obs = null
+
 const libMeta = computed(() => ({ name: props.libName, color: props.libColor }))
 const subText = computed(() => `已选 ${draft.value.length} 张，按点选顺序传给接口`)
+const pageCount = computed(() => Math.max(1, Math.ceil(imgTotal.value / size.value)))
+const allCount = computed(() => groups.value.reduce((a, g) => a + (g.image_count || 0), 0))
 
 function errMsg(e) {
   const d = e?.response?.data?.detail
@@ -37,17 +47,46 @@ function asList(data) {
   return Array.isArray(data) ? data : (data?.items || [])
 }
 
-/* 打开：草稿 = 外部值，并行拉组列表与全量图片（组过滤在本地做） */
-async function open() {
-  draft.value = [...(props.modelValue || [])]
-  curGroup.value = 'all'
-  drawer.value = true
+/* 测量网格：算列数与行高（CSS 变量下发，瓦片拉伸撑满无滚动条） */
+function measure() {
+  const el = gridEl.value
+  if (!el || !el.clientHeight) return
+  const w = el.clientWidth - 20, h = el.clientHeight - 20 - 30   /* 内边距 + 翻页器高度 */
+  const cols = Math.max(2, Math.floor((w + 10) / 142))           /* 132px 最小瓦片 + 10px 间距 */
+  let rows = Math.max(1, Math.floor((h + 10) / 169))             /* 瓦片高 ≈ 159 + 间距 */
+  while (rows > 1 && (h - (rows - 1) * 10) / rows < 130) rows--
+  const rowH = Math.floor((h - (rows - 1) * 10) / rows)
+  el.style.setProperty('--cols', cols)
+  el.style.setProperty('--rowh', rowH + 'px')
+  const s = cols * rows
+  if (s && s !== size.value) { size.value = s; page.value = 1 }
+}
+function ensureObs() {
+  if (!obs && gridEl.value) {
+    obs = new ResizeObserver(() => measure())
+    obs.observe(gridEl.value)
+  }
+}
+onBeforeUnmount(() => obs?.disconnect())
+
+async function load() {
   loading.value = true
   try {
-    const [g, imgs] = await Promise.all([libsApi.groups(props.library), libsApi.images(props.library)])
+    await nextTick()
+    ensureObs()
+    measure()
+    setTimeout(measure, 380)   /* 抽屉展开动画结束后再校一次（动画中 clientHeight=0 会被跳过） */
+    const params = curGroup.value === 'all'
+      ? { page: page.value, size: size.value }
+      : { group_id: curGroup.value, page: page.value, size: size.value }
+    const [g, imgs] = await Promise.all([
+      libsApi.groups(props.library),
+      libsApi.images(props.library, params),
+    ])
     groups.value = asList(g.data)
-    /* 后端按 id 升序返回；前端按名称自然排序倒序展示（8-10 排在 8-2 前） */
-    images.value = asList(imgs.data).sort((a, b) => naturalDesc(a.original_name, b.original_name))
+    imgTotal.value = imgs.data.total ?? 0
+    /* 后端已按名称自然倒排（全局有序），此处不再排序 */
+    images.value = asList(imgs.data.items)
   } catch (e) {
     groups.value = []
     images.value = []
@@ -57,9 +96,24 @@ async function open() {
   }
 }
 
-const allCount = computed(() => images.value.length)
-const shownImages = computed(() =>
-  curGroup.value === 'all' ? images.value : images.value.filter(i => i.group_id === curGroup.value))
+function gotoPage(p) {
+  const next = Math.min(pageCount.value, Math.max(1, p))
+  if (next === page.value) return
+  page.value = next
+  load()
+}
+
+watch(curGroup, () => { page.value = 1; load() })
+watch(() => props.library, () => { page.value = 1 })
+
+/* 打开：草稿 = 外部值，回到第 1 页加载（组列表全量、图片分页） */
+async function open() {
+  draft.value = [...(props.modelValue || [])]
+  curGroup.value = 'all'
+  page.value = 1
+  drawer.value = true
+  await load()
+}
 
 function groupName(img) {
   if (img.group_name) return img.group_name
@@ -116,27 +170,34 @@ defineExpose({ open })
         </button>
       </div>
 
-      <!-- 右：图片网格，点选切换 + 顺序徽标；右上角放大镜只管预览 -->
-      <div class="picker-grid">
-        <template v-if="shownImages.length">
-          <div v-for="img in shownImages" :key="img.id" class="ptile" :class="{ on: ordOf(img.id) > 0 }" @click="toggleTile(img)">
-            <div class="thumb">
-              <img :src="img.url" :alt="img.original_name" loading="lazy">
-              <button class="zoom" title="放大预览" @click.stop="openPreview(img)">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.8-3.8"/></svg>
-              </button>
+      <!-- 右：图片网格（分页）+ 底部翻页器 -->
+      <div class="picker-grid" ref="gridEl">
+        <div class="pgrid" v-loading="loading">
+          <template v-if="images.length">
+            <div v-for="img in images" :key="img.id" class="ptile" :class="{ on: ordOf(img.id) > 0 }" @click="toggleTile(img)">
+              <div class="thumb">
+                <img :src="img.url" :alt="img.original_name" loading="lazy">
+                <button class="zoom" title="放大预览" @click.stop="openPreview(img)">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.8-3.8"/></svg>
+                </button>
+              </div>
+              <span class="tick">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+              </span>
+              <span class="ord num">{{ ordOf(img.id) }}</span>
+              <span class="name" :title="`${img.original_name}${groupName(img) ? ` · ${groupName(img)}` : ''}`">{{ img.original_name }}{{ groupName(img) ? ` · ${groupName(img)}` : '' }}</span>
             </div>
-            <span class="tick">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
-            </span>
-            <span class="ord num">{{ ordOf(img.id) }}</span>
-            <span class="name" :title="`${img.original_name}${groupName(img) ? ` · ${groupName(img)}` : ''}`">{{ img.original_name }}{{ groupName(img) ? ` · ${groupName(img)}` : '' }}</span>
+          </template>
+          <div v-else-if="!loading" class="empty">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M3.5 17.5l5-4.5 4 3.5 3.5-3 4.5 4"/></svg>
+            <b>{{ curGroup === 'all' ? '这个库还是空的' : '这个组还是空的' }}</b>
+            <p>去「素材库」上传图片，或用「导入磁盘目录」把已有文件夹整组搬进来。</p>
           </div>
-        </template>
-        <div v-else-if="!loading" class="empty">
-          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M3.5 17.5l5-4.5 4 3.5 3.5-3 4.5 4"/></svg>
-          <b>{{ curGroup === 'all' ? '这个库还是空的' : '这个组还是空的' }}</b>
-          <p>去「素材库」上传图片，或用「导入磁盘目录」把已有文件夹整组搬进来。</p>
+        </div>
+        <div class="ppager num">
+          <button class="btn sm" :disabled="page <= 1" @click="gotoPage(page - 1)">上一页</button>
+          <span>第 {{ page }}/{{ pageCount }} 页 · 共 {{ imgTotal }} 张</span>
+          <button class="btn sm" :disabled="page >= pageCount" @click="gotoPage(page + 1)">下一页</button>
         </div>
       </div>
     </div>
@@ -149,7 +210,7 @@ defineExpose({ open })
     </template>
   </el-drawer>
 
-  <!-- 大图预览（teleport 到 body，层级高于抽屉）；Esc / 点遮罩关闭 -->
+  <!-- 大图预览（teleport 到 body） -->
   <el-image-viewer
     v-if="previewUrl"
     :url-list="[previewUrl]"
@@ -160,14 +221,10 @@ defineExpose({ open })
 </template>
 
 <style>
-/* 抽屉壳对齐原型 .drawer-h/.drawer-f（drawer teleport 到 body，须用全局作用域） */
+/* 抽屉壳对齐原型 .drawer-h/.drawer-b/.drawer-f（drawer teleport 到 body，须用全局作用域） */
 .picker-drawer .el-drawer__header{padding:15px 18px;margin-bottom:0;border-bottom:1px solid var(--border);color:var(--ink-1)}
 .picker-drawer .el-drawer__body{padding:0;overflow:hidden}
 .picker-drawer .el-drawer__footer{padding:13px 18px;border-top:1px solid var(--border)}
-</style>
-
-<style scoped>
-
 .picker-h{display:flex;align-items:center;gap:10px;min-width:0}
 .picker-h .ld{width:9px;height:9px;border-radius:50%;flex:none}
 .picker-h b{font-size:14.5px}
@@ -178,16 +235,17 @@ defineExpose({ open })
 .picker-groups{border-right:1px solid var(--border);overflow-y:auto;padding:10px}
 .pg-item{position:relative;width:100%;text-align:left;padding:8px 11px;border-radius:11px;font-size:13px;color:var(--ink-2);display:flex;align-items:center;gap:8px;margin-bottom:2px;cursor:pointer;border:0;background:none;font-family:inherit}
 .pg-item:hover{background:var(--panel-2)}
-.pg-item.on{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.pg-item.on{background:color-mix(in srgb,var(--accent) 16%,var(--panel-2));color:var(--accent);font-weight:600}
 .pg-item.on .n{color:var(--accent)}
 .pg-item .gname{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pg-item .n{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--ink-3);flex:none}
 
-.picker-grid{overflow-y:auto;padding:14px;display:grid;grid-template-columns:repeat(auto-fill,132px);grid-auto-rows:max-content;gap:10px;align-items:start;align-content:start}
-/* 瓦片 = 正方形图区（contain 完整缩放，允许留白）+ 下方独立名称行；行高随内容撑开，不压盖 */
+/* 右侧：网格（瓦片拉伸撑满）+ 底部翻页器，无滚动条 */
+.picker-grid{overflow:hidden;padding:14px;display:flex;flex-direction:column;gap:10px;min-height:0}
+.pgrid{flex:1;min-height:0;overflow:hidden;display:grid;grid-template-columns:repeat(var(--cols,3),1fr);grid-auto-rows:var(--rowh,160px);gap:10px;align-items:stretch}
 .ptile{position:relative;display:flex;flex-direction:column;width:100%;min-width:0;border-radius:11px;overflow:hidden;cursor:pointer;border:1.5px solid var(--border);background:var(--panel-2);transition:border-color .12s ease,transform .12s ease}
 .ptile:hover{transform:translateY(-2px)}
-.ptile .thumb{position:relative;height:132px;width:100%}
+.ptile .thumb{position:relative;flex:1;min-height:0;width:100%}
 .ptile .thumb img{width:100%;height:100%;object-fit:contain;display:block}
 .ptile .zoom{position:absolute;top:6px;right:6px;width:24px;height:24px;padding:0;border-radius:7px;background:var(--img-chip-bg);color:var(--ink-2);display:grid;place-items:center;border:1px solid var(--border-2);cursor:zoom-in;opacity:0;pointer-events:none;transition:opacity .12s ease;z-index:2}
 .ptile:hover .zoom{opacity:1;pointer-events:auto}
@@ -198,7 +256,7 @@ defineExpose({ open })
 .ptile.on{border-color:var(--accent)}
 .ptile.on .tick{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
 .ptile .ord{position:absolute;top:7px;right:7px;min-width:17px;height:17px;padding:0 4px;border-radius:99px;background:var(--accent);color:var(--on-accent);font-size:10px;font-weight:700;display:none;place-items:center;font-family:var(--mono)}
-.ptile.on .ord{display:grid}
+.ppager{display:flex;align-items:center;justify-content:center;gap:12px;flex:none;font-size:11px;color:var(--ink-3)}
 
 .picker-foot{display:flex;gap:8px;justify-content:flex-end;width:100%}
 </style>
