@@ -443,7 +443,7 @@ onMounted(async () => {
       <div class="card" style="grid-column:1/-1;padding:40px;text-align:center;color:var(--ink-3)">
         还没有任何素材库，点右上角「管理库」新建一个。
       </div>
-      <div class="ipager num" v-if="imgTotal > imgSize">
+      <div class="ipager num" v-if="curLib != null">
         <button class="btn sm" :disabled="imgPage <= 1" @click="gotoImg(imgPage - 1)">上一页</button>
         <span>第 {{ imgPage }}/{{ imgPageCount }} 页 · 共 {{ imgTotal }} 张</span>
         <button class="btn sm" :disabled="imgPage >= imgPageCount" @click="gotoImg(imgPage + 1)">下一页</button>

@@ -10,7 +10,7 @@ router = APIRouter(prefix="/prompts", tags=["prompts"])
 
 @router.get("")
 def list_prompts(keyword: str = "", tag: str = "", page: int = Query(1, ge=1),
-                 size: int = Query(50, le=200), db: Session = Depends(get_db)):
+                 size: int = Query(50, le=500), db: Session = Depends(get_db)):
     q = db.query(Prompt)
     if keyword:
         like = f"%{keyword}%"

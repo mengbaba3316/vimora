@@ -48,7 +48,6 @@ const pageSize = 50
 const loadingMore = ref(false)
 const MAX_PAGES = 10   /* 无限滚动上限：10 页 × 50 = 最新 500 条，压力可控 */
 const noMore = computed(() => pages.value >= MAX_PAGES || pages.value * pageSize >= rawTotal.value)
-const capped = computed(() => pages.value >= MAX_PAGES && rawTotal.value > pages.value * pageSize)
 const loading = ref(false)
 const filterStatus = ref('')
 const filterKw = ref('')
@@ -375,10 +374,6 @@ async function copyError() {
         </table>
       </div>
 
-      <div class="his-end num" v-if="list.length">
-        {{ capped ? `已显示最新 ${pages * pageSize} 条 · 更早记录请用筛选缩小范围`
-                  : (noMore ? `共 ${total} 条 · 已全部加载` : `已加载 ${list.length}/${rawTotal} 条 · 继续滚动加载…`) }}
-      </div>
     </div>
 
     <!-- 抽屉：任务详情（原型 #taskDrawer / #tdBody） -->

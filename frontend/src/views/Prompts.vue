@@ -181,7 +181,7 @@ onMounted(load)
         </table>
       </div>
 
-      <div class="ppager num" v-if="total > pageSize">
+      <div class="ppager num" v-if="total > 0">
         <span>共 {{ total }} 条 · 第 {{ page }}/{{ pageCount }} 页</span>
         <span class="pager-ops">
           <button class="btn sm" :disabled="page <= 1" @click="gotoPage(page - 1)">上一页</button>
