@@ -185,11 +185,9 @@ onMounted(load)
       </div>
 
       <div class="ppager num" v-if="total > 0">
+        <button class="btn sm" :disabled="page <= 1" @click="gotoPage(page - 1)">{{ L('上一页') }}</button>
         <span>{{ L('共 {n} 条', { n: total }) }} · {{ L('第 {p}/{c} 页', { p: page, c: pageCount }) }}</span>
-        <span class="pager-ops">
-          <button class="btn sm" :disabled="page <= 1" @click="gotoPage(page - 1)">{{ L('上一页') }}</button>
-          <button class="btn sm" :disabled="page >= pageCount" @click="gotoPage(page + 1)">{{ L('下一页') }}</button>
-        </span>
+        <button class="btn sm" :disabled="page >= pageCount" @click="gotoPage(page + 1)">{{ L('下一页') }}</button>
       </div>
     </div>
 
@@ -230,6 +228,6 @@ onMounted(load)
 .drawer-foot .cancel{margin-left:auto}
 
 /* 提示词翻页器 */
-.ppager{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:12px;font-size:12px;color:var(--ink-3)}
+.ppager{display:flex;align-items:center;justify-content:space-between;margin-top:12px;font-size:12px;color:var(--ink-3)}
 .ppager .pager-ops{display:flex;gap:8px}
 </style>
