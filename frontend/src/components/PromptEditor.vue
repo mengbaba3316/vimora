@@ -3,6 +3,7 @@ import { computed, ref, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { promptsApi } from '../api'
 import { useFindReplace } from '../composables/useFindReplace'
+import { L } from '../i18n'
 
 /*
  * 提示词编辑器（原型 .col-prompt 的 findbar + textarea + prompt-foot）。
@@ -101,8 +102,8 @@ async function saveBack() {
 <template>
   <div class="findbar">
     <div class="row">
-      <span class="lbl">查找</span>
-      <input id="findInput" v-model="findQuery" placeholder="在提示词内容内查找，如 场景 / white dress"
+      <span class="lbl">{{ L('查找') }}</span>
+      <input id="findInput" v-model="findQuery" :placeholder="L('在提示词内容内查找，如 场景 / white dress')"
              @input="onFindInput" @keydown="onFindKeydown">
       <button id="findPrev" class="iconbtn" title="上一个" @click="jumpPrev">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 14l6-6 6 6"/></svg>
@@ -113,10 +114,10 @@ async function saveBack() {
       <span id="findCount" class="fcount num" :class="{ none: noneResult }">{{ findLabel }}</span>
     </div>
     <div class="row">
-      <span class="lbl">替换</span>
-      <input id="replaceInput" v-model="replaceText" placeholder="替换为…">
-      <button id="repOne" class="btn sm" @click="onReplaceOne">替换</button>
-      <button id="repAll" class="btn sm" @click="onReplaceAll">全部替换</button>
+      <span class="lbl">{{ L('替换') }}</span>
+      <input id="replaceInput" v-model="replaceText" :placeholder="L('替换为…')">
+      <button id="repOne" class="btn sm" @click="onReplaceOne">{{ L('替换') }}</button>
+      <button id="repAll" class="btn sm" @click="onReplaceAll">{{ L('全部替换') }}</button>
     </div>
   </div>
   <div class="prompt-editor">
@@ -124,8 +125,8 @@ async function saveBack() {
   </div>
   <div class="prompt-foot">
     <span id="charCount" class="wc num">{{ charCount }}</span>
-    <button id="saveAsNew" class="btn sm" @click="saveAsNew">另存为新提示词</button>
-    <button id="saveBack" class="btn sm primary" @click="saveBack">保存回提示词库</button>
+    <button id="saveAsNew" class="btn sm" @click="saveAsNew">{{ L('另存为新提示词') }}</button>
+    <button id="saveBack" class="btn sm primary" @click="saveBack">{{ L('保存回提示词库') }}</button>
   </div>
 </template>
 

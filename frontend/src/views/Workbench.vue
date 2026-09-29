@@ -7,6 +7,8 @@ import { store } from '../store'
 import PromptEditor from '../components/PromptEditor.vue'
 import AssetPicker from '../components/AssetPicker.vue'
 import PaletteButton from '../components/PaletteButton.vue'
+import LangButton from '../components/LangButton.vue'
+import { L } from '../i18n'
 
 /*
  * 生图工作台（原型 #view-workbench）：
@@ -151,8 +153,8 @@ const ckParams = computed(() => sizeMode.value
 const isMock = computed(() => currentProvider.value?.type === 'mock')
 const genReason = computed(() => {
   const reason = []
-  if (!editorText.value.trim()) reason.push('请先选择或填写提示词')
-  if (!currentProvider.value) reason.push('请选择 API 源站')
+  if (!editorText.value.trim()) reason.push(L('请先选择或填写提示词'))
+  if (!currentProvider.value) reason.push(L('请选择 API 源站'))
   return reason.join('；')
 })
 
@@ -226,6 +228,7 @@ onMounted(async () => {
     <div class="view-head">
       <span class="sub">选词 → 改词 → 选图 → 生成；任务入队后即可连续提交，进度在历史任务页查看</span>
       <PaletteButton style="margin-left:auto" />
+      <LangButton />
     </div>
 
     <div class="wb">
@@ -236,7 +239,7 @@ onMounted(async () => {
             <span class="ld" :style="{ background: l.color || 'var(--ink-3)' }"></span>
             <b>{{ l.name }}库</b>
             <span class="cnt">{{ sel[l.id]?.length ? `已选 ${sel[l.id].length} 张` : '未选择' }}</span>
-            <button class="btn sm pick-btn" @click="pickers[l.id]?.open()">选择…</button>
+            <button class="btn sm pick-btn" @click="pickers[l.id]?.open()">{{ L('选择…') }}</button>
           </div>
           <div class="sel-strip">
             <template v-if="sel[l.id]?.length">
@@ -260,7 +263,7 @@ onMounted(async () => {
 
       <!-- 中(order 1)：提示词 -->
       <section class="card col-prompt">
-        <div class="card-h"><b>提示词</b><span class="cnt">本次可自由修改，不回写库</span></div>
+        <div class="card-h"><b>{{ L('提示词') }}</b><span class="cnt">{{ L('本次可自由修改，不回写库') }}</span></div>
         <div class="prompt-pick">
           <el-select id="promptSel" v-model="selectedPromptId" class="wselect" placeholder="选择提示词…" @change="onPromptChange">
             <el-option v-for="p in prompts" :key="p.id" :value="p.id" :label="p.name" />
@@ -271,16 +274,16 @@ onMounted(async () => {
 
       <!-- 右(order 2)：源站与参数 + 提交前检查 -->
       <aside class="card col-params">
-        <div class="card-h"><b>源站与参数</b></div>
+        <div class="card-h"><b>{{ L('源站与参数') }}</b></div>
         <div class="params-body">
-          <label class="field"><span>API 源站 <i class="req">*</i></span>
+          <label class="field"><span>{{ L('API 源站') }} <i class="req">*</i></span>
             <el-select id="provSel" v-model="form.providerId" class="wselect" placeholder="请选择 API 源站" @change="onProviderChange">
               <el-option v-for="p in providers" :key="p.id" :value="p.id"
                          :label="p.name + (p.type === 'mock' ? '（联调）' : '')" />
             </el-select>
             <div v-if="currentProvider?.remark" id="provRemark" class="prov-remark">{{ currentProvider.remark }}</div>
           </label>
-          <div class="field"><span>模型</span>
+          <div class="field"><span>{{ L('模型') }}</span>
             <el-select id="pModel" v-model="form.model" class="wselect" filterable allow-create
                        default-first-option placeholder="选择或输入模型">
               <el-option v-for="m in modelOptions" :key="m" :value="m" :label="m" />
@@ -292,23 +295,23 @@ onMounted(async () => {
             </el-select>
           </label>
           <template v-else>
-            <label id="ratioField" class="field"><span>比例</span>
+            <label id="ratioField" class="field"><span>{{ L('比例') }}</span>
               <el-select id="pRatio" v-model="form.ratio" class="wselect">
                 <el-option v-for="r in ratioOptions" :key="r" :value="r" :label="r" />
               </el-select>
             </label>
-            <label id="resField" class="field"><span>清晰度</span>
+            <label id="resField" class="field"><span>{{ L('清晰度') }}</span>
               <el-select id="pRes" v-model="form.resolution" class="wselect">
                 <el-option v-for="r in resolutionKs" :key="r" :value="r" :label="r" />
               </el-select>
             </label>
           </template>
-          <label class="field"><span>质量</span>
+          <label class="field"><span>{{ L('质量') }}</span>
             <el-select id="pQuality" v-model="form.quality" class="wselect">
               <el-option v-for="q in qualityOptions" :key="q" :value="q" :label="q" />
             </el-select>
           </label>
-          <label class="field"><span>生成张数</span>
+          <label class="field"><span>{{ L('生成张数') }}</span>
             <div class="n-row">
               <button id="nMinus" class="iconbtn" @click="nMinus">−</button>
               <input id="pN" v-model="form.n" class="input num" style="text-align:center;width:64px" @input="onNInput">
@@ -318,11 +321,11 @@ onMounted(async () => {
           </label>
         </div>
         <div class="precheck">
-          <h4>提交前检查</h4>
-          <div class="li"><span class="k">发送方式</span><b id="ckEp">{{ ckEndpoint }}</b></div>
-          <div class="li"><span class="k">提示词</span><b id="ckPrompt">{{ ckPrompt }}</b></div>
-          <div class="li"><span class="k">目标</span><b id="ckProv">{{ ckProv }}</b></div>
-          <div class="li"><span class="k">参数</span><b id="ckParams" class="num">{{ ckParams }}</b></div>
+          <h4>{{ L('提交前检查') }}</h4>
+          <div class="li"><span class="k">{{ L('发送方式') }}</span><b id="ckEp">{{ ckEndpoint }}</b></div>
+          <div class="li"><span class="k">{{ L('提示词') }}</span><b id="ckPrompt">{{ ckPrompt }}</b></div>
+          <div class="li"><span class="k">{{ L('目标') }}</span><b id="ckProv">{{ ckProv }}</b></div>
+          <div class="li"><span class="k">{{ L('参数') }}</span><b id="ckParams" class="num">{{ ckParams }}</b></div>
           <div v-if="isMock" class="warnline">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="flex:none;margin-top:2px"><path d="M12 9v4M12 17h.01M10.3 3.9L1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/></svg>
             <span>Mock 本地源站仅用于联调，不会生成真实图片</span>
@@ -330,7 +333,7 @@ onMounted(async () => {
         </div>
         <div class="gen-wrap">
           <button id="genBtn" class="btn primary gen" :disabled="!!genReason || submitting" @click="submitTask">
-            {{ submitting ? '提交中…' : `生成 ${form.n} 张` }}
+            {{ submitting ? L('提交中…') : L('生成 {n} 张', { n: form.n }) }}
           </button>
           <div id="genReason" class="gen-reason" :class="{ on: !!genReason }">{{ genReason }}</div>
         </div>

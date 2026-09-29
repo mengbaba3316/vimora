@@ -3,6 +3,7 @@ import { onMounted, ref, watch } from 'vue'
 import logoMark from './assets/logo-mark.svg?raw'
 import logoWord from './assets/logo-wordmark.svg?raw'
 import LiveClock from './components/LiveClock.vue'
+import { L } from './i18n'
 </script>
 
 <template>
@@ -15,23 +16,23 @@ import LiveClock from './components/LiveClock.vue'
       <nav class="nav">
         <router-link to="/" class="nav-item" exact-active-class="on">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="5" rx="2"/><rect x="13" y="10" width="8" height="11" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/></svg>
-          生图工作台
+          {{ L('生图工作台') }}
         </router-link>
         <router-link to="/prompts" class="nav-item" active-class="on">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 5h16M4 10h10M4 15h16M4 20h7"/></svg>
-          提示词库
+          {{ L('提示词库') }}
         </router-link>
         <router-link to="/libraries" class="nav-item" active-class="on">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><circle cx="9" cy="10" r="1.7"/><path d="M3.5 17.5l5-4.5 4 3.5 3.5-3 4.5 4"/></svg>
-          素材库
+          {{ L('素材库') }}
         </router-link>
         <router-link to="/providers" class="nav-item" active-class="on">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="4" width="18" height="7" rx="2"/><rect x="3" y="13" width="18" height="7" rx="2"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>
-          API 源站
+          {{ L('API 源站') }}
         </router-link>
         <router-link to="/history" class="nav-item" active-class="on">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>
-          历史任务
+          {{ L('历史任务') }}
         </router-link>
       </nav>
       <div class="rail-foot">

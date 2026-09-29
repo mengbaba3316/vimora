@@ -5,6 +5,8 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { promptsApi } from '../api'
 import { store } from '../store'
 import PaletteButton from '../components/PaletteButton.vue'
+import LangButton from '../components/LangButton.vue'
+import { L } from '../i18n'
 
 const router = useRouter()
 
@@ -133,27 +135,28 @@ onMounted(load)
 <template>
   <div class="view">
     <div class="view-head">
-      <h1>提示词库</h1><span class="sub">沉淀可复用的生图提示词，名称会用作输出目录名</span>
+      <h1>{{ L('提示词库') }}</h1><span class="sub">沉淀可复用的生图提示词，名称会用作输出目录名</span>
       <div class="right">
         <PaletteButton />
+        <LangButton />
         <button class="btn primary" @click="openCreate">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>新建提示词
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>{{ L('新建提示词') }}
         </button>
       </div>
     </div>
     <div class="view-body">
       <div class="toolbar">
-        <input class="input grow" v-model="keyword" placeholder="搜索名称、内容、标签…" @input="onSearchInput">
+        <input class="input grow" v-model="keyword" :placeholder="L('搜索名称、内容、标签…')" @input="onSearchInput">
         <span class="chip mute num">{{ total }} 条</span>
       </div>
       <div class="card table-card" v-loading="loading">
         <table>
           <thead>
             <tr>
-              <th style="width:180px">名称</th>
-              <th>内容摘要</th>
-              <th style="width:180px">标签</th>
-              <th style="width:160px">更新时间</th>
+              <th style="width:180px">{{ L('名称') }}</th>
+              <th>{{ L('内容摘要') }}</th>
+              <th style="width:180px">{{ L('标签') }}</th>
+              <th style="width:160px">{{ L('更新时间') }}</th>
               <th style="width:130px"></th>
             </tr>
           </thead>
@@ -167,8 +170,8 @@ onMounted(load)
               <td class="mono-cell">{{ p.updated_at }}</td>
               <td>
                 <div class="ops-cell">
-                  <button class="btn sm" @click="openEdit(p)">编辑</button>
-                  <button class="btn sm" @click="use(p)">用起来</button>
+                  <button class="btn sm" @click="openEdit(p)">{{ L('编辑') }}</button>
+                  <button class="btn sm" @click="use(p)">{{ L('用起来') }}</button>
                 </div>
               </td>
             </tr>
@@ -182,10 +185,10 @@ onMounted(load)
       </div>
 
       <div class="ppager num" v-if="total > 0">
-        <span>共 {{ total }} 条 · 第 {{ page }}/{{ pageCount }} 页</span>
+        <span>{{ L('共 {n} 条', { n: total }) }} · {{ L('第 {p}/{c} 页', { p: page, c: pageCount }) }}</span>
         <span class="pager-ops">
-          <button class="btn sm" :disabled="page <= 1" @click="gotoPage(page - 1)">上一页</button>
-          <button class="btn sm" :disabled="page >= pageCount" @click="gotoPage(page + 1)">下一页</button>
+          <button class="btn sm" :disabled="page <= 1" @click="gotoPage(page - 1)">{{ L('上一页') }}</button>
+          <button class="btn sm" :disabled="page >= pageCount" @click="gotoPage(page + 1)">{{ L('下一页') }}</button>
         </span>
       </div>
     </div>
@@ -207,7 +210,7 @@ onMounted(load)
       </div>
       <template #footer>
         <div class="drawer-foot">
-          <button v-if="editId" class="btn danger" @click="remove">删除</button>
+          <button v-if="editId" class="btn danger" @click="remove">{{ L('删除') }}</button>
           <button class="btn cancel" @click="drawer = false">取消</button>
           <button class="btn primary" :disabled="saving" @click="save">保存</button>
         </div>

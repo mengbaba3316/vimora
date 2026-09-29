@@ -3,6 +3,8 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { providersApi } from '../api'
 import PaletteButton from '../components/PaletteButton.vue'
+import LangButton from '../components/LangButton.vue'
+import { L } from '../i18n'
 
 /* ── 列表（全量含停用）── */
 const list = ref([])
@@ -226,9 +228,10 @@ onMounted(load)
 <template>
   <div class="view">
     <div class="view-head">
-      <h1>API 源站</h1><span class="sub">OpenAI 兼容中转站，路径与默认参数可按站覆盖</span>
+      <h1>{{ L('API 源站') }}</h1><span class="sub">OpenAI 兼容中转站，路径与默认参数可按站覆盖</span>
       <div class="right">
         <PaletteButton />
+        <LangButton />
         <button class="btn primary" @click="openCreate">新建源站</button>
       </div>
     </div>
@@ -237,12 +240,12 @@ onMounted(load)
         <table>
           <thead>
             <tr>
-              <th style="width:140px">名称</th>
-              <th style="width:130px">类型</th>
+              <th style="width:140px">{{ L('名称') }}</th>
+              <th style="width:130px">{{ L('类型') }}</th>
               <th>Base URL</th>
-              <th style="width:170px">默认模型</th>
-              <th style="width:64px">启用</th>
-              <th style="width:200px">连通性</th>
+              <th style="width:170px">{{ L('默认模型') }}</th>
+              <th style="width:64px">{{ L('启用') }}</th>
+              <th style="width:200px">{{ L('连通性') }}</th>
               <th style="width:110px"></th>
             </tr>
           </thead>
@@ -261,16 +264,16 @@ onMounted(load)
               <td><el-switch v-model="p.enabled" @change="toggle(p)" /></td>
               <td>
                 <div class="test-cell">
-                  <button class="btn sm" :disabled="!p.enabled || testing[p.id]" @click="test(p)">测试</button>
+                  <button class="btn sm" :disabled="!p.enabled || testing[p.id]" @click="test(p)">{{ L('测试') }}</button>
                   <span v-if="testing[p.id]" class="testing">请求中…</span>
                   <span v-else-if="testState(p).k === 'ok' || testState(p).k === 'bad'"
                         class="test-result" :class="testState(p).k === 'ok' ? 'ok' : 'bad'">{{ testState(p).text }}</span>
-                  <span v-else class="chip mute">未测试</span>
+                  <span v-else class="chip mute">{{ L('未测试') }}</span>
                 </div>
               </td>
               <td>
                 <div class="ops-cell">
-                  <button class="btn sm" @click="openEdit(p)">编辑</button>
+                  <button class="btn sm" @click="openEdit(p)">{{ L('编辑') }}</button>
                 </div>
               </td>
             </tr>
@@ -361,8 +364,8 @@ onMounted(load)
       </div>
       <template #footer>
         <div class="drawer-foot">
-          <button class="btn cancel" @click="drawer = false">取消</button>
-          <button class="btn primary" :disabled="saving" @click="save">保存</button>
+          <button class="btn cancel" @click="drawer = false">{{ L('取消') }}</button>
+          <button class="btn primary" :disabled="saving" @click="save">{{ L('保存') }}</button>
         </div>
       </template>
     </el-drawer>

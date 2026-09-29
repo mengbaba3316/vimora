@@ -5,6 +5,8 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { tasksApi, libTypesApi } from '../api'
 import { useTaskPolling } from '../composables/useTaskPolling'
 import PaletteButton from '../components/PaletteButton.vue'
+import LangButton from '../components/LangButton.vue'
+import { L } from '../i18n'
 
 /*
  * 历史任务页（原型 #view-history + #taskDrawer）：
@@ -302,9 +304,10 @@ async function copyError() {
 <template>
   <div class="view">
     <div class="view-head">
-      <h1>历史任务</h1><span class="sub">每次运行按「提示词名 / 时间戳」归档，参数快照可回看可重跑</span>
+      <h1>{{ L('历史任务') }}</h1><span class="sub">每次运行按「提示词名 / 时间戳」归档，参数快照可回看可重跑</span>
       <div class="right">
         <PaletteButton />
+        <LangButton />
         <span class="chip mute"><span class="d live-dot"></span>排队 / 生成中的任务每 2 秒自动刷新状态</span>
       </div>
     </div>
@@ -312,27 +315,27 @@ async function copyError() {
     <div class="view-body his-view-body">
       <div class="toolbar">
         <el-select id="hisStatus" v-model="filterStatus" class="wselect" style="width:130px" @change="onStatusChange">
-          <el-option value="" label="全部状态" />
-          <el-option value="queued" label="排队中" />
-          <el-option value="running" label="生成中" />
-          <el-option value="success" label="成功" />
-          <el-option value="partial" label="部分成功" />
-          <el-option value="failed" label="失败" />
+          <el-option value="" :label="L('全部状态')" />
+          <el-option value="queued" :label="L('排队中')" />
+          <el-option value="running" :label="L('生成中')" />
+          <el-option value="success" :label="L('成功')" />
+          <el-option value="partial" :label="L('部分成功')" />
+          <el-option value="failed" :label="L('失败')" />
         </el-select>
-        <input id="hisSearch" v-model="filterKw" class="input grow" placeholder="搜索提示词名 / 内容…">
-        <span id="hisTotal" class="chip mute num">{{ total }} 条</span>
+        <input id="hisSearch" v-model="filterKw" class="input grow" :placeholder="L('搜索提示词名 / 内容…')">
+        <span id="hisTotal" class="chip mute num">{{ L('共 {n} 条', { n: total }) }}</span>
       </div>
 
       <div class="card table-card his-table" v-loading="loading" @scroll="onTableScroll">
         <table class="sticky-head">
           <thead>
             <tr>
-              <th style="width:150px">创建时间</th>
-              <th style="width:170px">提示词</th>
-              <th style="width:110px">源站</th>
-              <th style="width:90px">方式</th>
-              <th class="num" style="width:110px">结果</th>
-              <th style="width:110px">状态</th>
+              <th style="width:150px">{{ L('创建时间') }}</th>
+              <th style="width:170px">{{ L('提示词') }}</th>
+              <th style="width:110px">{{ L('源站') }}</th>
+              <th style="width:90px">{{ L('方式') }}</th>
+              <th class="num" style="width:110px">{{ L('结果') }}</th>
+              <th style="width:110px">{{ L('状态') }}</th>
               <th style="width:140px"></th>
             </tr>
           </thead>
@@ -345,13 +348,13 @@ async function copyError() {
               <td class="num">{{ okCount(t) }}/{{ t.n }} 张</td>
               <td>
                 <span class="chip" :class="stMeta(t).cls">
-                  <span class="d"></span>{{ stMeta(t).label }}
+                  <span class="d"></span>{{ L(stMeta(t).label) }}
                 </span>
               </td>
               <td>
                 <div class="ops-cell">
-                  <button class="btn sm" @click="openDetail(t)">详情</button>
-                  <button class="btn sm" :disabled="rerunning[t.id]" @click="rerun(t)">重跑</button>
+                  <button class="btn sm" @click="openDetail(t)">{{ L('详情') }}</button>
+                  <button class="btn sm" :disabled="rerunning[t.id]" @click="rerun(t)">{{ L('重跑') }}</button>
                 </div>
               </td>
             </tr>
@@ -442,7 +445,7 @@ async function copyError() {
 
       <template #footer>
         <div class="td-foot">
-          <button class="btn danger td-del" @click="removeRecord">删除记录</button>
+          <button class="btn danger td-del" @click="removeRecord">{{ L('删除记录') }}</button>
           <span class="td-foot-right">
             <button v-if="detail?.error_message" class="btn" @click="copyError">复制错误信息</button>
             <button class="btn primary" :disabled="!detail || rerunning[detail.id]" @click="rerun(detail)">

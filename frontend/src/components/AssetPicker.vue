@@ -2,6 +2,7 @@
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { libsApi } from '../api'
+import { L } from '../i18n'
 
 /*
  * 素材选择抽屉（分页版）：左侧组筛选，右侧图片网格按页加载。
@@ -170,7 +171,7 @@ defineExpose({ open })
     <template #header>
       <div class="picker-h">
         <span class="ld" :style="{ background: libMeta.color }"></span>
-        <b>选择{{ libMeta.name }}参考图</b>
+        <b>{{ L('选择{name}参考图', { name: libMeta.name }) }}</b>
         <span class="sub">{{ subText }}</span>
       </div>
     </template>
@@ -179,7 +180,7 @@ defineExpose({ open })
       <!-- 左：组列表（含「全部组」与图片计数） -->
       <div class="picker-groups">
         <button class="pg-item" :class="{ on: curGroup === 'all' }" @click="curGroup = 'all'">
-          <span class="gname">全部组</span><span class="n num">{{ allCount }}</span>
+          <span class="gname">{{ L('全部组') }}</span><span class="n num">{{ allCount }}</span>
         </button>
         <button v-for="g in groups" :key="g.id" class="pg-item" :class="{ on: curGroup === g.id }" @click="curGroup = g.id">
           <span class="gname">{{ g.name }}</span><span class="n num">{{ g.image_count }}</span>
@@ -211,17 +212,17 @@ defineExpose({ open })
           </div>
         </div>
         <div class="ppager num">
-          <button class="btn sm" :disabled="page <= 1" @click="gotoPage(page - 1)">上一页</button>
-          <span>第 {{ page }}/{{ pageCount }} 页 · 共 {{ imgTotal }} 张</span>
-          <button class="btn sm" :disabled="page >= pageCount" @click="gotoPage(page + 1)">下一页</button>
+          <button class="btn sm" :disabled="page <= 1" @click="gotoPage(page - 1)">{{ L('上一页') }}</button>
+          <span>{{ L('第 {p}/{c} 页 · 共 {n} 张', { p: page, c: pageCount, n: imgTotal }) }}</span>
+          <button class="btn sm" :disabled="page >= pageCount" @click="gotoPage(page + 1)">{{ L('下一页') }}</button>
         </div>
       </div>
     </div>
 
     <template #footer>
       <div class="picker-foot">
-        <button class="btn" @click="clearLib">清空该库</button>
-        <button class="btn primary" @click="confirm">确定</button>
+        <button class="btn" @click="clearLib">{{ L('清空该库') }}</button>
+        <button class="btn primary" @click="confirm">{{ L('确定') }}</button>
       </div>
     </template>
   </el-drawer>

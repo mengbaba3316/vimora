@@ -4,6 +4,8 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { libsApi, libTypesApi } from '../api'
 import { naturalDesc } from '../utils/naturalSort'
 import PaletteButton from '../components/PaletteButton.vue'
+import LangButton from '../components/LangButton.vue'
+import { L } from '../i18n'
 
 /* 一级素材库：后端 library 表动态加载（不再写死四类），素材库页显示全部（含停用） */
 const libTypes = ref([])
@@ -396,17 +398,18 @@ onMounted(async () => {
 <template>
   <div class="view libs-view">
     <div class="view-head">
-      <h1>素材库</h1><span class="sub">一级 = 素材库（可自建/启停），二级 = 组（款式 / 文件夹）</span>
+      <h1>{{ L('素材库') }}</h1><span class="sub">一级 = 素材库（可自建/启停），二级 = 组（款式 / 文件夹）</span>
       <div class="right">
         <PaletteButton />
+        <LangButton />
         <button class="btn" @click="openManage">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg>管理库
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg>{{ L('管理库') }}
         </button>
         <button class="btn" @click="openImport">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>导入磁盘目录
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>{{ L('导入磁盘目录') }}
         </button>
         <button class="btn primary" :disabled="uploading" @click="triggerUpload">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 16V4M6 10l6-6 6 6M4 20h16"/></svg>上传图片
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 16V4M6 10l6-6 6 6M4 20h16"/></svg>{{ L('上传图片') }}
         </button>
       </div>
     </div>
@@ -426,10 +429,10 @@ onMounted(async () => {
     <div class="lib-wrap" v-if="curLib != null">
       <!-- 左：组列表 -->
       <div class="card lib-groups">
-        <div class="add-wrap"><button class="btn sm add-btn" @click="createGroup">＋ 新建组</button></div>
+        <div class="add-wrap"><button class="btn sm add-btn" @click="createGroup">＋ {{ L('新建组') }}</button></div>
         <div class="glist">
           <button class="pg-item" :class="{ on: curGroup === 'all' }" @click="pickGroup('all')">
-            <span class="gname">全部组</span><span class="n num">{{ allCount }}</span>
+            <span class="gname">{{ L('全部组') }}</span><span class="n num">{{ allCount }}</span>
           </button>
           <div v-for="g in curGroups" :key="g.id" class="pg-item has-ops" :class="{ on: curGroup === g.id }" @click="pickGroup(g.id)">
             <span class="gname">{{ g.name }}</span>
@@ -468,9 +471,9 @@ onMounted(async () => {
           </div>
         </div>
         <div class="ipager num">
-          <button class="btn sm" :disabled="imgPage <= 1" @click="gotoImg(imgPage - 1)">上一页</button>
-          <span>第 {{ imgPage }}/{{ imgPageCount }} 页 · 共 {{ imgTotal }} 张</span>
-          <button class="btn sm" :disabled="imgPage >= imgPageCount" @click="gotoImg(imgPage + 1)">下一页</button>
+          <button class="btn sm" :disabled="imgPage <= 1" @click="gotoImg(imgPage - 1)">{{ L('上一页') }}</button>
+          <span>{{ L('第 {p}/{c} 页 · 共 {n} 张', { p: imgPage, c: imgPageCount, n: imgTotal }) }}</span>
+          <button class="btn sm" :disabled="imgPage >= imgPageCount" @click="gotoImg(imgPage + 1)">{{ L('下一页') }}</button>
         </div>
       </div>
     </div>
@@ -507,11 +510,11 @@ onMounted(async () => {
             <button class="btn sm danger" @click="deleteLib(l)">删除</button>
           </span>
         </div>
-        <button class="btn sm add-lib" @click="createLib">＋ 新建素材库</button>
+        <button class="btn sm add-lib" @click="createLib">＋ {{ L('新建素材库') }}</button>
       </div>
       <template #footer>
         <div class="dlg-foot">
-          <button class="btn primary" @click="manageDialog = false">完成</button>
+          <button class="btn primary" @click="manageDialog = false">{{ L('完成') }}</button>
         </div>
       </template>
     </el-dialog>
