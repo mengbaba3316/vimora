@@ -279,7 +279,7 @@ async function copyError() {
       </div>
     </div>
 
-    <div class="view-body">
+    <div class="view-body his-view-body">
       <div class="toolbar">
         <el-select id="hisStatus" v-model="filterStatus" class="wselect" style="width:130px" @change="onStatusChange">
           <el-option value="" label="全部状态" />
@@ -293,8 +293,8 @@ async function copyError() {
         <span id="hisTotal" class="chip mute num">{{ total }} 条</span>
       </div>
 
-      <div class="card table-card" v-loading="loading">
-        <table>
+      <div class="card table-card his-table" v-loading="loading">
+        <table class="sticky-head">
           <thead>
             <tr>
               <th style="width:150px">创建时间</th>
@@ -438,6 +438,9 @@ async function copyError() {
 .task-drawer .el-drawer__header{padding:15px 18px;margin-bottom:0;border-bottom:1px solid var(--border);color:var(--ink-1)}
 .task-drawer .el-drawer__body{padding:16px 18px}
 .task-drawer .el-drawer__footer{padding:13px 18px;border-top:1px solid var(--border)}
+/* 本页布局：工具栏固定，滚动条收进表格内部 */
+.his-view-body{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;padding-bottom:14px}
+.his-table{flex:1;min-height:0;overflow:auto}
 </style>
 
 <style scoped>
