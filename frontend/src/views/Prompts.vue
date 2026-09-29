@@ -230,6 +230,6 @@ onMounted(load)
 .drawer-foot .cancel{margin-left:auto}
 
 /* 提示词翻页器 */
-.ppager{display:flex;align-items:center;justify-content:space-between;margin-top:12px;font-size:12px;color:var(--ink-3)}
+.ppager{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:12px;font-size:12px;color:var(--ink-3)}
 .ppager .pager-ops{display:flex;gap:8px}
 </style>
