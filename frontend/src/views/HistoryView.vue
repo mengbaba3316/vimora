@@ -304,11 +304,11 @@ async function copyError() {
 <template>
   <div class="view">
     <div class="view-head">
-      <h1>{{ L('历史任务') }}</h1><span class="sub">每次运行按「提示词名 / 时间戳」归档，参数快照可回看可重跑</span>
+      <h1>{{ L('历史任务') }}</h1><span class="sub">{{ L('每次运行按「提示词名 / 时间戳」归档，参数快照可回看可重跑') }}</span>
       <div class="right">
         <PaletteButton />
         <LangButton />
-        <span class="chip mute"><span class="d live-dot"></span>排队 / 生成中的任务每 2 秒自动刷新状态</span>
+        <span class="chip mute"><span class="d live-dot"></span>{{ L('排队 / 生成中的任务每 2 秒自动刷新状态') }}</span>
       </div>
     </div>
 
@@ -336,7 +336,7 @@ async function copyError() {
               <th style="width:90px">{{ L('方式') }}</th>
               <th class="num" style="width:110px">{{ L('结果') }}</th>
               <th style="width:110px">{{ L('状态') }}</th>
-              <th style="width:140px"></th>
+              <th style="width:140px">{{ L('操作') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -345,7 +345,7 @@ async function copyError() {
               <td><span class="name">#{{ t.id }} {{ t.prompt_name }}</span></td>
               <td>{{ t.provider_name }}</td>
               <td><span class="chip mute num">{{ t.endpoint }}</span></td>
-              <td class="num">{{ okCount(t) }}/{{ t.n }} 张</td>
+              <td class="num">{{ okCount(t) }}/{{ t.n }}{{ L('张') }}</td>
               <td>
                 <span class="chip" :class="stMeta(t).cls">
                   <span class="d"></span>{{ L(stMeta(t).label) }}

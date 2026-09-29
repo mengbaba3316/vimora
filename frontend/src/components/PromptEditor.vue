@@ -138,7 +138,9 @@ async function saveBack() {
 .findbar input:focus{outline:none;border-color:var(--accent)}
 .findbar .fcount{font-family:var(--mono);font-size:11.5px;color:var(--ink-3);min-width:52px;text-align:center;flex:none}
 .findbar .fcount.none{color:var(--down)}
-.findbar .lbl{font-size:11px;color:var(--ink-3);flex:none;width:26px}
+.findbar .lbl{font-size:11px;color:var(--ink-3);flex:none;min-width:26px}
+.findbar .btn{flex:none}
+.prompt-foot .btn{flex:none}
 .iconbtn{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;color:var(--ink-2);flex:none;border:1px solid var(--border);background:none;cursor:pointer}
 .iconbtn:hover{background:var(--panel-3);color:var(--ink-1)}
 .prompt-editor{flex:1;min-height:0;display:flex;flex-direction:column;padding:12px 16px 0}

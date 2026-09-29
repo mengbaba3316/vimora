@@ -144,12 +144,12 @@ function nPlus() { form.n = Math.min(nMax.value, form.n + 1) }
 function onNInput() { form.n = Math.min(nMax.value, Math.max(1, parseInt(form.n) || 1)) }
 
 /* ── 提交前检查（皆 computed）── */
-const ckEndpoint = computed(() => assetsCount.value ? `edits · 参考图 ${assetsCount.value} 张` : 'generations · 纯文生图')
-const ckPrompt = computed(() => `${editingPrompt.value?.name || '未选择'} · ${editorText.value.length} 字`)
-const ckProv = computed(() => currentProvider.value?.name || '未选择')
+const ckEndpoint = computed(() => assetsCount.value ? `edits · ${L('参考图 {n} 张', { n: assetsCount.value })}` : `generations · ${L('纯文生图')}`)
+const ckPrompt = computed(() => `${editingPrompt.value?.name || L('未选择')} · ${editorText.value.length} ${L('字')}`)
+const ckProv = computed(() => currentProvider.value?.name || L('未选择'))
 const ckParams = computed(() => sizeMode.value
   ? `${form.size || '-'} · ${form.quality || '-'} · ${form.n} 张`
-  : `${form.ratio} · ${form.resolution} · ${form.quality || '-'} · ${form.n} 张`)
+  : `${form.ratio} · ${form.resolution} · ${form.quality || '-'} · ${form.n} ${L('张')}`)
 const isMock = computed(() => currentProvider.value?.type === 'mock')
 const genReason = computed(() => {
   const reason = []
@@ -226,7 +226,7 @@ onMounted(async () => {
 <template>
   <div class="view">
     <div class="view-head">
-      <span class="sub">选词 → 改词 → 选图 → 生成；任务入队后即可连续提交，进度在历史任务页查看</span>
+      <span class="sub">{{ L('选词 → 改词 → 选图 → 生成；任务入队后即可连续提交，进度在历史任务页查看') }}</span>
       <PaletteButton style="margin-left:auto" />
       <LangButton />
     </div>
@@ -237,8 +237,8 @@ onMounted(async () => {
         <section v-for="l in libTypes" :key="l.id" class="card lib-card">
           <div class="card-h">
             <span class="ld" :style="{ background: l.color || 'var(--ink-3)' }"></span>
-            <b>{{ l.name }}库</b>
-            <span class="cnt">{{ sel[l.id]?.length ? `已选 ${sel[l.id].length} 张` : '未选择' }}</span>
+            <b>{{ L('{name}库', { name: l.name }) }}</b>
+            <span class="cnt">{{ sel[l.id]?.length ? L('已选 {n} 张', { n: sel[l.id].length }) : L('未选择') }}</span>
             <button class="btn sm pick-btn" @click="pickers[l.id]?.open()">{{ L('选择…') }}</button>
           </div>
           <div class="sel-strip">
@@ -250,7 +250,7 @@ onMounted(async () => {
                 <button class="rm" title="移除" @click="removeAsset(l.id, id)">✕</button>
               </span>
             </template>
-            <span v-else class="empty-hint">还没有选择{{ l.name }}参考图，点「选择…」从库中挑选（可多张）</span>
+            <span v-else class="empty-hint">{{ L('还没有选择{name}参考图，点「选择…」从库中挑选（可多张）', { name: l.name }) }}</span>
           </div>
         </section>
         <AssetPicker v-for="l in libTypes" :key="l.id" :ref="el => (pickers[l.id] = el)"
@@ -316,7 +316,7 @@ onMounted(async () => {
               <button id="nMinus" class="iconbtn" @click="nMinus">−</button>
               <input id="pN" v-model="form.n" class="input num" style="text-align:center;width:64px" @input="onNInput">
               <button id="nPlus" class="iconbtn" @click="nPlus">＋</button>
-              <span class="n-hint">1 至 {{ nMax }} 张</span>
+              <span class="n-hint">{{ L('1 至 {n} 张', { n: nMax }) }}</span>
             </div>
           </label>
         </div>

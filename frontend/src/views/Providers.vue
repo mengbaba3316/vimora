@@ -228,7 +228,7 @@ onMounted(load)
 <template>
   <div class="view">
     <div class="view-head">
-      <h1>{{ L('API 源站') }}</h1><span class="sub">OpenAI 兼容中转站，路径与默认参数可按站覆盖</span>
+      <h1>{{ L('API 源站') }}</h1><span class="sub">{{ L('OpenAI 兼容中转站，路径与默认参数可按站覆盖') }}</span>
       <div class="right">
         <PaletteButton />
         <LangButton />
@@ -246,7 +246,7 @@ onMounted(load)
               <th style="width:170px">{{ L('默认模型') }}</th>
               <th style="width:64px">{{ L('启用') }}</th>
               <th style="width:200px">{{ L('连通性') }}</th>
-              <th style="width:110px"></th>
+              <th style="width:110px">{{ L('操作') }}</th>
             </tr>
           </thead>
           <tbody>

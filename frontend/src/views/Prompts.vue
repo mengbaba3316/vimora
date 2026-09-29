@@ -135,7 +135,7 @@ onMounted(load)
 <template>
   <div class="view">
     <div class="view-head">
-      <h1>{{ L('提示词库') }}</h1><span class="sub">沉淀可复用的生图提示词，名称会用作输出目录名</span>
+      <h1>{{ L('提示词库') }}</h1><span class="sub">{{ L('沉淀可复用的生图提示词，名称会用作输出目录名') }}</span>
       <div class="right">
         <PaletteButton />
         <LangButton />
@@ -157,7 +157,7 @@ onMounted(load)
               <th>{{ L('内容摘要') }}</th>
               <th style="width:180px">{{ L('标签') }}</th>
               <th style="width:160px">{{ L('更新时间') }}</th>
-              <th style="width:130px"></th>
+              <th style="width:130px">{{ L('操作') }}</th>
             </tr>
           </thead>
           <tbody>

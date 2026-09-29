@@ -398,7 +398,7 @@ onMounted(async () => {
 <template>
   <div class="view libs-view">
     <div class="view-head">
-      <h1>{{ L('素材库') }}</h1><span class="sub">一级 = 素材库（可自建/启停），二级 = 组（款式 / 文件夹）</span>
+      <h1>{{ L('素材库') }}</h1><span class="sub">{{ L('一级 = 素材库（可自建/启停），二级 = 组（款式 / 文件夹）') }}</span>
       <div class="right">
         <PaletteButton />
         <LangButton />
