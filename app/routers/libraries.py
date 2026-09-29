@@ -100,11 +100,12 @@ def list_images(library_id: int, group_id: Optional[int] = None, keyword: str = 
                     "url": f"/files/libraries/{i.file_path}",
                     "created_at": str(i.created_at)} for i in rows],
                 "total": total, "page": page, "size": size}
-    return [{   # 全量形态同样自然倒排"id": i.id, "group_id": i.group_id, "group_name": i.group.name,
-             "library": i.library, "original_name": i.original_name,
-             "file_path": i.file_path, "sort_order": i.sort_order,
-             "url": f"/files/libraries/{i.file_path}",
-             "created_at": str(i.created_at)} for i in q.order_by(AssetImage.id).all()]
+    return [{   # 全量形态同样自然倒排
+                "id": i.id, "group_id": i.group_id, "group_name": i.group.name,
+                "library": i.library, "original_name": i.original_name,
+                "file_path": i.file_path, "sort_order": i.sort_order,
+                "url": f"/files/libraries/{i.file_path}",
+                "created_at": str(i.created_at)} for i in rows]
 
 
 @router.post("/{library_id}/images")
