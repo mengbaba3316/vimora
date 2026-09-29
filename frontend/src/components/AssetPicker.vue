@@ -51,7 +51,9 @@ function asList(data) {
 function measure() {
   const el = gridEl.value
   if (!el || !el.clientHeight) return
-  const w = el.clientWidth - 20, h = el.clientHeight - 20 - 30   /* 内边距 + 翻页器高度 */
+  const pager = el.querySelector('.ppager')
+  const pagerH = (pager ? pager.offsetHeight : 30) + 10          /* 翻页器实高 + 间距 */
+  const w = el.clientWidth - 28, h = el.clientHeight - 28 - pagerH   /* 内边距 14×2 + 翻页器 */
   const cols = Math.max(2, Math.floor((w + 10) / 142))           /* 132px 最小瓦片 + 10px 间距 */
   let rows = Math.max(1, Math.floor((h + 10) / 169))             /* 瓦片高 ≈ 159 + 间距 */
   while (rows > 1 && (h - (rows - 1) * 10) / rows < 130) rows--
@@ -61,6 +63,18 @@ function measure() {
   const s = cols * rows
   if (s && s !== size.value) { size.value = s; page.value = 1 }
 }
+/* 渲染后自检：内容溢出就压行高（rounding/字体差异兜底） */
+function fitRows() {
+  const el = gridEl.value, pg = el?.querySelector('.pgrid')
+  if (!el || !pg) return
+  let guard = 6
+  while (pg.scrollHeight > pg.clientHeight + 2 && guard--) {
+    const cur = parseInt(el.style.getPropertyValue('--rowh')) || 160
+    if (cur <= 120) break
+    el.style.setProperty('--rowh', (cur - 12) + 'px')
+  }
+}
+
 function ensureObs() {
   if (!obs && gridEl.value) {
     obs = new ResizeObserver(() => measure())
@@ -87,6 +101,8 @@ async function load() {
     imgTotal.value = imgs.data.total ?? 0
     /* 后端已按名称自然倒排（全局有序），此处不再排序 */
     images.value = asList(imgs.data.items)
+    await nextTick()
+    fitRows()
   } catch (e) {
     groups.value = []
     images.value = []
