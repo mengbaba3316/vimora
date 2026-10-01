@@ -308,3 +308,13 @@ td .ops-cell{display:flex;gap:6px;justify-content:center}
 .empty b{color:var(--ink-2);font-size:13.5px}
 .empty p{font-size:12.5px;max-width:320px;margin:0}
 .empty .btn{margin-top:4px}
+
+/* ── 页面切换过渡：旧页快速淡出上移，新页淡入上浮 ── */
+.page-enter-active{transition:opacity .22s cubic-bezier(.22,.61,.36,1),transform .22s cubic-bezier(.22,.61,.36,1)}
+.page-leave-active{transition:opacity .12s ease,transform .12s ease}
+.page-enter-from{opacity:0;transform:translateY(10px)}
+.page-leave-to{opacity:0;transform:translateY(-6px)}
+@media (prefers-reduced-motion: reduce){
+  .page-enter-active,.page-leave-active{transition:none}
+  .page-enter-from,.page-leave-to{opacity:1;transform:none}
+}

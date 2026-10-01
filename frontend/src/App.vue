@@ -40,7 +40,11 @@ import { L } from './i18n'
       </div>
     </aside>
     <main>
-      <router-view />
+      <router-view v-slot="{ Component }">
+        <transition name="page" mode="out-in">
+          <component :is="Component" />
+        </transition>
+      </router-view>
     </main>
   </div>
 </template>
@@ -65,6 +69,6 @@ import { L } from './i18n'
 .rail-foot{flex:none;display:flex;align-items:center;justify-content:center;padding:10px 12px;border-top:1px solid var(--border)}
 .theme-btn{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;background:var(--panel-2);border:1px solid var(--border);color:var(--ink-2);cursor:pointer;transition:background .15s ease,border-color .15s ease,color .15s ease;font-family:inherit;padding:0}
 .theme-btn:hover{background:var(--panel-3);border-color:var(--border-2);color:var(--ink-1)}
-main{flex:1;min-width:0;min-height:0;display:flex;flex-direction:column;overflow-y:auto;overflow-x:clip}
+main{flex:1;min-width:0;min-height:0;display:flex;flex-direction:column;overflow-y:auto;overflow-x:clip;scrollbar-gutter:stable}
 </style>
 
