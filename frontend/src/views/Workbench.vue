@@ -38,11 +38,13 @@ function asList(data) {
 }
 
 /* ── 提示词 ── */
+const CUSTOM_PROMPT_ID = '__custom__'    /* 下拉里的「自定义 Prompt」哨兵值：临时编写，不入库 */
 const prompts = ref([])
 const selectedPromptId = ref(null)
-const editingPrompt = ref(null)          /* 当前选中的库内提示词（可空） */
+const editingPrompt = ref(null)          /* 当前选中的库内提示词（可空=自定义/未选） */
 const editorText = ref('')
 const promptEditorRef = ref(null)
+const isCustomPrompt = computed(() => selectedPromptId.value === CUSTOM_PROMPT_ID)
 
 async function loadPrompts() {
   try {
@@ -59,6 +61,13 @@ function loadPromptIntoEditor(p) {
   promptEditorRef.value?.resetFind()
 }
 function onPromptChange() {
+  if (isCustomPrompt.value) {
+    /* 自定义 Prompt：编辑区清空临时编写，不关联库内提示词 */
+    editingPrompt.value = null
+    editorText.value = ''
+    promptEditorRef.value?.resetFind()
+    return
+  }
   loadPromptIntoEditor(prompts.value.find(x => x.id === selectedPromptId.value))
 }
 /* PromptEditor 另存成功：刷新列表并选中新提示词 */
@@ -145,7 +154,7 @@ function onNInput() { form.n = Math.min(nMax.value, Math.max(1, parseInt(form.n)
 
 /* ── 提交前检查（皆 computed）── */
 const ckEndpoint = computed(() => assetsCount.value ? `edits · ${L('参考图 {n} 张', { n: assetsCount.value })}` : `generations · ${L('纯文生图')}`)
-const ckPrompt = computed(() => `${editingPrompt.value?.name || L('未选择')} · ${editorText.value.length} ${L('字')}`)
+const ckPrompt = computed(() => `${editingPrompt.value?.name || (isCustomPrompt.value ? L('自定义') : L('未选择'))} · ${editorText.value.length} ${L('字')}`)
 const ckProv = computed(() => currentProvider.value?.name || L('未选择'))
 const ckParams = computed(() => sizeMode.value
   ? `${form.size || '-'} · ${form.quality || '-'} · ${form.n} 张`
@@ -172,7 +181,7 @@ async function submitTask() {
     const size = sizeMode.value ? form.size : ratioToSize(form.ratio, form.resolution)
     const { data } = await tasksApi.create({
       prompt_id: editingPrompt.value?.id ?? null,
-      prompt_name: editingPrompt.value?.name || '未命名',
+      prompt_name: editingPrompt.value?.name || (isCustomPrompt.value ? L('自定义') : '未命名'),
       prompt_content: editorText.value,
       provider_id: form.providerId,
       model: form.model,
@@ -219,6 +228,9 @@ onMounted(async () => {
   } else if (prompts.value.length) {
     selectedPromptId.value = prompts.value[0].id
     loadPromptIntoEditor(prompts.value[0])
+  } else {
+    /* 库里还没有提示词：直接落到自定义模式，编辑区留空即可开写 */
+    selectedPromptId.value = CUSTOM_PROMPT_ID
   }
 })
 </script>
@@ -263,9 +275,10 @@ onMounted(async () => {
 
       <!-- 中(order 1)：提示词 -->
       <section class="card col-prompt">
-        <div class="card-h"><b>{{ L('提示词') }}</b><span class="cnt">{{ L('本次可自由修改，不回写库') }}</span></div>
+        <div class="card-h"><b>{{ L('提示词') }}</b><span class="cnt">{{ isCustomPrompt ? L('临时编写，不存入提示词库') : L('本次可自由修改，不回写库') }}</span></div>
         <div class="prompt-pick">
           <el-select id="promptSel" v-model="selectedPromptId" class="wselect" placeholder="选择提示词…" @change="onPromptChange">
+            <el-option :value="CUSTOM_PROMPT_ID" :label="L('自定义 Prompt')" />
             <el-option v-for="p in prompts" :key="p.id" :value="p.id" :label="p.name" />
           </el-select>
         </div>
