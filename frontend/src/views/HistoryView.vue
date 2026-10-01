@@ -1,6 +1,5 @@
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from 'vue'
-import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { tasksApi, libTypesApi } from '../api'
 import { useTaskPolling } from '../composables/useTaskPolling'
@@ -161,7 +160,6 @@ onMounted(async () => {
 function okCount(t) { return t.images?.length || 0 }
 
 /* ── 详情抽屉 ── */
-const router = useRouter()
 const drawer = ref(false)
 const detail = ref(null)
 
@@ -254,8 +252,8 @@ async function rerun(t) {
   try {
     const { data } = await tasksApi.rerun(t.id)
     drawer.value = false
-    ElMessage.success(`任务 #${data.id} 已加入队列（参数快照一致），去工作台可继续提交新任务`)
-    router.push('/')
+    ElMessage.success(`任务 #${data.id} 已用同样配置重跑入队，进度稍后自动刷新`)
+    await refresh(false)   /* 就地刷新列表，新任务立即可见，不跳页 */
   } catch (e) {
     ElMessage.error('重跑失败：' + errMsg(e))
   } finally {
