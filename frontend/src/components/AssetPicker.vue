@@ -267,7 +267,6 @@ defineExpose({ open })
 .ptile .zoom{position:absolute;top:6px;right:6px;width:24px;height:24px;padding:0;border-radius:7px;background:var(--img-chip-bg);color:var(--ink-2);display:grid;place-items:center;border:1px solid var(--border-2);cursor:zoom-in;opacity:0;pointer-events:none;transition:opacity .12s ease;z-index:2}
 .ptile:hover .zoom{opacity:1;pointer-events:auto}
 .ptile .zoom:hover{color:var(--ink-1)}
-.ptile.on .zoom{top:29px}   /* 右上角被选中序号徽标占用时，放大镜下移避让 */
 .ptile .name{flex:none;font-size:10.5px;padding:4px 8px;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-top:1px solid var(--border)}
 .ptile .tick{position:absolute;top:7px;left:7px;width:20px;height:20px;border-radius:50%;background:var(--img-chip-bg-soft);border:1.5px solid var(--border-2);display:grid;place-items:center;color:transparent}
 .ptile.on{border-color:var(--accent)}
