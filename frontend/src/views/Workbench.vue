@@ -178,7 +178,7 @@ async function submitTask() {
   submitting.value = true
   try {
     /* 尺寸：像素模式原样传所选串；比例模式按清晰度档位换算（extra.resolution 带所选 K） */
-    const size = sizeMode.value ? form.size : ratioToSize(form.ratio, form.resolution)
+    const size = sizeMode.value ? form.size : ratioToSize(form.ratio, form.resolution, form.model)
     const { data } = await tasksApi.create({
       prompt_id: editingPrompt.value?.id ?? null,
       prompt_name: editingPrompt.value?.name || (isCustomPrompt.value ? L('自定义') : '未命名'),
