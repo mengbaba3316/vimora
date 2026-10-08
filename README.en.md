@@ -4,7 +4,7 @@
 
 # Vimora · Image Generation Workbench
 
-**Compose prompts with reference images — your data never leaves your machine.**
+**Your own prompts, your own assets — ready to grab, ready to combine.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.9%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
@@ -24,9 +24,17 @@
 
 ## What is it
 
-Vimora is a **local-first** AI image generation workbench: it combines a prompt with reference images, sends them to any OpenAI-compatible relay, and archives the results by prompt. The asset libraries are built and maintained by you — faces, outfits, scenes, poses or anything else, organized exactly the way you work, with no fixed categories. Built with FastAPI + Vue 3 + MySQL, up and running in one command, with a built-in Mock provider so you can walk through the entire flow **without spending a cent**.
+Vimora is an AI image generation workbench built around **maintaining and reusing your prompts and reference assets**: references go into asset libraries, organized in groups, always at hand; prompts are archived, searchable, editable and reusable in one click; picking images and tweaking words happens on one screen, and submitting queues the job instantly. Images are generated through any OpenAI-compatible relay and archived by prompt. Built with FastAPI + Vue 3 + MySQL, up and running in one command, with a built-in Mock provider so you can walk through the entire flow without spending a cent.
 
 Who it's for: e-commerce photographers and content creators who constantly "pick words, tweak words, pick images, generate, review" — or anyone who wants an image-generation workflow that doesn't depend on a cloud platform and keeps every prompt and asset on their own disk.
+
+## Highlights
+
+- **Reuse your assets** — upload reference images once, keep them grouped and at hand; no more digging through folders every time
+- **Treat prompts as assets** — archive, search, tweak and reuse; stop scrolling through chat history for old prompts
+- **Keep working while generating** — submit-and-unlock queueing; tweak the prompt and submit again without waiting for results
+- **Everything is traceable** — every task keeps a full snapshot; results are archived by day and prompt, ready to compare and rerun
+- **No platform lock-in** — images, prompts and records stay on your own machine, immune to cloud throttling, shutdowns and price hikes
 
 ## Why Vimora
 
@@ -40,10 +48,10 @@ Vimora turns that repeated routine into a proper workbench: references live in a
 
 ## Design principles
 
-- **Your data, your machine** — assets, prompts, tasks and results all live in a local MySQL database and on disk (`data/`, `outputs/`). No cloud accounts; drop the database and it's all gone.
-- **Restrained and reliable** — the default graphite-dark theme is tuned for long hours of judging color on screen (same reason Lightroom is dark), animations only convey state, and the only ever-present animation is a heartbeat dot while a task runs.
-- **Zero-cost trial** — a built-in Mock provider walks you through the full create-task-to-result flow without spending money or touching the network; it also powers the automated tests.
-- **Single user, complete setup** — no sign-up, no team features. Install and use; one machine and one browser is the whole deployment.
+- **Clean and tidy** — three panes, one screen for picking images, tweaking words and generating; the graphite-dark theme is tuned for long hours of judging images, and animations only convey state
+- **Easy to use** — install and go: no sign-up, no team setup; the Mock provider lets you practice the whole flow for free
+- **Easy to maintain** — organize asset and prompt libraries any way you like; no fixed categories — the more you use it, the better it fits your workflow
+- **Yours, managed by you** — all data lives in your own database and disk; back it up or take it with you anytime
 
 ## Features
 
