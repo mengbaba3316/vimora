@@ -97,6 +97,9 @@ async function indexLibImages() {
 function imgName(lib, id) {
   return imgIndex[lib]?.get(id)?.original_name || `#${id}`
 }
+function imgUrl(lib, id) {
+  return imgIndex[lib]?.get(id)?.url || ''
+}
 function removeAsset(lib, id) {
   const i = (sel[lib] || []).indexOf(id)
   if (i > -1) sel[lib].splice(i, 1)
@@ -257,9 +260,10 @@ onMounted(async () => {
             <template v-if="sel[l.id]?.length">
               <span v-for="(id, i) in sel[l.id]" :key="id" class="sel-chip"
                     :style="{ '--tint': l.color, '--tint-solid': l.color }" :title="imgName(l.id, id)">
-                <span class="thumb">{{ imgName(l.id, id).slice(0, 2) }}</span>
+                <img v-if="imgUrl(l.id, id)" class="thumb" :src="imgUrl(l.id, id)" :alt="imgName(l.id, id)" loading="lazy">
+                <span v-else class="thumb">{{ imgName(l.id, id).slice(0, 2) }}</span>
                 <span class="ord num">{{ i + 1 }}</span>
-                <button class="rm" title="移除" @click="removeAsset(l.id, id)">✕</button>
+                <button class="rm" :title="L('移除')" :aria-label="L('移除')" @click="removeAsset(l.id, id)"></button>
               </span>
             </template>
             <span v-else class="empty-hint">{{ L('还没有选择{name}参考图，点「选择…」从库中挑选（可多张）', { name: l.name }) }}</span>
@@ -380,8 +384,12 @@ onMounted(async () => {
 .sel-strip .empty-hint{font-size:12px;color:var(--ink-3)}
 .sel-chip{position:relative;width:40px;height:40px;border-radius:8px;flex:none;border:1.5px solid var(--tint-solid)}
 .sel-chip .thumb{width:100%;height:100%;border-radius:inherit;display:grid;place-items:center;font-size:10px;font-weight:700;letter-spacing:.05em;color:var(--ink-2);background:linear-gradient(135deg,var(--tint),transparent 140%),var(--panel-2);border:1px solid var(--border)}
-.sel-chip .rm{position:absolute;top:-6px;right:-6px;width:16px;height:16px;border-radius:50%;background:var(--panel-3);color:var(--ink-2);font-size:10px;display:none;place-items:center;border:1px solid var(--border-2);cursor:pointer}
-.sel-chip:hover .rm{display:grid}
+.sel-chip img.thumb{object-fit:cover;display:block}
+.sel-chip .rm{position:absolute;top:-6px;right:-6px;width:16px;height:16px;border-radius:50%;background:var(--panel-3);display:none;border:1px solid var(--border-2);cursor:pointer;padding:0}
+.sel-chip .rm::before,.sel-chip .rm::after{content:'';position:absolute;left:50%;top:50%;width:8px;height:1.5px;margin:-0.75px 0 0 -4px;background:var(--ink-2)}
+.sel-chip .rm::before{transform:rotate(45deg)}
+.sel-chip .rm::after{transform:rotate(-45deg)}
+.sel-chip:hover .rm{display:block}
 .sel-chip .ord{position:absolute;bottom:-5px;right:-5px;min-width:15px;height:15px;padding:0 3px;border-radius:99px;background:var(--accent);color:var(--on-accent);font-size:9.5px;font-weight:700;display:grid;place-items:center;font-family:var(--mono)}
 
 /* 参数列 */
