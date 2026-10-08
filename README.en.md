@@ -20,8 +20,7 @@
 
 ---
 
-<!-- Screenshot placeholder: save your workbench capture as screenshots/workbench.png, commit it, then uncomment the next line -->
-<!-- ![Workbench](screenshots/workbench.png) -->
+![Workbench](screenshots/workbench.png)
 
 ## What is it
 

@@ -20,8 +20,7 @@
 
 ---
 
-<!-- 截图占位：把工作台全貌截图保存为 screenshots/workbench.png 并提交后，取消下一行注释即可显示 -->
-<!-- ![工作台](screenshots/workbench.png) -->
+![工作台](screenshots/workbench.png)
 
 ## 这是什么
 
