@@ -12,8 +12,7 @@
 [![Vue 3](https://img.shields.io/badge/Vue-3-4FC08D?logo=vuedotjs&logoColor=white)](https://vuejs.org/)
 [![MySQL](https://img.shields.io/badge/MySQL-8-4479A1?logo=mysql&logoColor=white)](https://www.mysql.com/)
 
-[![GitHub](https://img.shields.io/badge/GitHub-vimora-181717?logo=github)](https://github.com/yourname/vimora)
-[![Gitee](https://img.shields.io/badge/Gitee-vimora-C71D23?logo=gitee)](https://gitee.com/yourname/vimora)
+[![Gitee](https://img.shields.io/badge/Gitee-vimora-C71D23?logo=gitee)](https://gitee.com/menghahayl/vimora)
 
 [简体中文](README.md) | English
 
@@ -21,41 +20,41 @@
 
 ---
 
-<!-- TODO: add 2–3 screenshots here: workbench (dark), library, task history -->
-<!-- ![Workbench](docs/screenshots/workbench.png) -->
+<!-- Screenshot placeholder: save your workbench capture as screenshots/workbench.png, commit it, then uncomment the next line -->
+<!-- ![Workbench](screenshots/workbench.png) -->
 
 ## What is it
 
-Vimora is a **local-first** AI image generation workbench: it combines a prompt with four kinds of reference images — face / outfit / socks / pose — sends them to any OpenAI-compatible relay, and archives the results by prompt. Built with FastAPI + Vue 3 + MySQL, up and running in one command, with a built-in Mock provider so you can walk through the entire flow **without spending a cent**.
+Vimora is a **local-first** AI image generation workbench: it combines a prompt with reference images, sends them to any OpenAI-compatible relay, and archives the results by prompt. The asset libraries are built and maintained by you — faces, outfits, scenes, poses or anything else, organized exactly the way you work, with no fixed categories. Built with FastAPI + Vue 3 + MySQL, up and running in one command, with a built-in Mock provider so you can walk through the entire flow **without spending a cent**.
 
 Who it's for: e-commerce photographers and content creators who constantly "pick words, tweak words, pick images, generate, review" — or anyone who wants an image-generation workflow that doesn't depend on a cloud platform and keeps every prompt and asset on their own disk.
 
 ## Why Vimora
 
-The daily grind of e-commerce photography is rewriting the same prompt over and over: swap a face reference, swap an outfit, swap a pose, generate, compare. In a chat window, every tweak means digging through history; on a cloud platform, your assets and prompts are never really yours.
+The daily grind of e-commerce photography is rewriting the same prompt over and over: swap the outfit, swap the scene, swap the pose, generate, compare. In a chat window, every tweak means digging through history; on a cloud platform, your assets and prompts are never really yours.
 
 Vimora turns that repeated routine into a proper workbench: references live in asset libraries ready to grab, prompts are archived and searchable, tasks queue up the moment you submit so you can keep working, and every image and record lands on your own disk and database.
 
 ## The name
 
-**Vimora = Vi + mora**. *Vi* comes from *Vision*; *mora* is Latin for "a moment, a pause" — **letting what you see settle into an image**. A darkroom is where light slowly develops into a picture, and that's what Vimora wants to be: a quiet, reliable, un-flashy place where you can focus on the images.
+**Vimora = Vi + mora**. *Vi* comes from *Vision*; *mora* is Latin for "a moment, a pause" — **letting what you see settle into an image**: a quiet, reliable, un-flashy place where you can focus on the images.
 
 ## Design principles
 
 - **Your data, your machine** — assets, prompts, tasks and results all live in a local MySQL database and on disk (`data/`, `outputs/`). No cloud accounts; drop the database and it's all gone.
-- **Restrained and reliable** — a photographic-darkroom interface: the default graphite-dark theme is tuned for long hours of judging color on screen (same reason Lightroom is dark), animations only convey state, and the only ever-present animation is a heartbeat dot while a task runs.
+- **Restrained and reliable** — the default graphite-dark theme is tuned for long hours of judging color on screen (same reason Lightroom is dark), animations only convey state, and the only ever-present animation is a heartbeat dot while a task runs.
 - **Zero-cost trial** — a built-in Mock provider walks you through the full create-task-to-result flow without spending money or touching the network; it also powers the automated tests.
 - **Single user, complete setup** — no sign-up, no team features. Install and use; one machine and one browser is the whole deployment.
 
 ## Features
 
 **Workbench**
-- Three-pane layout: asset column (1 face / 1 socks / 1 pose, up to 3 outfits) | prompt in the center | parameters
+- Three-pane layout: assets | prompt | parameters — pick images, tweak words, generate, all on one screen
 - Submit-and-unlock: tasks queue instantly, submit several in a row without waiting
 - Chinese / English UI toggle (top-right, preference persisted)
 
 **Asset libraries**
-- Four independent libraries (face / outfit / socks / pose) with group management
+- Libraries and groups are free to create and self-maintained — no fixed categories, grow them with your workflow
 - Manual upload or bulk import from disk folders (first-level subfolder = group)
 - Multi-select cards, group filtering, dynamic pagination, resolution-adaptive grid
 
@@ -73,6 +72,8 @@ Vimora turns that repeated routine into a proper workbench: references live in a
 - Frosted-glass overlays (drawers / dialogs / toasts), monospace type for data
 
 ## Getting started
+
+Two ways to run it: **from source** (below), or a prebuilt Windows exe (in preparation, will be published on the [Releases](https://gitee.com/menghahayl/vimora/releases) page — no Python setup needed).
 
 ### Requirements
 
@@ -142,7 +143,7 @@ Tests use the dedicated `TEST_DB_NAME` database and temp directories for files, 
 app/                    # FastAPI backend
 ├── config.py           # .env / environment configuration
 ├── database.py         # DB bootstrap, engine/session
-├── models.py           # Six ORM tables (prompt/asset_group/asset_image/provider/gen_task/task_image)
+├── models.py           # ORM tables (prompt/library/asset_group/asset_image/provider/gen_task/task_image)
 ├── routers/            # prompts / libraries / providers / tasks
 ├── services/           # storage (assets) / generator (inference & results) / task_runner / mock_provider
 └── utils/              # filename sanitizing, image I/O
@@ -153,14 +154,12 @@ data/                   # asset libraries (generated at runtime)
 outputs/                # generated results (generated at runtime)
 ```
 
-## Roadmap
+## What's next
 
-- [ ] One-click packaged release (PyInstaller scaffolding exists)
 - [ ] Batch rerun and batch export of tasks
 - [ ] Prompt variable templates (batch-fill placeholders with references)
-- [ ] More provider protocols (Gemini, local ComfyUI, etc.)
 
-> Got an idea? Open an [Issue](https://github.com/yourname/vimora/issues) or send a PR.
+> Got an idea? Open an [Issue](https://gitee.com/menghahayl/vimora/issues) or send a PR.
 
 ## Contributing
 

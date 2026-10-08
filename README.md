@@ -12,8 +12,7 @@
 [![Vue 3](https://img.shields.io/badge/Vue-3-4FC08D?logo=vuedotjs&logoColor=white)](https://vuejs.org/)
 [![MySQL](https://img.shields.io/badge/MySQL-8-4479A1?logo=mysql&logoColor=white)](https://www.mysql.com/)
 
-[![GitHub](https://img.shields.io/badge/GitHub-vimora-181717?logo=github)](https://github.com/yourname/vimora)
-[![Gitee](https://img.shields.io/badge/Gitee-vimora-C71D23?logo=gitee)](https://gitee.com/yourname/vimora)
+[![Gitee](https://img.shields.io/badge/Gitee-vimora-C71D23?logo=gitee)](https://gitee.com/menghahayl/vimora)
 
 简体中文 | [English](README.en.md)
 
@@ -21,41 +20,41 @@
 
 ---
 
-<!-- TODO: 截图放这里，建议 2~3 张：工作台全貌（暗色）、素材库、历史任务页 -->
-<!-- ![工作台](docs/screenshots/workbench.png) -->
+<!-- 截图占位：把工作台全貌截图保存为 screenshots/workbench.png 并提交后，取消下一行注释即可显示 -->
+<!-- ![工作台](screenshots/workbench.png) -->
 
 ## 这是什么
 
-Vimora 是一个**本地优先**的 AI 生图工作台：把提示词与人脸 / 服装 / 袜子 / 姿势四类参考图组合起来，经任意 OpenAI 兼容的中转站出图，结果按提示词自动归档。FastAPI + Vue 3 + MySQL，一条命令跑起来，内置 Mock 源站可以**零额度**走通全流程。
+Vimora 是一个**本地优先**的 AI 生图工作台：把提示词与参考图组合起来，经任意 OpenAI 兼容的中转站出图，结果按提示词自动归档。素材库由你自己搭建和维护——人脸、服装、场景、姿势还是别的类别，完全按你的工作流来，不写死。FastAPI + Vue 3 + MySQL，一条命令跑起来，内置 Mock 源站可以**零额度**走通全流程。
 
 适合谁：需要反复"选词、改词、选图、生成、回看"的电商摄影 / 素材产出从业者，或任何想要一个不依赖云平台、图库和提示词都攥在自己手里的生图工作流的人。
 
 ## 为什么做 Vimora
 
-做电商摄影的日常，是把同一条提示词翻来覆去地改：换一张人脸参考、换一套服装、换一个姿势，再生成、再对比。这件事在聊天框里做，改一次要翻一次历史；在云平台做，图库和提示词都不在自己手里。
+做电商摄影的日常，是把同一条提示词翻来覆去地改：换一套服装、换一个场景、换一个姿势，再生成、再对比。这件事在聊天框里做，改一次要翻一次历史；在云平台做，图库和提示词都不在自己手里。
 
 Vimora 就是把这件每天重复几十次的事，做成一个顺手的工作台：参考图挂进素材库随取随用，提示词存档可搜可改，任务提交即入队、连续提交不等待，所有图和记录都落在自己电脑的磁盘和数据库里。
 
 ## 名字的由来
 
-**Vimora = Vi + mora**。Vi 取自 *Vision*（视），mora 是拉丁语里的"片刻、停留"——**让所见停留成影像**。暗房是把光影慢慢显影的地方，Vimora 想做的也是这件事：给你一个安静、可靠、不发花哨的地方，专心盯图。
+**Vimora = Vi + mora**。Vi 取自 *Vision*（视），mora 是拉丁语里的"片刻、停留"——**让所见停留成影像**：安静、可靠、不发花哨，专心盯图。
 
 ## 设计理念
 
 - **数据归自己** —— 素材、提示词、任务、成图全部落在本机 MySQL 与磁盘（`data/`、`outputs/`），不依赖任何云账号，删库即删一切。
-- **克制可靠** —— 摄影暗房式的界面：石墨黑默认主题为长时间盯图优化（Lightroom 同理），动效只表达状态反馈，整页唯一的常驻动画是运行中的心跳点。
+- **克制可靠** —— 石墨黑默认主题为长时间盯图优化（Lightroom 同理），动效只表达状态反馈，整页唯一的常驻动画是运行中的心跳点。
 - **零额度试跑** —— 内置 Mock 源站，不花一分钱、不出一次网就能走通建任务到出图的全流程，也用它跑自动化测试。
 - **单人即全部** —— 没有注册登录、没有团队协作，装好就用；一台电脑、一个浏览器就是全部部署。
 
 ## 功能特性
 
 **工作台**
-- 三栏布局：素材窄列（人脸 / 袜子 / 姿势各 1 张、服装最多 3 张）｜提示词居中｜参数列
+- 三栏布局：素材 ｜ 提示词 ｜ 参数，一屏完成选图、改词、出图
 - 提交即入队、立即解锁界面，可连续提交多个任务
 - 支持中英文界面切换（右上角一键切换，语言偏好持久化）
 
 **素材库**
-- 人脸 / 服装 / 袜子 / 姿势四类素材独立建库，分组管理
+- 库与分组自由创建、自主维护，类别不写死，随工作流扩展
 - 手动上传或按磁盘目录批量导入（一级子目录 = 组）
 - 素材卡多选、分组筛选、动态分页，网格随分辨率自适应
 
@@ -73,6 +72,8 @@ Vimora 就是把这件每天重复几十次的事，做成一个顺手的工作�
 - 浮层（抽屉 / 弹窗 / toast）磨砂玻璃质感，数据用等宽字体
 
 ## 快速开始
+
+两种方式：**源码运行**（见下文），或直接使用打包好的 exe（整理中，后续发布到 [Releases](https://gitee.com/menghahayl/vimora/releases)，届时无需自行搭建 Python 环境）。
 
 ### 环境要求
 
@@ -142,7 +143,7 @@ python -m pytest tests/ -v
 app/                    # FastAPI 后端
 ├── config.py           # .env / 环境变量配置
 ├── database.py         # 建库建表、engine/会话
-├── models.py           # 六表 ORM（prompt/asset_group/asset_image/provider/gen_task/task_image）
+├── models.py           # ORM（prompt/library/asset_group/asset_image/provider/gen_task/task_image）
 ├── routers/            # prompts / libraries / providers / tasks
 ├── services/           # storage（素材落盘）/ generator（出图与结果落盘）/ task_runner / mock_provider
 └── utils/              # 文件名安全化、图片读写
@@ -153,14 +154,12 @@ data/                   # 素材库落盘（运行时生成）
 outputs/                # 生图结果归档（运行时生成）
 ```
 
-## Roadmap
+## 后续计划
 
-- [ ] 一键打包发行（PyInstaller 已有雏形）
 - [ ] 任务批量重跑与批量导出
 - [ ] 提示词变量模板（占位符批量套参考图）
-- [ ] 更多源站协议（Gemini、本地 ComfyUI 等）
 
-> 有想法？欢迎提 [Issue](https://github.com/yourname/vimora/issues) 或直接提 PR。
+> 有想法？欢迎提 [Issue](https://gitee.com/menghahayl/vimora/issues) 或直接提 PR。
 
 ## 贡献
 
