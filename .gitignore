@@ -18,3 +18,7 @@ __pycache__/
 
 # IDE
 .idea/
+
+# 本地一次性脚本与运行日志（内含本机数据库口令，禁止入库）
+relay_*.py
+server.log
