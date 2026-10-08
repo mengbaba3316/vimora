@@ -22,3 +22,8 @@ __pycache__/
 # 本地一次性脚本与运行日志（内含本机数据库口令，禁止入库）
 relay_*.py
 server.log
+
+# 过程性档案：设计原型 / SDD 文档 / 设计工具日志——留本地，不入库
+prototype/
+docs/
+.finesse/
