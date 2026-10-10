@@ -17,14 +17,14 @@ def test_group_crud(client):
     assert client.delete(f"/api/libraries/1/groups/{gid}").status_code == 200
 
 def test_upload_list_delete_image(client, settings):
-    gid = client.post("/api/libraries/3/groups", json={"name": "白袜"}).json()["id"]
+    gid = client.post("/api/libraries/3/groups", json={"name": "站姿"}).json()["id"]
     r = client.post(f"/api/libraries/3/images",
                     data={"group_id": str(gid)},
                     files=[("files", ("细节1.png", png_bytes(), "image/png")),
                            ("files", ("细节2.png", png_bytes(), "image/png"))])
     assert r.status_code == 200 and r.json()["imported"] == 2
     imgs = client.get(f"/api/libraries/3/images?group_id={gid}").json()
-    assert len(imgs) == 2 and imgs[0]["url"].startswith("/files/libraries/socks/")
+    assert len(imgs) == 2 and imgs[0]["url"].startswith("/files/libraries/pose/")
     # file_path 相对 DATA_DIR/libraries（与静态挂载 /files/libraries 一致），简报测试行漏了 libraries 段
     path = os.path.join(settings.DATA_DIR, "libraries", imgs[0]["file_path"])
     assert os.path.exists(path)
@@ -64,10 +64,10 @@ def test_group_rename_dup_and_cross_library_guards(client):
     assert client.put(f"/api/libraries/1/groups/{g1}", json={"name": "A"}).status_code == 200
     # 不存在的 library id → 404（规格 §5.2；非数字路径参数由框架 422 拦截）
     assert client.put(f"/api/libraries/9999/groups/{g1}", json={"name": "C"}).status_code == 404
-    # 跨库：face 的组走 socks 前缀 → 404
+    # 跨库：face 的组走 pose 前缀 → 404
     assert client.put(f"/api/libraries/3/groups/{g1}", json={"name": "C"}).status_code == 404
     assert client.delete(f"/api/libraries/3/groups/{g1}").status_code == 404
-    # 图片跨库：face 的图走 socks 前缀 → 404
+    # 图片跨库：face 的图走 pose 前缀 → 404
     r = client.post("/api/libraries/1/images", data={"group_id": str(g1)},
                     files=[("files", ("a.png", png_bytes(), "image/png"))])
     assert r.status_code == 200
@@ -75,7 +75,7 @@ def test_group_rename_dup_and_cross_library_guards(client):
     assert client.put(f"/api/libraries/3/images/{img_id}",
                       json={"original_name": "z.png"}).status_code == 404
     assert client.delete(f"/api/libraries/3/images/{img_id}").status_code == 404
-    # 跨库上传：socks 前缀 + face 组 → 404（防 library 列与组不一致）
+    # 跨库上传：pose 前缀 + face 组 → 404（防 library 列与组不一致）
     assert client.post("/api/libraries/3/images", data={"group_id": str(g1)},
                        files=[("files", ("b.png", png_bytes(), "image/png"))]).status_code == 404
     # 本库操作仍正常

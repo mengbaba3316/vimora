@@ -13,8 +13,8 @@ def test_group_name_unique_per_library(db):
     except Exception: db.rollback()
 
 def test_cascade_delete_images(db):
-    g = AssetGroup(library=3, name="白袜")
-    g.images.append(AssetImage(library=3, original_name="a.png", file_path="socks/1/a.png"))
+    g = AssetGroup(library=3, name="站姿")
+    g.images.append(AssetImage(library=3, original_name="a.png", file_path="pose/1/a.png"))
     db.add(g); db.commit()
     gid = g.id
     db.delete(g); db.commit()

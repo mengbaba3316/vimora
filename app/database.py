@@ -97,8 +97,7 @@ def _ensure_columns(engine):
 _LIBRARY_SEED = [
     ("face", "人脸", "var(--lib-face)", 1),
     ("outfit", "服装", "var(--lib-outfit)", 2),
-    ("socks", "袜子", "var(--lib-socks)", 3),
-    ("pose", "姿势", "var(--lib-pose)", 4),
+    ("pose", "姿势", "var(--lib-pose)", 3),
 ]
 
 def _seed_libraries(engine):

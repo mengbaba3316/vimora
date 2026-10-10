@@ -21,7 +21,7 @@ def test_sqlite_backend(tmp_path):
         db = Session()
         # 种子库自动灌入
         libs = db.query(models.Library).order_by(models.Library.sort_order).all()
-        assert [l.key for l in libs] == ["face", "outfit", "socks", "pose"]
+        assert [l.key for l in libs] == ["face", "outfit", "pose"]
         # BigInteger 主键在 SQLite 上自增（_PK 方言变体）
         db.add_all([models.Provider(name="甲"), models.Provider(name="乙")])
         db.commit()

@@ -13,9 +13,9 @@ from .database import Base
 _PK = BigInteger().with_variant(Integer, "sqlite")
 
 class Library(Base):
-    """一级素材库（可配置）：face/outfit/socks/pose 为种子数据，可增删改/启停/排序。
+    """一级素材库（可配置）：face/outfit/pose 为种子数据，可增删改/启停/排序。
 
-    key 为落盘目录名与旧枚举值映射（种子固定 face/outfit/socks/pose，新建为 lib_{id}）；
+    key 为落盘目录名与旧枚举值映射（种子固定 face/outfit/pose，新建为 lib_{id}）；
     enabled 仅控制工作台引用入口，素材库页面始终可见可上传。
     """
     __tablename__ = "library"

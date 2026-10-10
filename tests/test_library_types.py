@@ -4,7 +4,7 @@
 def test_library_type_crud(client):
     # 种子库存在（迁移在 ensure_database 时灌入）
     libs = client.get("/api/library-types").json()
-    assert [l["key"] for l in libs] == ["face", "outfit", "socks", "pose"]
+    assert [l["key"] for l in libs] == ["face", "outfit", "pose"]
     assert all(l["enabled"] for l in libs)
 
     # 英文名建库 → key 用名称 slug
