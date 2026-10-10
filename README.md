@@ -7,7 +7,7 @@
 
 **自己的提示词、自己的素材，随取随用，组合出图。**
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.9%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![Vue 3](https://img.shields.io/badge/Vue-3-4FC08D?logo=vuedotjs&logoColor=white)](https://vuejs.org/)
@@ -175,6 +175,6 @@ outputs/                # 生图结果归档（运行时生成）
 
 ## License
 
-本项目基于 [MIT License](LICENSE) 开源——可自由使用、修改、分发（含商用），只需保留本版权声明。
+本项目基于 [GNU AGPL-3.0](LICENSE) 协议开源——可自由使用、修改、分发（含商用），但修改后的版本或以网络服务形式对外提供时，须按相同协议开放完整源码。
 
 Copyright (c) 2026 Vimora contributors

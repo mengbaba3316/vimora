@@ -7,7 +7,7 @@
 
 **Your own prompts, your own assets — ready to grab, ready to combine.**
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.9%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![Vue 3](https://img.shields.io/badge/Vue-3-4FC08D?logo=vuedotjs&logoColor=white)](https://vuejs.org/)
@@ -175,6 +175,6 @@ Issues and PRs are welcome: for bugs please include reproduction steps and logs;
 
 ## License
 
-This project is released under the [MIT License](LICENSE) — free to use, modify, and distribute (commercial use included), as long as the copyright notice is preserved.
+This project is released under the [GNU AGPL-3.0](LICENSE) — free to use, modify, and distribute (commercial use included), but modified versions, and versions offered as a network service, must make their complete source available under the same license.
 
 Copyright (c) 2026 Vimora contributors
