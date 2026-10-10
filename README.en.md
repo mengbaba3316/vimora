@@ -80,7 +80,7 @@ Vimora turns that repeated routine into a proper workbench: references live in a
 
 ## Getting started
 
-Two ways to run it: **from source** (below), or a prebuilt Windows exe (in preparation, will be published on the [Releases](https://gitee.com/menghahayl/vimora/releases) page — no Python setup needed).
+Two ways to run it: **from source** (below), or download the prebuilt [exe](https://gitee.com/menghahayl/vimora/releases).
 
 ### Requirements
 
@@ -160,13 +160,6 @@ tests/                  # pytest regression suite
 data/                   # asset libraries (generated at runtime)
 outputs/                # generated results (generated at runtime)
 ```
-
-## What's next
-
-- [ ] Batch rerun and batch export of tasks
-- [ ] Prompt variable templates (batch-fill placeholders with references)
-
-> Got an idea? Open an [Issue](https://gitee.com/menghahayl/vimora/issues) or send a PR.
 
 ## Contributing
 

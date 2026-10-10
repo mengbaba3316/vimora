@@ -80,7 +80,7 @@ Vimora 就是把这件每天重复几十次的事，做成一个顺手的工作�
 
 ## 快速开始
 
-两种方式：**源码运行**（见下文），或直接使用打包好的 exe（整理中，后续发布到 [Releases](https://gitee.com/menghahayl/vimora/releases)，届时无需自行搭建 Python 环境）。
+两种方式：**源码运行**（见下文），或直接下载打包好的 [exe](https://gitee.com/menghahayl/vimora/releases)。
 
 ### 环境要求
 
@@ -160,13 +160,6 @@ tests/                  # pytest 回归测试
 data/                   # 素材库落盘（运行时生成）
 outputs/                # 生图结果归档（运行时生成）
 ```
-
-## 后续计划
-
-- [ ] 任务批量重跑与批量导出
-- [ ] 提示词变量模板（占位符批量套参考图）
-
-> 有想法？欢迎提 [Issue](https://gitee.com/menghahayl/vimora/issues) 或直接提 PR。
 
 ## 贡献
 
