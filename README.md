@@ -1,8 +1,9 @@
 <div align="center">
 
-<img src="logo.svg" alt="Vimora" width="96" />
-
-# Vimora · 生图工作台
+<h1>
+  <img src="logo.svg" alt="" width="76" /><br>
+  <img src="logo-wordmark.svg" alt="Vimora" width="190" />
+</h1>
 
 **自己的提示词、自己的素材，随取随用，组合出图。**
 

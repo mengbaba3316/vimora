@@ -1,8 +1,9 @@
 <div align="center">
 
-<img src="logo.svg" alt="Vimora" width="96" />
-
-# Vimora · Image Generation Workbench
+<h1>
+  <img src="logo.svg" alt="" width="76" /><br>
+  <img src="logo-wordmark.svg" alt="Vimora" width="190" />
+</h1>
 
 **Your own prompts, your own assets — ready to grab, ready to combine.**
 
