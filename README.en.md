@@ -1,9 +1,7 @@
 <div align="center">
 
-<h1>
-  <img src="logo.svg" alt="" width="76" /><br>
-  <img src="logo-wordmark.svg" alt="Vimora" width="190" />
-</h1>
+<img src="logo.svg" alt="" width="76" /><br>
+<img src="logo-wordmark.svg" alt="Vimora" width="190" />
 
 **Your own prompts, your own assets — ready to grab, ready to combine.**
 
@@ -14,6 +12,7 @@
 [![MySQL](https://img.shields.io/badge/MySQL-8-4479A1?logo=mysql&logoColor=white)](https://www.mysql.com/)
 
 [![Gitee](https://img.shields.io/badge/Gitee-vimora-C71D23?logo=gitee)](https://gitee.com/menghahayl/vimora)
+[![GitHub](https://img.shields.io/badge/GitHub-vimora-181717?logo=github)](https://github.com/mengbaba3316/vimora)
 
 [简体中文](README.md) | English
 
