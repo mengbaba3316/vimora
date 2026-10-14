@@ -170,3 +170,7 @@ Issues and PRs are welcome: for bugs please include reproduction steps and logs;
 This project is released under the [GNU AGPL-3.0](LICENSE) — free to use, modify, and distribute (commercial use included), but modified versions, and versions offered as a network service, must make their complete source available under the same license.
 
 Copyright (c) 2026 Vimora contributors
+
+## Community
+
+This project is listed on and endorsed by the [LINUX DO](https://linux.do) community.

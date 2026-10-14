@@ -170,3 +170,7 @@ outputs/                # 生图结果归档（运行时生成）
 本项目基于 [GNU AGPL-3.0](LICENSE) 协议开源——可自由使用、修改、分发（含商用），但修改后的版本或以网络服务形式对外提供时，须按相同协议开放完整源码。
 
 Copyright (c) 2026 Vimora contributors
+
+## 社区
+
+本开源项目已链接并认可 [LINUX DO](https://linux.do) 社区。
